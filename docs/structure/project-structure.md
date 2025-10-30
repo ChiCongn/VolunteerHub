@@ -56,5 +56,6 @@ backend/
 ├── package.json
 ├── jest.config.ts
 ├── Dockerfile
+├── .gitignore
 └── .env
 ```
