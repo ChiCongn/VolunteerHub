@@ -1,28 +1,14 @@
 ```yaml
 openapi: 3.0.3
 info:
-  title: User API - Logout User
+  title: VolunteerHub API - Logout User
   version: 1.0.0
-  description: Invalidates the user's session (internal for session invalidation).
+  description: Logs out the user by invalidating the session (internal use).
 servers:
-  - url: /api/v1
-    description: Base URL for the API
+  - url: https://volunteerhub.com/api/v1
+    description: Production
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: INVALID_INPUT
-        message:
-          type: string
-          example: Invalid input data
+  $ref: ./components.json
 paths:
   /auth/logout:
     post:
@@ -30,7 +16,7 @@ paths:
         - Authentication
       summary: User logout
       operationId: logoutUser
-      description: Invalidates the user's session (internal use).
+      description: Invalidates the current session or token.
       security:
         - bearerAuth: []
       responses:
@@ -39,15 +25,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Successfully logged out
+                $ref: '#/components/schemas/ApiResponse'
         '401':
-          description: Unauthorized - Missing or invalid authentication token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 ```

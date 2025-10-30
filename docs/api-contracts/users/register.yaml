@@ -1,60 +1,14 @@
 ```yaml
 openapi: 3.0.3
 info:
-  title: User API - Register User
+  title: VolunteerHub API - Register User
   version: 1.0.0
-  description: Registers a new user.
+  description: Registers a new user account.
 servers:
-  - url: /api/v1
-    description: Base URL for the API
+  - url: https://volunteerhub.com/api/v1
+    description: Production
 components:
-  schemas:
-    RegisterRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          example: user@example.com
-        password:
-          type: string
-          format: password
-          minLength: 8
-          example: Password123!
-        name:
-          type: string
-          example: John Doe
-      required:
-        - email
-        - password
-        - name
-    AuthResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        user:
-          type: object
-          properties:
-            id:
-              type: string
-              example: 123e4567-e89b-12d3-a456-426614174000
-            email:
-              type: string
-              example: user@example.com
-            name:
-              type: string
-              example: John Doe
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: INVALID_INPUT
-        message:
-          type: string
-          example: Invalid input data
+  $ref: ./components.json
 paths:
   /auth/register:
     post:
@@ -62,6 +16,7 @@ paths:
         - Authentication
       summary: Register a new user
       operationId: registerUser
+      description: Creates a new user account with the provided credentials.
       requestBody:
         content:
           application/json:
@@ -75,15 +30,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
         '400':
-          description: Bad Request - Invalid input data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequest'
         '409':
-          description: Conflict - Email already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 ```

@@ -1,83 +1,47 @@
 ```yaml
 openapi: 3.0.3
 info:
-  title: User API - List Users
+  title: VolunteerHub API - List Admin Users
   version: 1.0.0
-  description: Retrieves a list of all users for admin purposes. May overlap with reporting stats.
+  description: Retrieves a paginated list of users for admin purposes. May overlap with reporting stats.
 servers:
-  - url: /api/v1
-    description: Base URL for the API
+  - url: https://volunteerhub.com/api/v1
+    description: Production
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          example: 123e4567-e89b-12d3-a456-426614174000
-        email:
-          type: string
-          example: user@example.com
-        name:
-          type: string
-          example: John Doe
-        status:
-          type: string
-          enum: [pending, active, locked]
-          example: active
-        createdAt:
-          type: string
-          format: date-time
-          example: 2025-10-15T14:16:00Z
-      required:
-        - id
-        - email
-        - name
-        - status
-        - createdAt
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: INVALID_INPUT
-        message:
-          type: string
-          example: Invalid input data
+  $ref: ./components.json
 paths:
   /admin/users:
     get:
       tags:
         - Admin
-      summary: List all users (admin)
+      summary: List all users
       operationId: listUsers
-      description: Retrieves a list of all users for admin purposes. May overlap with reporting stats.
+      description: Admin endpoint to fetch all users with pagination.
       security:
         - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationLimit'
       responses:
         '200':
           description: List of users
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
         '401':
-          description: Unauthorized - Missing or invalid authentication token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - User lacks admin role
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 ```

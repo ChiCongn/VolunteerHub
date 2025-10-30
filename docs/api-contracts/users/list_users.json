@@ -1,67 +1,75 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "User API - List Users",
-    "version": "1.0.0",
-    "description": "Retrieves a list of all users for admin purposes. May overlap with reporting stats."
-  },
-  "servers": [
-    {
-      "url": "/api/v1",
-      "description": "Base URL for the API"
-    }
-  ],
-  "components": {
-    "$ref": "./components.json"
-  },
-  "paths": {
-    "/admin/users": {
-      "get": {
-        "tags": ["Admin"],
-        "summary": "List all users (admin)",
-        "operationId": "listUsers",
-        "description": "Retrieves a list of all users for admin purposes. May overlap with reporting stats.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of users",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Missing or invalid authentication token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden - User lacks admin role",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
+    "openapi": "3.0.3",
+    "info": {
+        "title": "VolunteerHub API - List Admin Users",
+        "version": "1.0.0",
+        "description": "Retrieves a paginated list of users for admin purposes. May overlap with reporting stats."
+    },
+    "servers": [
+        {
+            "url": "https://volunteerhub.com/api/v1",
+            "description": "Production"
         }
-      }
+    ],
+    "components": {
+        "$ref": "./components.json"
+    },
+    "paths": {
+        "/admin/users": {
+            "get": {
+                "tags": ["Admin"],
+                "summary": "List all users",
+                "operationId": "listUsers",
+                "description": "Admin endpoint to fetch all users with pagination.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/PaginationPage"
+                    },
+                    {
+                        "$ref": "#/components/parameters/PaginationLimit"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/Meta"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
     }
-  }
 }

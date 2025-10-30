@@ -1,113 +1,54 @@
 ```yaml
 openapi: 3.0.3
 info:
-  title: User API - Lock User
+  title: VolunteerHub API - Lock User
   version: 1.0.0
-  description: Locks a user account (admin only).
+  description: Locks a user account to prevent access (admin only).
 servers:
-  - url: /api/v1
-    description: Base URL for the API
+  - url: https://volunteerhub.com/api/v1
+    description: Production
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  schemas:
-    LockUserRequest:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [locked, active]
-          example: locked
-      required:
-        - status
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          example: 123e4567-e89b-12d3-a456-426614174000
-        email:
-          type: string
-          example: user@example.com
-        name:
-          type: string
-          example: John Doe
-        status:
-          type: string
-          enum: [pending, active, locked]
-          example: active
-        createdAt:
-          type: string
-          format: date-time
-          example: 2025-10-15T14:16:00Z
-      required:
-        - id
-        - email
-        - name
-        - status
-        - createdAt
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: INVALID_INPUT
-        message:
-          type: string
-          example: Invalid input data
+  $ref: ./components.json
 paths:
   /users/{id}/lock:
     patch:
       tags:
         - Admin
-      summary: Lock user (admin)
+      summary: Lock user
       operationId: lockUser
+      description: Changes user status to locked.
       security:
         - bearerAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the user
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LockUserRequest'
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/UserStatus'
       responses:
         '200':
           description: User locked successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         '400':
-          description: Bad Request - Invalid input data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Missing or invalid authentication token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - User lacks admin role
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not Found - User with specified ID does not exist
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 ```

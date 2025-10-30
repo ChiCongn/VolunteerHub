@@ -1,55 +1,14 @@
 ```yaml
 openapi: 3.0.3
 info:
-  title: User API - Login User
+  title: VolunteerHub API - Login User
   version: 1.0.0
-  description: Authenticates a user and returns a JWT token.
+  description: Authenticates a user and returns an access token.
 servers:
-  - url: /api/v1
-    description: Base URL for the API
+  - url: https://volunteerhub.com/api/v1
+    description: Production
 components:
-  schemas:
-    LoginRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          example: user@example.com
-        password:
-          type: string
-          format: password
-          example: Password123!
-      required:
-        - email
-        - password
-    AuthResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        user:
-          type: object
-          properties:
-            id:
-              type: string
-              example: 123e4567-e89b-12d3-a456-426614174000
-            email:
-              type: string
-              example: user@example.com
-            name:
-              type: string
-              example: John Doe
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-          example: INVALID_INPUT
-        message:
-          type: string
-          example: Invalid input data
+  $ref: ./components.json
 paths:
   /auth/login:
     post:
@@ -57,6 +16,7 @@ paths:
         - Authentication
       summary: User login
       operationId: loginUser
+      description: Authenticates the user with email and password.
       requestBody:
         content:
           application/json:
@@ -69,10 +29,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized - Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 ```
