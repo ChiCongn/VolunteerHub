@@ -1,0 +1,53 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: User API - Logout User
+  version: 1.0.0
+  description: Invalidates the user's session (internal for session invalidation).
+servers:
+  - url: /api/v1
+    description: Base URL for the API
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INVALID_INPUT
+        message:
+          type: string
+          example: Invalid input data
+paths:
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      operationId: logoutUser
+      description: Invalidates the user's session (internal use).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully logged out
+        '401':
+          description: Unauthorized - Missing or invalid authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+```

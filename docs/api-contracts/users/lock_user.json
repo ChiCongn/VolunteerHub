@@ -1,0 +1,163 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "User API - Lock User",
+        "version": "1.0.0",
+        "description": "Locks a user account (admin only)."
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "Base URL for the API"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "LockUserRequest": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": ["locked", "active"],
+                        "example": "locked"
+                    }
+                },
+                "required": ["status"]
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@example.com"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["pending", "active", "locked"],
+                        "example": "active"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-15T14:16:00Z"
+                    }
+                },
+                "required": ["id", "email", "name", "status", "createdAt"]
+            },
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "example": "INVALID_INPUT"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Invalid input data"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/users/{id}/lock": {
+            "patch": {
+                "tags": ["Admin"],
+                "summary": "Lock user (admin)",
+                "operationId": "lockUser",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Unique identifier of the user"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LockUserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User locked successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or invalid authentication token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - User lacks admin role",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - User with specified ID does not exist",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
