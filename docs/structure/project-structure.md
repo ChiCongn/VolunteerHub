@@ -59,3 +59,37 @@ backend/
 ├── .gitignore
 └── .env
 ```
+
+## Frontend Structure
+```bash
+frontend/
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   │
+│   ├── components/              # Reusable components
+│   │
+│   ├── pages/
+│   │
+│   ├── routes/
+│   │
+│   ├── store/                   # Zustand / Redux Toolkit
+│   │
+│   ├── hooks/
+│   │
+│   ├── utils/
+│   │
+│   ├── assets/                  # Images, icons, fonts
+│   │
+│   ├── styles/
+│   │
+│   └── types/
+│
+├── vite.config.ts
+├── tailwind.config.js 
+├── tsconfig.json
+├── package.json
+├── .gitignore
+├── .env
+└── Dockerfile
+```
