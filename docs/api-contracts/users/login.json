@@ -1,113 +1,57 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-        "title": "User API - Login User",
-        "version": "1.0.0",
-        "description": "Authenticates a user and returns a JWT token."
-    },
-    "servers": [
-        {
-            "url": "/api/v1",
-            "description": "Base URL for the API"
-        }
-    ],
-    "components": {
-        "schemas": {
-            "LoginRequest": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "format": "email",
-                        "example": "user@example.com"
-                    },
-                    "password": {
-                        "type": "string",
-                        "format": "password",
-                        "example": "Password123!"
-                    }
-                },
-                "required": ["email", "password"]
-            },
-            "AuthResponse": {
-                "type": "object",
-                "properties": {
-                    "token": {
-                        "type": "string",
-                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    },
-                    "user": {
-                        "type": "object",
-                        "properties": {
-                            "id": {
-                                "type": "string",
-                                "example": "123e4567-e89b-12d3-a456-426614174000"
-                            },
-                            "email": {
-                                "type": "string",
-                                "example": "user@example.com"
-                            },
-                            "name": {
-                                "type": "string",
-                                "example": "John Doe"
-                            }
-                        }
-                    }
-                }
-            },
-            "Error": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "example": "INVALID_INPUT"
-                    },
-                    "message": {
-                        "type": "string",
-                        "example": "Invalid input data"
-                    }
-                }
-            }
-        }
-    },
-    "paths": {
-        "/auth/login": {
-            "post": {
-                "tags": ["Authentication"],
-                "summary": "User login",
-                "operationId": "loginUser",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/LoginRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful login",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AuthResponse"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Invalid credentials",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Error"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+  "openapi": "3.0.3",
+  "info": {
+    "title": "User API - Login User",
+    "version": "1.0.0",
+    "description": "Authenticates a user and returns a JWT token."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Base URL for the API"
     }
+  ],
+  "components": {
+    "$ref": "./components.json"
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "operationId": "loginUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
