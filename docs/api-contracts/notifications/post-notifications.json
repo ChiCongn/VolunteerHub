@@ -1,0 +1,110 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VolunteerHub API - Web-Push Subscription",
+    "version": "1.0.0",
+    "description": "Registers a new web-push subscription endpoint for the authenticated user."
+  },
+  "servers": [
+    {
+      "url": "https://volunteerhub.com/api/v1",
+      "description": "Production"
+    }
+  ],
+  "components": {
+    "$ref": "./components.json"
+  },
+  "paths": {
+    "/subscribe": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Register for Push Notifications",
+        "operationId": "registerPushSubscription",
+        "description": "Registers a new browser push subscription (Web Push API) for the authenticated user.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "The PushSubscription object obtained from the browser's Push API.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The push service URL."
+                  },
+                  "expirationTime": {
+                    "type": "integer",
+                    "nullable": true,
+                    "description": "Timestamp when the subscription will expire, or null."
+                  },
+                  "keys": {
+                    "type": "object",
+                    "properties": {
+                      "p256dh": {
+                        "type": "string",
+                        "description": "Base64-URL-encoded P-256 elliptic curve public key."
+                      },
+                      "auth": {
+                        "type": "string",
+                        "description": "Base64-URL-encoded authentication secret."
+                      }
+                    },
+                    "required": [
+                      "p256dh",
+                      "auth"
+                    ]
+                  }
+                },
+                "required": [
+                  "endpoint",
+                  "keys"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription registered successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Subscription registered successfully.",
+                  "data": null
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  }
+}
