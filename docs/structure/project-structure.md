@@ -32,12 +32,12 @@ backend/
 │   │
 │   ├── infrastructure/          # Implementations (Mongo, external services)
 │   │   ├── repositories/        # Concrete repo implementations
-│   │   ├── services/            # Infrastructure services (email, cache)
+│   │   ├── externals/            # Infrastructure services (email, cache)
 │   │   └── database/            # DB init, seeding, migrations (if any)
 │   │
 │   ├── application/             # Use cases / business logic
 │   │   ├── dtos/
-│   │   └── services
+│   │   └── services/
 │   │
 │   ├── presentation/            # HTTP API Layer
 │   │   ├── controllers/
@@ -56,5 +56,40 @@ backend/
 ├── package.json
 ├── jest.config.ts
 ├── Dockerfile
+├── .gitignore
 └── .env
+```
+
+## Frontend Structure
+```bash
+frontend/
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   │
+│   ├── components/              # Reusable components
+│   │
+│   ├── pages/
+│   │
+│   ├── routes/
+│   │
+│   ├── store/                   # Zustand / Redux Toolkit
+│   │
+│   ├── hooks/
+│   │
+│   ├── utils/
+│   │
+│   ├── assets/                  # Images, icons, fonts
+│   │
+│   ├── styles/
+│   │
+│   └── types/
+│
+├── vite.config.ts
+├── tailwind.config.js 
+├── tsconfig.json
+├── package.json
+├── .gitignore
+├── .env
+└── Dockerfile
 ```

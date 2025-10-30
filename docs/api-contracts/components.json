@@ -6,9 +6,8 @@
         "description": "Centralized reusable OpenAPI components for the VolunteerHub API.\nDefines shared schemas, parameters, headers, security schemes, and responses\nused across all API contracts for consistency and scalability."
     },
     "security": [
-        {
-            "bearerAuth": []
-        }
+        {"bearerAuth": []},
+        { "CookieAuth": [] }
     ],
     "components": {
         "securitySchemes": {
@@ -17,6 +16,11 @@
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
                 "description": "JWT-based bearer authentication.\nInclude as `Authorization: Bearer <token>` in request headers."
+            },
+            "CookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "access_token"
             }
         },
         "parameters": {
@@ -166,7 +170,7 @@
                 "type": "string",
                 "enum": [
                     "volunteer",
-                    "manager",
+                    "event_manager",
                     "admin"
                 ],
                 "example": "volunteer"
@@ -186,6 +190,7 @@
                 "enum": [
                     "pending",
                     "approved",
+                    "ongoing",
                     "cancelled",
                     "completed"
                 ],
@@ -195,28 +200,55 @@
                 "type": "string",
                 "enum": [
                     "like",
-                    "love",
-                    "laugh",
+                    "dislike",
                     "sad",
                     "angry",
-                    "wow"
+                    "wow",
+                    "haha"
                 ],
                 "example": "like"
             },
             "NotificationType": {
                 "type": "string",
                 "enum": [
-                    "event_approved",
-                    "event_cancelled",
-                    "event_completed",
-                    "new_post",
-                    "new_comment",
-                    "new_emoji",
-                    "manager_assigned",
-                    "event_invite",
-                    "account_locked"
+                    "system",
+                    "event",
+                    "user"
                 ],
-                "example": "new_post"
+                "example": "system"
+            },
+            "RegistrationStatus": {
+                "type": "string",
+                "enum": [
+                    "pending",
+                    "approved",
+                    "rejected"
+                ],
+                "example": "pending"
+            },
+            "ReportType": {
+                "type": "string",
+                "enum": [
+                    "spam",
+                    "harassment",
+                    "illegal_content",
+                    "violence",
+                    "copyright_violation",
+                    "other"
+                ],
+                "example": "spam"
+            },
+            "Category": {
+                "type": "string",
+                "enum": [
+                    "education",
+                    "social",
+                    "technology_stem",
+                    "health_wellness",
+                    "community_service",
+                    "other"
+                ],
+                "example": "social"
             },
             "User": {
                 "type": "object",
@@ -237,7 +269,7 @@
                     "status": {
                         "$ref": "#/components/schemas/UserStatus"
                     },
-                    "avatarPath": {
+                    "avatarUrl": {
                         "type": "string",
                         "nullable": true
                     },
@@ -245,10 +277,6 @@
                         "type": "string",
                         "format": "date-time",
                         "nullable": true
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
                     }
                 },
                 "required": [
@@ -331,11 +359,14 @@
                     "description": {
                         "type": "string"
                     },
-                    "imagePath": {
+                    "imageUrl": {
                         "type": "string"
                     },
-                    "category": {
-                        "type": "string"
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
                     },
                     "registerCount": {
                         "type": "integer"
@@ -349,17 +380,13 @@
                     "ownerId": {
                         "type": "string"
                     },
-                    "managerIds": {
+                    "eventManagerIds": {
                         "type": "array",
                         "items": {
                             "type": "string"
                         }
                     },
                     "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdAt": {
                         "type": "string",
                         "format": "date-time"
                     }
@@ -369,12 +396,11 @@
                     "name",
                     "location",
                     "startTime",
+                    "endTime",
                     "description",
                     "imagePath",
-                    "category",
                     "capacity",
-                    "status",
-                    "createdAt"
+                    "status"
                 ]
             },
             "CreateEventRequest": {
@@ -398,11 +424,14 @@
                     "description": {
                         "type": "string"
                     },
-                    "imagePath": {
+                    "imageUrl": {
                         "type": "string"
                     },
-                    "category": {
-                        "type": "string"
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
                     },
                     "capacity": {
                         "type": "integer"
@@ -414,8 +443,6 @@
                     "startTime",
                     "endTime",
                     "description",
-                    "imagePath",
-                    "category",
                     "capacity"
                 ]
             },
@@ -440,8 +467,11 @@
                     "description": {
                         "type": "string"
                     },
-                    "category": {
-                        "type": "string"
+                    "categories": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
                     },
                     "capacity": {
                         "type": "integer"
@@ -478,15 +508,11 @@
                     "authorId": {
                         "type": "string"
                     },
-                    "title": {
-                        "type": "string"
-                    },
                     "content": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "imageUrl": {
+                        "type": "string"
                     },
                     "updatedAt": {
                         "type": "string",
@@ -504,25 +530,24 @@
             "CreatePostRequest": {
                 "type": "object",
                 "properties": {
-                    "title": {
+                    "content": {
                         "type": "string"
                     },
-                    "content": {
+                    "imageUrl": {
                         "type": "string"
                     }
                 },
                 "required": [
-                    "title",
                     "content"
                 ]
             },
             "UpdatePostRequest": {
                 "type": "object",
                 "properties": {
-                    "title": {
+                    "content": {
                         "type": "string"
                     },
-                    "content": {
+                    "imageUrl": {
                         "type": "string"
                     }
                 }
@@ -543,10 +568,6 @@
                         "type": "string"
                     },
                     "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdAt": {
                         "type": "string",
                         "format": "date-time"
                     }
@@ -581,7 +602,7 @@
                     "content"
                 ]
             },
-            "Emoji": {
+            "Reaction": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -593,46 +614,37 @@
                     "authorId": {
                         "type": "string"
                     },
-                    "type": {
+                    "emoji": {
                         "$ref": "#/components/schemas/EmojiType"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
                     }
                 },
                 "required": [
                     "id",
                     "postId",
                     "authorId",
-                    "type",
-                    "createdAt"
+                    "emoji"
                 ]
             },
             "CreateEmojiRequest": {
                 "type": "object",
                 "properties": {
-                    "type": {
+                    "emoji": {
                         "$ref": "#/components/schemas/EmojiType"
                     }
                 },
                 "required": [
-                    "type"
+                    "emoji"
                 ]
             },
             "UpdateEmojiRequest": {
                 "type": "object",
                 "properties": {
-                    "type": {
+                    "emoji": {
                         "$ref": "#/components/schemas/EmojiType"
                     }
                 },
                 "required": [
-                    "type"
+                    "emoji"
                 ]
             },
             "Notification": {

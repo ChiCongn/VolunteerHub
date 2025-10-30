@@ -37,48 +37,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "location": {
-                                        "type": "string"
-                                    },
-                                    "startTime": {
-                                        "type": "string",
-                                        "format": "date-time"
-                                    },
-                                    "endTime": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "nullable": true
-                                    },
-                                    "imageUrl": {
-                                        "type": "string",
-                                        "nullable": true
-                                    },
-                                    "capacity": {
-                                        "type": "integer"
-                                    },
-                                    "categories": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "required": [
-                                    "name",
-                                    "description",
-                                    "location",
-                                    "startTime",
-                                    "endTime",
-                                    "capacity"
-                                ]
+                                "$ref": "#/components/schemas/CreateEventRequest"
                             }
                         }
                     }
