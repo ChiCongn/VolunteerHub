@@ -1,0 +1,75 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "VolunteerHub API – Cancel Event",
+        "version": "1.0.0",
+        "description": "Cancel an event. Manager / admin only."
+    },
+    "servers": [
+        {
+            "url": "https://volunteerhub.com/api/v1",
+            "description": "Production server"
+        }
+    ],
+    "components": {
+        "$ref": "./components.json"
+    },
+    "paths": {
+        "/events/{eventId}/cancel": {
+            "post": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Cancel an event",
+                "operationId": "cancelEvent",
+                "description": "Marks the event as cancelled.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-rolesAllowed": [
+                    "manager",
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event cancelled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Event"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    }
+}
