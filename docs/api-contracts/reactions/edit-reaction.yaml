@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Edit Reaction
+  version: 1.0.0
+  description: Updates an existing emoji reaction. Requires authentication.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /emojis/{reactionId}:
+    patch:
+      tags:
+        - Emojis
+      summary: Edit reaction
+      operationId: editReaction
+      description: >-
+        Updates the type of an existing emoji reaction. Only the user who added
+        it can edit it.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reactionId
+          in: path
+          required: true
+          description: The unique identifier of the emoji reaction to update.
+          schema:
+            type: string
+      requestBody:
+        description: The new emoji type.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmojiRequest'
+      responses:
+        '200':
+          description: Reaction updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Emoji'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
