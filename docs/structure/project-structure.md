@@ -32,12 +32,12 @@ backend/
 │   │
 │   ├── infrastructure/          # Implementations (Mongo, external services)
 │   │   ├── repositories/        # Concrete repo implementations
-│   │   ├── services/            # Infrastructure services (email, cache)
+│   │   ├── externals/            # Infrastructure services (email, cache)
 │   │   └── database/            # DB init, seeding, migrations (if any)
 │   │
 │   ├── application/             # Use cases / business logic
 │   │   ├── dtos/
-│   │   └── services
+│   │   └── services/
 │   │
 │   ├── presentation/            # HTTP API Layer
 │   │   ├── controllers/
