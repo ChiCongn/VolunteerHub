@@ -12,6 +12,7 @@ info:
 # ========================
 security:
   - bearerAuth: []
+  - CookieAuth: []
 
 components:
   # ========================
@@ -25,6 +26,11 @@ components:
       description: >
         JWT-based bearer authentication.
         Include as `Authorization: Bearer <token>` in request headers.
+
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
 
   # ========================
   # PARAMETERS
@@ -152,7 +158,7 @@ components:
     # ---------- Enum Definitions ----------
     UserRole:
       type: string
-      enum: [volunteer, manager, admin]
+      enum: [volunteer, event_manager, admin]
       example: volunteer
 
     UserStatus:
@@ -162,27 +168,51 @@ components:
 
     EventStatus:
       type: string
-      enum: [pending, approved, cancelled, completed]
-      example: approved
+      enum: [pending, approved, ongoing, cancelled, completed]
+      example: publish
 
     EmojiType:
       type: string
-      enum: [like, love, laugh, sad, angry, wow]
+      enum: [like, dislike, sad, angry, wow, haha]
       example: like
 
     NotificationType:
       type: string
       enum: 
-        - event_approved        # Event approved by admin
-        - event_cancelled       # Event cancelled by owner/manager
-        - event_completed       # Event marked as completed
-        - new_post              # New post in event user joined
-        - new_comment           # New comment on user's post
-        - new_emoji             # Someone reacted to user's post/comment
-        - manager_assigned      # User promoted to manager
-        - event_invite          # User invited to an event
-        - account_locked        # Account locked by admin
-      example: new_post
+        - system        
+        - event       
+        - user       
+      example: system
+    
+    RegistrationStatus:
+      type: string
+      enum:
+        - pending
+        - approved
+        - rejected
+      example: pending
+
+    ReportType:
+      type: string
+      enum:
+        - spam
+        - harassment
+        - illegal_content
+        - violence
+        - copyright_violation
+        - other
+      example: spam
+
+    Category:
+      type: string
+      enum:
+        - education
+        - social
+        - technology_stem
+        - health_wellness
+        - community_service
+        - other
+      example: social
 
     # ---------- User & Auth ----------
     User:
@@ -199,16 +229,13 @@ components:
           $ref: "#/components/schemas/UserRole"
         status:
           $ref: "#/components/schemas/UserStatus"
-        avatarPath:
+        avatarUrl:
           type: string
           nullable: true
         lastLogin:
           type: string
           format: date-time
           nullable: true
-        createdAt:
-          type: string
-          format: date-time
       required: [id, username, email, role, status]
 
     RegisterRequest:
@@ -261,10 +288,12 @@ components:
           nullable: true
         description:
           type: string
-        imagePath:
+        imageUrl:
           type: string
-        category:
-          type: string
+        categories:
+          type: array
+          items:
+            type: string
         registerCount:
           type: integer
         capacity:
@@ -273,17 +302,14 @@ components:
           $ref: "#/components/schemas/EventStatus"
         ownerId:
           type: string
-        managerIds:
+        eventManagerIds:
           type: array
           items:
             type: string
         updatedAt:
           type: string
           format: date-time
-        createdAt:
-          type: string
-          format: date-time
-      required: [id, name, location, startTime, description, imagePath, category, capacity, status, createdAt]
+      required: [id, name, location, startTime, endTime, description, imageUrl, capacity, status]
 
     CreateEventRequest:
       type: object
@@ -301,13 +327,15 @@ components:
           nullable: true
         description:
           type: string
-        imagePath:
+        imageUrl:
           type: string
-        category:
-          type: string
+        categories:
+          type: array
+          items:
+            type: string
         capacity:
           type: integer
-      required: [name, location, startTime, endTime, description, imagePath, category, capacity]
+      required: [name, location, startTime, endTime, description, capacity]
 
     UpdateEventRequest:
       type: object
@@ -325,8 +353,10 @@ components:
           nullable: true
         description:
           type: string
-        category:
-          type: string
+        categories:
+          type: array
+          items:
+            type: string
         capacity:
           type: integer
 
@@ -350,13 +380,10 @@ components:
           type: string
         authorId:
           type: string
-        title:
-          type: string
         content:
           type: string
-        createdAt:
+        imageUrl:
           type: string
-          format: date-time
         updatedAt:
           type: string
           format: date-time
@@ -365,18 +392,16 @@ components:
     CreatePostRequest:
       type: object
       properties:
-        title:
-          type: string
         content:
           type: string
-      required: [title, content]
+      required: [content]
 
     UpdatePostRequest:
       type: object
       properties:
-        title:
-          type: string
         content:
+          type: string
+        imageUrl:
           type: string
 
     Comment:
@@ -391,9 +416,6 @@ components:
         content:
           type: string
         updatedAt:
-          type: string
-          format: date-time
-        createdAt:
           type: string
           format: date-time
       required: [id, postId, authorId, content, updatedAt]
@@ -412,7 +434,7 @@ components:
           type: string
       required: [content]
 
-    Emoji:
+    Reaction:
       type: object
       properties:
         id:
@@ -421,27 +443,21 @@ components:
           type: string
         authorId:
           type: string
-        type:
+        emoji:
           $ref: "#/components/schemas/EmojiType"
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-      required: [id, postId, authorId, type, createdAt]
+      required: [id, postId, authorId, emoji]
 
     CreateEmojiRequest:
       type: object
       properties:
-        type:
+        emoji:
           $ref: "#/components/schemas/EmojiType"
-      required: [type]
+      required: [emoji]
 
     UpdateEmojiRequest:
       type: object
       properties:
-        type:
+        emoji:
           $ref: "#/components/schemas/EmojiType"
       required: [type]
 
