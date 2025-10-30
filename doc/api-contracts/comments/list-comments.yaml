@@ -39,7 +39,7 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: "#/components/schemas/CreateCommentRequest"
+                          $ref: "#/components/schemas/Comment"
                       meta:
                         $ref: "#/components/schemas/Meta"
               example:
