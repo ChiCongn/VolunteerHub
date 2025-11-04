@@ -1,4 +1,4 @@
-import { NotificationType } from './enums';
+import { NotificationType } from '../../domain/entities/enums';
 
 export interface CreateNotificationDto {
     userId: string;

@@ -1,4 +1,4 @@
-import { EmojiType } from './enums';
+import { EmojiType } from '../../domain/entities/enums';
 
 export interface AddReactionDto {
     userId: string;

@@ -1,4 +1,4 @@
-import { ReportType, ReportStatus } from './enums';
+import { ReportType, ReportStatus } from '../../domain/entities/enums';
 
 export interface CreateReportDto {
     postId: string;

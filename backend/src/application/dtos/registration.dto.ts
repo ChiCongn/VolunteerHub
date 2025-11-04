@@ -1,4 +1,4 @@
-import { RegistrationStatus } from "./enums";
+import { RegistrationStatus } from "../../domain/entities/enums";
 
 export interface CreateRegistrationDto {
     userId: string;
