@@ -1,4 +1,4 @@
-import { EventCategory, EventStatus } from "../../application/dtos/enums";
+import { EventCategory, EventStatus } from "./enums";
 import { CreateEventProps, UpdateEventProps } from "../dtos/event.dtos";
 
 export class Event {

@@ -1,4 +1,4 @@
-import { NotificationType } from "../../application/dtos/enums"
+import { NotificationType } from "../entities/enums"
 
 export interface CreateNotificationProps {
     id: string,

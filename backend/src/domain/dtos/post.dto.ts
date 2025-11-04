@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from "../../application/dtos/enums";
+import { UserRole, UserStatus } from "../entities/enums";
 
 export interface CreatePostProps {
     id: string,

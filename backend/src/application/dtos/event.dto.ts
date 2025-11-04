@@ -1,4 +1,4 @@
-import { EventStatus, EventCategory } from "./enums";
+import { EventStatus, EventCategory } from "../../domain/entities/enums";
 
 export interface CreateEventDto {
     name: string;

@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from "../../application/dtos/enums";
+import { UserRole, UserStatus } from "./enums";
 import { CreateUserProps, UpdateUserProps } from "../dtos/user.dtos";
 
 export class User {

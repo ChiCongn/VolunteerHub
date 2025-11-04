@@ -1,4 +1,4 @@
-import { EventStatus, EventCategory } from "../../application/dtos/enums";
+import { EventStatus, EventCategory } from "../entities/enums";
 
 export interface CreateEventProps {
     id: string;

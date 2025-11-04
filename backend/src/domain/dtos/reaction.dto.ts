@@ -1,4 +1,4 @@
-import { EmojiType } from "../../application/dtos/enums";
+import { EmojiType } from "../entities/enums";
 
 export interface CreateReactionProps {
     id: string,
