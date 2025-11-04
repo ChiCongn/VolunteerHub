@@ -43,16 +43,18 @@ export class Event {
         this._updatedAt = event.updatedAt ?? new Date();
     }
 
-    updatedEvent(updatedEvent: UpdateEventProps) {
-        this._name = updatedEvent.name;
-        this._location = updatedEvent.location;
-        this._startTime = updatedEvent.startTime;
-        this._endTime = updatedEvent.endTime;
-        this._description = updatedEvent.description;
-        this._imageUrl = updatedEvent.imageUrl;
-        this._categories = updatedEvent.categories;
-        this._capacity = updatedEvent.capacity;
-        this._eventManagerIds = updatedEvent.eventManagerIds;
+    updateEvent(updatedEvent: UpdateEventProps): void {
+        if (updatedEvent.name) this._name = updatedEvent.name;
+        if (updatedEvent.location) this._location = updatedEvent.location;
+        if (updatedEvent.startTime) this._startTime = updatedEvent.startTime;
+        if (updatedEvent.endTime) this._endTime = updatedEvent.endTime;
+        if (updatedEvent.description) this._description = updatedEvent.description;
+        if (updatedEvent.imageUrl) this._imageUrl = updatedEvent.imageUrl;
+        if (updatedEvent.categories) this._categories = updatedEvent.categories;
+        if (updatedEvent.capacity) this._capacity = updatedEvent.capacity;
+        if (updatedEvent.eventManagerIds) this._eventManagerIds = updatedEvent.eventManagerIds;
+
+        this.touch();
     }
 
     setStatus(newStatus: EventStatus): void {
@@ -70,24 +72,16 @@ export class Event {
     }
 
     /** Withdraw a registration */
-    withdrawUser(userId: string): void {
-        
-    }
+    withdrawUser(userId: string): void {}
 
     /** Add a manager (admin-only action, so only domain service should call this) */
-    addManager(managerId: string): void {
-        
-    }
+    addManager(managerId: string): void {}
 
     /** Remove a manager */
-    removeManager(managerId: string): void {
-        
-    }
+    removeManager(managerId: string): void {}
 
     // approve an user
-    approveVolunteer(volunteerId: string): void {
-        
-    }
+    approveVolunteer(volunteerId: string): void {}
 
     get name() { return this._name; }
     get location() { return this._location; }
@@ -107,9 +101,7 @@ export class Event {
     get updatedAt() { return this._updatedAt; }
 
     // example
-    private validate(): void {
-        
-    }
+    private validate(): void {}
 
     private touch(): void {
         this._updatedAt = new Date();

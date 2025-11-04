@@ -20,13 +20,13 @@ export interface CreateEventProps {
 }
 
 export interface UpdateEventProps {
-    name: string;
-    location: string;
-    startTime: Date;
-    endTime: Date | null;
-    description: string;
-    imageUrl: string;
-    categories: EventCategory[];
-    capacity: number;
-    eventManagerIds: string[];
+    name?: string;
+    location?: string;
+    startTime?: Date;
+    endTime?: Date | null;
+    description?: string;
+    imageUrl?: string;
+    categories?: EventCategory[];
+    capacity?: number;
+    eventManagerIds?: string[];
 }
