@@ -7,12 +7,15 @@ import { SortOption } from "../../application/dtos/sort-option.dto";
 import { UpdateUserDto } from "../../application/dtos/user.dto";
 
 export interface IUserRepository {
-
     create(user: CreateVolunteerDto): Promise<User>;
     findById(id: string): Promise<User | null>;
     findByDisplayName(username: string): Promise<User[] | null>;
-    
-    listUsers(filter?: ListUserFilterDto, pagination?: Pagination, sort?: SortOption): Promise<ListResult<User>>;
+
+    listUsers(
+        filter?: ListUserFilterDto,
+        pagination?: Pagination,
+        sort?: SortOption
+    ): Promise<ListResult<User>>;
 
     update(id: string, data: UpdateUserDto): Promise<User>;
     softDelete(id: string): Promise<void>;
@@ -20,5 +23,4 @@ export interface IUserRepository {
     setUserLock(id: string, locked: boolean): Promise<void>;
 
     count(filter?: ListUserFilterDto): Promise<number>;
-
 }
