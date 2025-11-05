@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model audit_logs {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String?  @db.Uuid
+  action     String
+  details    Json?
+  ip_address String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  users      users?   @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+}
+
+model comment_reports {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  comment_id  String      @db.Uuid
+  reporter_id String      @db.Uuid
+  type        report_type
+  reason      String
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  comments    comments    @relation(fields: [comment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users       @relation(fields: [reporter_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model comments {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  post_id         String            @db.Uuid
+  author_id       String            @db.Uuid
+  content         String
+  created_at      DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamptz(6)
+  comment_reports comment_reports[]
+  users           users             @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  posts           posts             @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([post_id, created_at(sort: Desc)], map: "idx_comments_post_created_at")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model events {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  location       String
+  start_time     DateTime         @db.Timestamptz(6)
+  end_time       DateTime?        @db.Timestamptz(6)
+  description    String
+  image_url      String
+  categories     event_category[]
+  register_count Int?             @default(0)
+  capacity       Int
+  status         event_status     @default(pending)
+  owner_id       String           @db.Uuid
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?        @default(now()) @db.Timestamptz(6)
+  users          users            @relation(fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  posts          posts[]
+  registrations  registrations[]
+
+  @@index([categories], map: "idx_events_categories_gin", type: Gin)
+  @@index([location(ops: raw("gin_trgm_ops"))], map: "idx_events_location_trgm", type: Gin)
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "idx_events_name_trgm", type: Gin)
+  @@index([owner_id], map: "idx_events_owner")
+  @@index([status, start_time(sort: Desc)], map: "idx_events_status_time")
+}
+
+model notifications {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String            @db.Uuid
+  message      String
+  read         Boolean           @default(false)
+  type         notification_type
+  redirect_url String?
+  created_at   DateTime          @default(now()) @db.Timestamptz(6)
+  users        users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_notifications_user_created_at")
+}
+
+model post_reports {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  post_id     String      @db.Uuid
+  reporter_id String      @db.Uuid
+  type        report_type
+  reason      String
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  posts       posts       @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users       @relation(fields: [reporter_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model posts {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  event_id     String         @db.Uuid
+  author_id    String         @db.Uuid
+  content      String
+  image_url    String?
+  created_at   DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime?      @default(now()) @db.Timestamptz(6)
+  comments     comments[]
+  post_reports post_reports[]
+  users        users          @relation(fields: [author_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  events       events         @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reactions    reactions[]
+
+  @@index([author_id], map: "idx_posts_author")
+  @@index([event_id, created_at(sort: Desc)], map: "idx_posts_event_created_at")
+}
+
+model reactions {
+  post_id    String   @db.Uuid
+  user_id    String   @db.Uuid
+  reaction   emoji
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  posts      posts    @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([post_id, user_id])
+  @@index([post_id, user_id, created_at(sort: Desc)], map: "idx_reactions_post_user_created_at")
+}
+
+model registrations {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  event_id   String              @db.Uuid
+  user_id    String              @db.Uuid
+  status     registration_status @default(pending)
+  created_at DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?           @default(now()) @db.Timestamptz(6)
+  events     events              @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([event_id, user_id])
+  @@index([event_id, user_id], map: "idx_registrations_event_user")
+  @@index([user_id], map: "idx_registrations_user")
+}
+
+model users {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  email           String            @unique @db.VarChar(255)
+  password_hash   String
+  role            user_role         @default(volunteer)
+  status          user_status       @default(pending)
+  avatar_url      String?           @default("/uploads/avatars/default-avatar.png")
+  last_login      DateTime?         @default(now()) @db.Timestamptz(6)
+  created_at      DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamptz(6)
+  audit_logs      audit_logs[]
+  comment_reports comment_reports[]
+  comments        comments[]
+  events          events[]
+  notifications   notifications[]
+  post_reports    post_reports[]
+  posts           posts[]
+  reactions       reactions[]
+  registrations   registrations[]
+}
+
+enum emoji {
+  like
+  dislike
+  wow
+  sad
+  angry
+  haha
+}
+
+enum event_category {
+  education
+  social
+  community_service
+  health_wellness
+  technology_stem
+  other
+}
+
+enum event_status {
+  pending
+  approved
+  ongoing
+  cancelled
+  completed
+}
+
+enum notification_type {
+  system
+  user
+  event
+}
+
+enum registration_status {
+  pending
+  approved
+  rejected
+}
+
+enum report_type {
+  spam
+  harassment
+  illegal_content
+  violence
+  copyright_violation
+  other
+}
+
+enum user_role {
+  volunteer
+  event_manager
+  admin
+}
+
+enum user_status {
+  pending
+  active
+  locked
+  deleted
+}
