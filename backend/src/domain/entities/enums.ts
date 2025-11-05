@@ -46,6 +46,12 @@ export const RegistrationStatus = {
 } as const;
 export type RegistrationStatus = typeof RegistrationStatus[keyof typeof RegistrationStatus];
 
+export const ReportTarget = {
+    Post: 'post',
+    Comment: 'comment',
+} as const;
+export type ReportTarget = typeof ReportTarget[keyof typeof ReportTarget];
+
 export const ReportType = {
     Spam: 'spam',
     Harassment: 'harassment',
