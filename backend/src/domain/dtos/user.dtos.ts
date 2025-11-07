@@ -6,7 +6,7 @@ export interface CreateUserProps {
     name: string;
     email: string;
     passwordHash: string;
-    avatarUrl?: string;
+    avatarUrl: string | null;
 
     role: UserRole;
     status: UserStatus;
@@ -18,8 +18,8 @@ export interface CreateUserProps {
     commentIds: string[];
     reactionIds: string[];
 
-    lastLogin?: Date | null;
-    updatedAt?: Date;
+    lastLogin: Date | null;
+    updatedAt: Date | null;
 }
 
 export interface UpdateUserProps {

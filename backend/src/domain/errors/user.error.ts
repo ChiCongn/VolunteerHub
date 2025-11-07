@@ -23,3 +23,19 @@ export class RolePromotionNotAllowedError extends DomainError {
         super("ROLE_PROMOTION_INVALID", `Cannot promote from ${from} to ${to}`);
     }
 }
+
+export class CannotDeleteLockedUserError extends DomainError {
+    constructor(userId: string) {
+        super(
+            "CANNOT_DELETE_LOCKED_USER",
+            "Cannot delete a locked user account. Unlock it first.",
+            [userId]
+        );
+    }
+}
+
+export class CannotDeleteAlreadyDeletedUserError extends DomainError {
+    constructor(userId: string) {
+        super("USER_ALREADY_DELETED", "This user account has already been deleted", [userId]);
+    }
+}
