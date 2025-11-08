@@ -18,10 +18,15 @@ import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 
-const prisma = new PrismaClient();
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 
 export class UserRepository implements IUserRepository {
+    private prisma: PrismaClient;
+
+    constructor(prismaClient?: PrismaClient) {
+        this.prisma = prismaClient ?? new PrismaClient();
+    }
+
     async create(user: CreateVolunteerDto): Promise<User> {
         try {
             const userId = await this.insert(user);
@@ -36,7 +41,7 @@ export class UserRepository implements IUserRepository {
     }
 
     async findById(id: string): Promise<User> {
-        const users = await prisma.$queryRawUnsafe<PrismaUser[]>(
+        const users = await this.prisma.$queryRawUnsafe<PrismaUser[]>(
             `SELECT * FROM users WHERE id = $1 LIMIT 1;`,
             id
         );
@@ -53,7 +58,7 @@ export class UserRepository implements IUserRepository {
     }
 
     async findByDisplayName(username: string): Promise<User[] | null> {
-        const result = await prisma.$queryRawUnsafe<PrismaUser[]>(
+        const result = await this.prisma.$queryRawUnsafe<PrismaUser[]>(
             `SELECT id, name, email, role, status, avatar_url, last_login
             FROM users
             WHERE LOWER(name) LIKE LOWER($1)
@@ -114,8 +119,8 @@ export class UserRepository implements IUserRepository {
     `;
 
         // ---- execute ----
-        const users = await prisma.$queryRawUnsafe<User[]>(query, ...params);
-        const total = await prisma.$queryRawUnsafe<number>(
+        const users = await this.prisma.$queryRawUnsafe<User[]>(query, ...params);
+        const total = await this.prisma.$queryRawUnsafe<number>(
             `SELECT COUNT(*) as count FROM users ${whereClause};`,
             ...params
         );
@@ -126,7 +131,7 @@ export class UserRepository implements IUserRepository {
     async update(id: string, data: UpdateUserDto): Promise<User> {
         await this.checkRootAdminAndExistedId(id);
 
-        const updateUser = await prisma.users.update({
+        const updateUser = await this.prisma.users.update({
             where: { id },
             data: {
                 ...(data.username && { username: data.username }),
@@ -144,7 +149,7 @@ export class UserRepository implements IUserRepository {
     async softDelete(id: string): Promise<void> {
         await this.checkRootAdminAndExistedId(id);
 
-        await prisma.users.update({
+        await this.prisma.users.update({
             where: { id },
             data: {
                 status: UserStatus.Deleted,
@@ -155,7 +160,7 @@ export class UserRepository implements IUserRepository {
 
     async setUserLock(id: string, locked: boolean): Promise<void> {
         await this.checkRootAdminAndExistedId(id);
-        await prisma.users.update({
+        await this.prisma.users.update({
             where: { id },
             data: { status: locked ? UserStatus.Locked : UserStatus.Active },
         });
@@ -183,7 +188,7 @@ export class UserRepository implements IUserRepository {
         }
 
         const whereSQL = whereClauses.length ? `WHERE ${whereClauses.join(" AND ")}` : "";
-        const result = await prisma.$queryRawUnsafe<{ count: bigint }[]>(
+        const result = await this.prisma.$queryRawUnsafe<{ count: bigint }[]>(
             `SELECT COUNT(*) as count FROM "User" ${whereSQL};`,
             ...params
         );
@@ -196,17 +201,17 @@ export class UserRepository implements IUserRepository {
             throw new CannotModifyRootAdminError();
         }
 
-        const user = await prisma.users.findUnique({ where: { id } });
+        const user = await this.prisma.users.findUnique({ where: { id } });
         if (!user) {
             throw new UserNotFoundError(id);
         }
     }
 
     private async insert(user: CreateVolunteerDto): Promise<string> {
-        const existing = await prisma.users.findUnique({ where: { email: user.email } });
+        const existing = await this.prisma.users.findUnique({ where: { email: user.email } });
         if (existing) throw new EmailAlreadyExistsError(user.email);
 
-        const newUser = await prisma.users.create({
+        const newUser = await this.prisma.users.create({
             data: {
                 name: user.username,
                 email: user.email,
