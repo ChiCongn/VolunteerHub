@@ -7,8 +7,10 @@
         "schema": "src/infrastructure/prisma/schema.prisma"
     },
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "node --loader ts-node/esm src/server.ts",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "dev": "tsx watch src/server.ts",
         "build": "tsc",
         "start": "node dist/server.js",
         "lint": "eslint src --ext .ts",
@@ -23,24 +25,31 @@
         "@prisma/client": "^6.19.0",
         "dotenv": "^17.2.3",
         "express": "^4.21.2",
-        "pg": "^8.16.3"
+        "pg": "^8.16.3",
+        "pino": "^10.1.0",
+        "pino-pretty": "^13.1.2"
     },
     "devDependencies": {
         "@eslint/js": "^9.38.0",
         "@types/express": "^5.0.5",
         "@types/node": "^24.9.2",
         "@types/pg": "^8.15.6",
+        "@types/pino": "^7.0.4",
         "@typescript-eslint/eslint-plugin": "^8.46.2",
         "@typescript-eslint/parser": "^8.46.2",
+        "@vitest/coverage-v8": "^4.0.8",
+        "cross-env": "^10.1.0",
         "eslint": "^9.38.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
         "globals": "^16.4.0",
         "jiti": "^2.6.1",
         "prettier": "^3.6.2",
+        "supertest": "^7.1.4",
         "ts-node": "^10.9.2",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.46.2"
+        "typescript-eslint": "^8.46.2",
+        "vitest": "^4.0.8"
     }
 }

@@ -9,13 +9,19 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "types": [
-            "node"
+            "node",
+            "vitest"
         ]
     },
     "include": [
         "src/**/*.ts",
+        "tests/**/*.ts"
     ],
     "exclude": [
-        "node_modules"
-    ]
+        "node_modules",
+        "dist",
+    ],
+    "ts-node": {
+        "esm": true
+    }
 }
