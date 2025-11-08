@@ -14,8 +14,6 @@ export class User {
 
     private _notifications: string[];
     private _postIds: string[];
-    private _commentIds: string[];
-    private _reactionIds: string[];
     private _participatedEventIds: string[];
     private _registeredEventIds: string[];
 
@@ -35,9 +33,7 @@ export class User {
         this._notifications = props.notificationIds ?? [];
         this._participatedEventIds = props.participatedEventIds ?? [];
         this._registeredEventIds = props.registeredEventIds ?? [];
-        this._commentIds = props.commentIds ?? [];
         this._postIds = props.postIds ?? [];
-        this._reactionIds = props.reactionIds ?? [];
 
         this._lastLogin = props.lastLogin ?? null;
         this._updatedAt = props.updatedAt ?? new Date();
@@ -54,8 +50,6 @@ export class User {
 
     get notifications() { return [...this._notifications]; }
     get postIds() { return [...this._postIds]; }
-    get commentIds() { return [...this._commentIds]; }
-    get reactionIds() { return [...this._reactionIds]; }
     get participatedEventIds() { return [...this._participatedEventIds]; }
     get registeredEventIds() { return [...this._registeredEventIds]; }
 
@@ -118,16 +112,6 @@ export class User {
 
     addPost(postId: string) {
         this._postIds.push(postId);
-        this.touch();
-    }
-
-    addComment(commentId: string) {
-        this._commentIds.push(commentId);
-        this.touch();
-    }
-
-    addReaction(reactionId: string) {
-        this._reactionIds.push(reactionId);
         this.touch();
     }
 

@@ -15,8 +15,6 @@ export interface CreateUserProps {
     participatedEventIds: string[];
     registeredEventIds: string[];
     postIds: string[];
-    commentIds: string[];
-    reactionIds: string[];
 
     lastLogin: Date | null;
     updatedAt: Date | null;
