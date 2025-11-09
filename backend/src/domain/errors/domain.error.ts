@@ -4,10 +4,10 @@ export abstract class DomainError extends Error {
 
     constructor(code: string, message: string, details?: string[]) {
         super(message);
-        Object.setPrototypeOf(this, DomainError.prototype);
         this.name = this.constructor.name;
         this.code = code;
         this.details = details;
+        Object.setPrototypeOf(this, new.target.prototype);
     }
 
     toJSON(): { code: string; message: string; details?: string[] } {

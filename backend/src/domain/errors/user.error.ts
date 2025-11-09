@@ -39,3 +39,33 @@ export class CannotDeleteAlreadyDeletedUserError extends DomainError {
         super("USER_ALREADY_DELETED", "This user account has already been deleted", [userId]);
     }
 }
+
+export class UserLockedError extends DomainError {
+    constructor(userId: string) {
+        super(
+            'USER_LOCKED',
+            `User account "${userId}" is locked and cannot be accessed`,
+            [userId]
+        );
+    }
+}
+
+export class UserDeletedError extends DomainError {
+    constructor(userId: string) {
+        super(
+            'USER_DELETED',
+            `User account "${userId}" has been deleted`,
+            [userId]
+        );
+    }
+}
+
+export class UserPendingApprovalError extends DomainError {
+    constructor(userId: string) {
+        super(
+            'USER_PENDING_APPROVAL',
+            `User "${userId}" is pending admin approval`,
+            [userId]
+        );
+    }
+}
