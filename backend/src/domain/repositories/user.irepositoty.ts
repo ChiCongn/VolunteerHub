@@ -1,26 +1,40 @@
-import { CreateVolunteerDto } from "../../application/dtos/user.dto";
 import { User } from "../entities/user.entity";
-import { ListUserFilterDto } from "../../application/dtos/user.dto";
+import { 
+    CreateVolunteerDto, 
+    UpdateUserDto, 
+    ListUserFilterDto, 
+    Credentials,
+    PublicUserProfile,
+    AdminUserView,
+    AuthUser
+} from "../../application/dtos/user.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
-import { UpdateUserDto } from "../../application/dtos/user.dto";
 
 export interface IUserRepository {
+    // Core CRUD
     create(user: CreateVolunteerDto): Promise<User>;
     findById(id: string): Promise<User | null>;
-    findByDisplayName(username: string): Promise<User[] | null>;
+    update(id: string, changes: UpdateUserDto): Promise<User>;
+    softDelete(id: string): Promise<void>;
 
+    // Auth-related
+    findAuthUserByCredentials(credentials: Credentials): Promise<AuthUser | null>;
+    updatePassword(userId: string, newPasswordHash: string): Promise<void>;
+    updateLastLogin(userId: string, at?: Date): Promise<void>;
+
+    // Public View
+    fetchPublicProfile(userId: string): Promise<PublicUserProfile | null>;
+    searchPublicProfilesByDisplayName(username: string): Promise<PublicUserProfile[] | null>;
+
+    // Admin view
+    fetchAdminUserView(userId: string): Promise<AdminUserView | null>;
     listUsers(
         filter?: ListUserFilterDto,
         pagination?: Pagination,
         sort?: SortOption
-    ): Promise<ListResult<User>>;
-
-    update(id: string, data: UpdateUserDto): Promise<User>;
-    softDelete(id: string): Promise<void>;
-
-    setUserLock(id: string, locked: boolean): Promise<void>;
-
+    ): Promise<ListResult<AdminUserView>>;
     count(filter?: ListUserFilterDto): Promise<number>;
+    setUserLock(id: string, locked: boolean): Promise<void>;
 }
