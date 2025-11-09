@@ -19,8 +19,10 @@ export interface ListUserFilterDto {
 }
 
 export interface PublicUserProfile {
+    id: string;
     username: string;
     avatarUrl: string;
+    role: UserRole;
 }
 
 export interface AdminUserView {
@@ -30,7 +32,8 @@ export interface AdminUserView {
     avatarUrl: string;
     status: UserStatus;
     role: UserRole;
-    lastLogin: Date;
+    lastLogin: Date | null;
+    createdAt: Date;
 }
 
 export interface Credentials {
@@ -42,7 +45,6 @@ export interface AuthUser {
     id: string;
     email: string;
     username: string;
-    passwordHash: string;
     role: UserRole;
     status: UserStatus;
 }

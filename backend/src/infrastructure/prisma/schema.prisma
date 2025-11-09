@@ -141,14 +141,14 @@ model registrations {
 
 model users {
   id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name            String
+  username            String
   email           String            @unique @db.VarChar(255)
   password_hash   String
   role            user_role         @default(volunteer)
   status          user_status       @default(pending)
-  avatar_url      String?           @default("/uploads/avatars/default-avatar.png")
+  avatar_url      String            @default("/uploads/avatars/default-avatar.png")
   last_login      DateTime?         @default(now()) @db.Timestamptz(6)
-  created_at      DateTime?         @default(now()) @db.Timestamptz(6)
+  created_at      DateTime          @default(now()) @db.Timestamptz(6)
   updated_at      DateTime?         @default(now()) @db.Timestamptz(6)
   audit_logs      audit_logs[]
   comment_reports comment_reports[]

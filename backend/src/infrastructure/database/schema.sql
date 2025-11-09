@@ -19,7 +19,7 @@ CREATE TYPE event_category AS ENUM ('education','social','community_service', 'h
 -- -----------------------
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
+    username TEXT NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     role user_role NOT NULL DEFAULT 'volunteer',
