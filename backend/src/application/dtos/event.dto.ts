@@ -25,9 +25,21 @@ export interface UpdateEventDto {
 
 export interface EventFilterDto {
     status?: EventStatus;
-    location?: string;
     name?: string;
+    location?: string;
     categories?: EventCategory[];
     dateRange?: [Date, Date];
     ownerId?: string;
+}
+
+export interface PublicEventView {
+    name: string;
+    location: string;
+    startTime: Date;
+    endTime: Date | null;
+    description: string;
+    imageUrl: string;
+    categories: EventCategory[];
+    regiesterCount: number;
+    capacity: number;
 }

@@ -1,32 +1,44 @@
 import { Event } from "../entities/event.entity";
-import { CreateEventDto } from "../../application/dtos/event.dto";
-import { UpdateEventDto } from "../../application/dtos/event.dto";
-import { EventFilterDto } from "../../application/dtos/event.dto";
+import { 
+    CreateEventDto, 
+    UpdateEventDto,
+    EventFilterDto,
+    PublicEventView 
+} from "../../application/dtos/event.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 import { User } from "../entities/user.entity";
+import { PublicUserProfile } from "../../application/dtos/user.dto";
 
 export interface IEventRepository {
+    // Core CRUD
     create(data: CreateEventDto): Promise<Event>;
     findById(id: string): Promise<Event | null>;
     update(id: string, data: UpdateEventDto): Promise<Event>;
     softDelete(id: string): Promise<void>;
 
-    approveEvent(id: string): Promise<Event>;
-    rejectEvent(id: string, reason: string): Promise<Event>;
-    completeEvent(id: string): Promise<Event>;
-    cancelEvent(id: string): Promise<Event>;
+    // Public view
+    fetchPublicView(id: string): Promise<PublicEventView | null>;
+    searchEvent(filters?: EventFilterDto): Promise<PublicEventView[]>;
 
+    // Event manager
+    approveEvent(id: string): Promise<void>;
+    rejectEvent(id: string, reason: string): Promise<void>;
+    completeEvent(id: string): Promise<void>;
+    cancelEvent(id: string): Promise<void>;
+
+    getParticipantsByEventId(eventId: string): Promise<PublicUserProfile[]>;
+    getRegisteredUsersByEventId(eventId: string): Promise<PublicUserProfile[]>;
+    getEventManagersByEventId(eventId: string): Promise<PublicUserProfile[]>;
+
+    // Admin view
     listEvents(
         filters?: EventFilterDto,
         pagination?: Pagination,
         sort?: SortOption
-    ): Promise<ListResult<Event>>;
+    ): Promise<ListResult<PublicEventView>>;
     
-    findByOwnerId(ownerId: string): Promise<Event[]>;
-    findParticipantsByEventId(eventId: string): Promise<User[]>;
-    findRegisteredUsersByEventId(eventId: string): Promise<User[]>;
-    findEventManagersByEventId(eventId: string): Promise<User[]>;
+    findByOwnerId(ownerId: string): Promise<PublicEventView[]>;
     count(filters?: EventFilterDto): Promise<number>;
 }
