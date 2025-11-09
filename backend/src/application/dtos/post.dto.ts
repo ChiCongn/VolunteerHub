@@ -13,4 +13,5 @@ export interface UpdatePostDto {
 export interface PostView {
     content: string;
     imageUrl?: string;
+    updatedAt: Date;
 }
