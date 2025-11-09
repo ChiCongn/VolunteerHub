@@ -4,7 +4,7 @@ import { CreateUserProps, UpdateUserProps } from "../dtos/user.dtos";
 export class User {
     public readonly id: string;
 
-    private _name: string;
+    private _username: string;
     private _email: string;
     private _passwordHash: string;
     private _avatarUrl: string;
@@ -22,7 +22,7 @@ export class User {
 
     constructor(props: CreateUserProps) {
         this.id = props.id;
-        this._name = props.name;
+        this._username = props.username;
         this._email = props.email;
         this._passwordHash = props.passwordHash;
         this._avatarUrl = props.avatarUrl ?? '/images/default-avatar.png';
@@ -40,7 +40,7 @@ export class User {
     }
 
     // --- Getters ---
-    get name() { return this._name; }
+    get username() { return this._username; }
     get email() { return this._email; }
     get passwordHash() { return this._passwordHash; }
     get avatarUrl() { return this._avatarUrl; }
@@ -58,7 +58,7 @@ export class User {
 
     // --- Business Logic ---
     updateProfile(update: UpdateUserProps): void {
-        if (update.name) this._name = update.name;
+        if (update.name) this._username = update.name;
         if (update.passwordHash) this._passwordHash = update.passwordHash;
         if (update.avatarUrl) this._avatarUrl = update.avatarUrl;
         this.touch();

@@ -6,7 +6,7 @@
 -- 1. ROOT ADMIN
 -- ========================================
 INSERT INTO users (
-    id, name, email, password_hash, role, status, avatar_url, created_at, updated_at
+    id, username, email, password_hash, role, status, avatar_url, created_at, updated_at
 ) VALUES (
     gen_random_uuid(),
     'Root Admin',
@@ -22,7 +22,7 @@ INSERT INTO users (
 -- ========================================
 -- 2. EVENT MANAGERS (Your Custom Data)
 -- ========================================
-INSERT INTO users (id, name, email, password_hash, role, status, avatar_url, created_at, updated_at) VALUES
+INSERT INTO users (id, username, email, password_hash, role, status, avatar_url, created_at, updated_at) VALUES
 (gen_random_uuid(), 'Theresia Van Astrea', 'theresia@volunteerhub.com', crypt('password', gen_salt('bf')), 'event_manager', 'active', '/uploads/avatars/theresia.jpg', NOW(), NOW()),
 (gen_random_uuid(), 'chicongn', 'chicongn@volunteerhub.com', crypt('password', gen_salt('bf')), 'event_manager', 'active', '/uploads/avatars/chicongn.jpg', NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
@@ -30,7 +30,7 @@ ON CONFLICT (email) DO NOTHING;
 -- ========================================
 -- 3. VOLUNTEERS (Fixed image paths)
 -- ========================================
-INSERT INTO users (id, name, email, password_hash, role, status, avatar_url, created_at, updated_at) VALUES
+INSERT INTO users (id, username, email, password_hash, role, status, avatar_url, created_at, updated_at) VALUES
 (gen_random_uuid(), 'Emma Davis',     'emma.volunteer@gmail.com',     crypt('password', gen_salt('bf')), 'volunteer', 'active', '/uploads/avatars/default-avatar.png', NOW(), NOW()),
 (gen_random_uuid(), 'Liam Chen',      'liam.volunteer@gmail.com',     crypt('password', gen_salt('bf')), 'volunteer', 'active', '/uploads/avatars/default-avatar.png', NOW(), NOW()),
 (gen_random_uuid(), 'Sophia Martinez','sophia.volunteer@gmail.com', crypt('password', gen_salt('bf')), 'volunteer', 'active', '/uploads/avatars/default-avatar.png', NOW(), NOW())

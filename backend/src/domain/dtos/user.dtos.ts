@@ -3,7 +3,7 @@ import { UserRole, UserStatus } from "../entities/enums";
 export interface CreateUserProps {
     id: string;
 
-    name: string;
+    username: string;
     email: string;
     passwordHash: string;
     avatarUrl: string | null;
