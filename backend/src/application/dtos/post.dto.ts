@@ -1,3 +1,5 @@
+import { PublicUserProfile } from "./user.dto";
+
 export interface CreatePostDto {
     authorId: string;
     eventId: string;
@@ -11,6 +13,8 @@ export interface UpdatePostDto {
 }
 
 export interface PostView {
+    id: string;
+    author: PublicUserProfile;
     content: string;
     imageUrl?: string;
     updatedAt: Date;
