@@ -1,8 +1,12 @@
-import { PrismaClient, users as PrismaUser } from "../prisma/generated/client";
+import { PrismaClient, Prisma, users as PrismaUser } from "../prisma/generated/client";
 import {
     CreateVolunteerDto,
     UpdateUserDto,
     ListUserFilterDto,
+    Credentials,
+    PublicUserProfile,
+    AdminUserView,
+    AuthUser
 } from "../../application/dtos/user.dto";
 import { IUserRepository } from "../../domain/repositories/user.irepositoty";
 import { User } from "../../domain/entities/user.entity";
@@ -12,13 +16,21 @@ import {
     CannotDeleteLockedUserError,
     CannotModifyRootAdminError,
 } from "../../domain/errors/user.error";
-import { EmailAlreadyExistsError } from "../../domain/errors/auth.error";
+import {
+    EmailAlreadyExistsError,
+    InvalidCredentialsError,
+    AccountLockedError,
+    AccountPendingError,
+} from "../../domain/errors/auth.error";
 import { UserRole, UserStatus } from "../../domain/entities/enums";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 
+import logger from "../../logger";
+
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
+const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;
 
 export class UserRepository implements IUserRepository {
     private prisma: PrismaClient;
@@ -27,108 +39,64 @@ export class UserRepository implements IUserRepository {
         this.prisma = prismaClient ?? new PrismaClient();
     }
 
+    // Core CRUD
     async create(user: CreateVolunteerDto): Promise<User> {
+        logger.info({ email: user.email }, "Creating new volunteer user");
         try {
             const userId = await this.insert(user);
 
+            logger.info({ userId }, "User created successfully, fetching domain object");
             const createdUser = await this.findById(userId);
 
             return createdUser;
         } catch (err) {
+            logger.error({
+                error: err instanceof Error ? err.message : err,
+                email: user.email,
+            }, "Failed to create user");
             // Optional: wrap or rethrow domain errors if needed
             throw err;
         }
     }
 
     async findById(id: string): Promise<User> {
+        logger.debug({ id }, "Fetching user by ID");
         const users = await this.prisma.$queryRawUnsafe<PrismaUser[]>(
-            `SELECT * FROM users WHERE id = $1 LIMIT 1;`,
+            `SELECT * FROM users WHERE id = $1::uuid LIMIT 1;`,
             id
         );
 
-        if (users.length === 0) throw new UserNotFoundError(id);
+        if (!users || users.length === 0) {
+            logger.warn({ id }, "User not found in findById()");
+            throw new UserNotFoundError(id);
+        }
 
+        logger.debug({ id }, "Found user in DB, resolving relations");
         const user = users[0];
+        const [
+            participatedEventIds,
+            registeredEventIds,
+            notificationIds,
+            postIds,
+        ] = await Promise.all([
+            this.findParticipatedEventIds(id),
+            this.findRegisteredEventIds(id),
+            this.findNotificationIds(id),
+            this.findPostIds(id),
+        ]);
 
-        // Domain rule checks
-        if (user.status === UserStatus.Deleted) throw new CannotDeleteAlreadyDeletedUserError(id);
-        if (user.status === UserStatus.Locked) throw new CannotDeleteLockedUserError(id);
-
-        return this.toDomain(user);
-    }
-
-    async findByDisplayName(username: string): Promise<User[] | null> {
-        const result = await this.prisma.$queryRawUnsafe<PrismaUser[]>(
-            `SELECT id, name, email, role, status, avatar_url, last_login
-            FROM users
-            WHERE LOWER(name) LIKE LOWER($1)
-            AND status = 'active'
-            ORDER BY 
-                CASE 
-                    WHEN username ILIKE $2 THEN 0  -- exact prefix match first
-                    WHEN username ILIKE $1 THEN 1  -- partial match
-                    ELSE 2 
-                END,
-                name ASC
-            LIMIT 20;`,
-            `%${username}%`
-        );
-        return result.length ? result.map(this.toDomain) : null;
-    }
-
-    async listUsers(
-        filter?: ListUserFilterDto,
-        pagination?: Pagination,
-        sort?: SortOption
-    ): Promise<ListResult<User>> {
-        const page = pagination?.page ?? 1;
-        const limit = Math.min(pagination?.limit ?? 20, 100);
-        const offset = (page - 1) * limit;
-
-        let whereClause = "WHERE 1=1";
-        const params: any[] = [];
-
-        // ---- filters ----
-        if (filter?.role) {
-            params.push(filter.role);
-            whereClause += ` AND role = $${params.length}`;
-        }
-
-        if (filter?.status) {
-            params.push(filter.status);
-            whereClause += ` AND status = $${params.length}`;
-        }
-
-        if (filter?.search) {
-            params.push(`%${filter.search}%`);
-            whereClause += ` AND (username ILIKE $${params.length} OR email ILIKE $${params.length})`;
-        }
-
-        // ---- sort ----
-        const allowedSortFields = ["name", "email", "role", "status", "last_login", "updated_at"];
-        const field = allowedSortFields.includes(sort?.field ?? "");
-        const order = sort?.order.toUpperCase() === "ASC" ? "ASC" : "DESC";
-
-        // ---- main query ----
-        const query = `
-        SELECT id, name, email, role, status, avatar_url, last_login, updated_at
-        FROM users
-        ${whereClause}
-        ORDER BY "${field}" ${order}
-        LIMIT ${limit} OFFSET ${offset};
-    `;
-
-        // ---- execute ----
-        const users = await this.prisma.$queryRawUnsafe<User[]>(query, ...params);
-        const total = await this.prisma.$queryRawUnsafe<number>(
-            `SELECT COUNT(*) as count FROM users ${whereClause};`,
-            ...params
-        );
-
-        return { items: users, total, page, limit };
+        logger.debug({ id }, "Finished loading domain user");
+        return this.toDomain({
+            ...user,
+            participatedEventIds,
+            registeredEventIds,
+            notificationIds,
+            postIds,
+        });
     }
 
     async update(id: string, data: UpdateUserDto): Promise<User> {
+        logger.info({ id }, "Updating user");
         await this.checkRootAdminAndExistedId(id);
 
         const updateUser = await this.prisma.users.update({
@@ -141,12 +109,12 @@ export class UserRepository implements IUserRepository {
             },
         });
 
-        const updatedUser = await this.findById(id);
-        return updatedUser;
+        logger.debug({ id }, "User updated successfully, refetching domain object");
+        return await this.findById(id);
     }
 
-
     async softDelete(id: string): Promise<void> {
+        logger.info({ id }, "Soft-deleting user");
         await this.checkRootAdminAndExistedId(id);
 
         await this.prisma.users.update({
@@ -156,6 +124,207 @@ export class UserRepository implements IUserRepository {
                 updated_at: new Date(),
             },
         });
+        logger.info({ id }, "User soft-deleted successfully");
+    }
+
+    // Auth-related
+    async findAuthUserByCredentials(credentials: Credentials): Promise<AuthUser | null> {
+        logger.debug({ email: credentials.email }, "Authenticating user credentials");
+        const { email, passwordHash } = credentials;
+
+        const user = await this.prisma.users.findUnique({ where: { email } });
+        if (!user || passwordHash !== user.password_hash) {
+            logger.warn({ email }, "Invalid credentials");
+            throw new InvalidCredentialsError();
+        }
+
+        switch (user.status) {
+            case 'locked':
+                logger.warn({ email }, "Account is locked");
+                throw new AccountLockedError();
+            case 'pending':
+                logger.warn({ email }, "Account is pending approval");
+                throw new AccountPendingError();
+        }
+
+        logger.info({ userId: user.id }, "User authenticated successfully");
+        return {
+            id: user.id.toString(),
+            email: user.email,
+            username: user.username,
+            role: user.role,
+            status: user.status,
+        };
+    }
+
+    async updatePassword(userId: string, newPasswordHash: string): Promise<void> {
+        logger.info({ userId }, "Updating user password");
+        await this.checkRootAdminAndExistedId(userId);
+        await this.prisma.users.update({
+            where: { id: userId },
+            data: { password_hash: newPasswordHash },
+        });
+        logger.info({ userId }, "Password updated successfully");
+    }
+
+    async updateLastLogin(userId: string, at?: Date): Promise<void> {
+        logger.debug({ userId }, "Updating last login timestamp");
+        await this.checkRootAdminAndExistedId(userId);
+        const now = at ?? new Date();
+        await this.prisma.users.update({
+            where: { id: userId },
+            data: { last_login: now },
+        });
+        logger.debug({ userId }, "Last login updated");
+    }
+
+
+    // Public View
+    async fetchPublicProfile(userId: string): Promise<PublicUserProfile | null> {
+        logger.debug({ userId }, "Fetching public profile");
+        const user = await this.prisma.users.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                username: true,
+                avatar_url: true,
+                role: true,
+            },
+        });
+
+        if (!user) {
+            logger.warn({ userId }, "Public profile not found");
+            throw new UserNotFoundError(userId);
+        }
+
+        logger.debug({ userId }, "Public profile fetched successfully");
+        return {
+            id: user.id,
+            username: user.username,
+            avatarUrl: user.avatar_url,
+            role: user.role,
+        };
+    }
+
+    async searchPublicProfilesByDisplayName(username: string): Promise<PublicUserProfile[] | null> {
+        const users = await this.prisma.users.findMany({
+            where: {
+                username: {
+                    contains: username,
+                    mode: 'insensitive',
+                },
+                status: { notIn: ['locked', 'deleted'] },
+            },
+            select: {
+                id: true,
+                username: true,
+                avatar_url: true,
+                role: true,
+            },
+        });
+
+        return users.map(user => ({
+            id: user.id,
+            username: user.username,
+            avatarUrl: user.avatar_url,
+            role: user.role,
+        }));
+    }
+
+    // Admin view
+    async fetchAdminUserView(userId: string): Promise<AdminUserView | null> {
+        const user = await this.prisma.users.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                avatar_url: true,
+                role: true,
+                status: true,
+                last_login: true,
+                created_at: true,
+            },
+        });
+
+        if (!user) return null;
+
+        return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            avatarUrl: user.avatar_url,
+            role: user.role,
+            status: user.status,
+            lastLogin: user.last_login,
+            createdAt: user.created_at,
+        };
+    }
+
+    async listUsers(
+        filter?: ListUserFilterDto,
+        pagination?: Pagination,
+        sort?: SortOption
+    ): Promise<ListResult<AdminUserView>> {
+        logger.info({ filter, pagination, sort }, "Listing users (admin view)");
+        // Build WHERE clause dynamically
+        const conditions: string[] = [];
+        const params: any[] = [];
+        let idx = 1;
+
+        if (filter?.role) {
+            conditions.push(`role = $${idx++}`);
+            params.push(filter.role);
+        }
+        if (filter?.status) {
+            conditions.push(`status = $${idx++}`);
+            params.push(filter.status);
+        }
+        if (filter?.search) {
+            conditions.push(`(LOWER(username) LIKE LOWER($${idx}) OR LOWER(email) LIKE LOWER($${idx}))`);
+            params.push(`%${filter.search}%`);
+            idx++;
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        // Order clause
+        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'created_at DESC';
+
+        // Pagination
+        const page = pagination?.page ?? 0;
+        const limit = pagination?.limit ?? 10;
+        logger.debug({ whereClause, orderBy, page, limit }, "Executing user list query");
+
+        // Total count
+        const countResult = await this.prisma.$queryRaw<{ count: string }[]>`
+            SELECT COUNT(*) AS count FROM users ${Prisma.sql([whereClause])}
+        `;
+        const total = parseInt(countResult[0].count, 10);
+
+        // Fetch items
+        const itemsRaw: any[] = await this.prisma.$queryRaw`
+            SELECT id, username, email, avatar_url, status, role, created_at, last_login
+            FROM users
+            ${Prisma.sql([whereClause])}
+            ORDER BY ${Prisma.raw(orderBy)}
+            OFFSET ${page}
+            LIMIT ${limit}
+        `;
+
+        // Map to DTO
+        const items: AdminUserView[] = itemsRaw.map(u => ({
+            id: u.id,
+            username: u.username,
+            email: u.email,
+            avatarUrl: u.avatar_url,
+            status: u.status,
+            role: u.role,
+            createdAt: u.created_at,
+            lastLogin: u.last_login ?? undefined,
+        }));
+
+        return { items, total, page, limit };
     }
 
     async setUserLock(id: string, locked: boolean): Promise<void> {
@@ -198,22 +367,28 @@ export class UserRepository implements IUserRepository {
 
     private async checkRootAdminAndExistedId(id: string) {
         if (id === ROOT_ADMIN_ID) {
+            logger.error({ id }, "Attempted modification of root admin");
             throw new CannotModifyRootAdminError();
         }
 
         const user = await this.prisma.users.findUnique({ where: { id } });
         if (!user) {
+            logger.warn({ id }, "User not found");
             throw new UserNotFoundError(id);
         }
     }
 
     private async insert(user: CreateVolunteerDto): Promise<string> {
+        logger.debug({ email: user.email }, "Checking if email already exists");
         const existing = await this.prisma.users.findUnique({ where: { email: user.email } });
-        if (existing) throw new EmailAlreadyExistsError(user.email);
+        if (existing) {
+            logger.warn({ email: user.email }, "Duplicate email detected");
+            throw new EmailAlreadyExistsError(user.email);
+        }
 
         const newUser = await this.prisma.users.create({
             data: {
-                name: user.username,
+                username: user.username,
                 email: user.email,
                 password_hash: user.passwordHash,
                 role: UserRole.Volunteer,
@@ -221,13 +396,61 @@ export class UserRepository implements IUserRepository {
             },
             select: { id: true },
         });
+
+        logger.info({ userId: newUser.id }, "Inserted new user record");
         return newUser.id;
     }
 
-    private toDomain(prismaUser: PrismaUser): User {
+    private async findParticipatedEventIds(userId: string): Promise<string[]> {
+        logger.trace({ userId }, "Fetching participated event IDs");
+        const result = await this.prisma.registrations.findMany({
+            where: {
+                user_id: userId,
+                status: 'approved',
+            },
+            select: { event_id: true },
+        });
+        return result.map((r: { event_id: string }) => r.event_id);
+    }
+
+    private async findRegisteredEventIds(userId: string): Promise<string[]> {
+        logger.trace({ userId }, "Fetching registered event IDs");
+        const result = await this.prisma.registrations.findMany({
+            where: { user_id: userId },
+            select: { event_id: true },
+        });
+        return result.map((r: { event_id: string }) => r.event_id);
+    }
+
+    private async findNotificationIds(userId: string): Promise<string[]> {
+        logger.trace({ userId }, "Fetching notification IDs");
+        const result = await this.prisma.notifications.findMany({
+            where: { user_id: userId },
+            select: { id: true },
+        });
+        return result.map((r: { id: string }) => r.id);
+    }
+
+    private async findPostIds(userId: string): Promise<string[]> {
+        logger.trace({ userId }, "Fetching post IDs");
+        const result = await this.prisma.posts.findMany({
+            where: { author_id: userId },
+            select: { id: true },
+        });
+        return result.map((r: { id: string }) => r.id);
+    }
+
+
+    private toDomain(prismaUser: PrismaUser & {
+        participatedEventIds?: string[];
+        registeredEventIds?: string[];
+        notificationIds?: string[];
+        postIds?: string[];
+    }): User {
+        logger.trace({ id: prismaUser.id }, "Mapping PrismaUser to domain User");
         return new User({
             id: prismaUser.id,
-            name: prismaUser.name,
+            name: prismaUser.username,
             email: prismaUser.email,
             passwordHash: prismaUser.password_hash,
             avatarUrl: prismaUser.avatar_url,
@@ -236,12 +459,10 @@ export class UserRepository implements IUserRepository {
             lastLogin: prismaUser.last_login,
             updatedAt: prismaUser.updated_at,
 
-            notificationIds: [],
-            participatedEventIds: [],
-            registeredEventIds: [],
-            commentIds: [],
-            postIds: [],
-            reactionIds: [],
+            participatedEventIds: prismaUser.participatedEventIds ?? [],
+            registeredEventIds: prismaUser.registeredEventIds ?? [],
+            notificationIds: prismaUser.notificationIds ?? [],
+            postIds: prismaUser.postIds ?? [],
         });
     }
 }

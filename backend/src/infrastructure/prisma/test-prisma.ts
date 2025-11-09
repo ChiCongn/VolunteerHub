@@ -1,14 +1,15 @@
 import "dotenv/config";
 import { PrismaClient } from "./generated/client";
+import logger from "../../logger";
 
 const prisma = new PrismaClient();
 
 async function testPrimsma() {
     try {
+        logger.info("something");
         //const users = await prisma.users.findMany();
         const users = await prisma.$queryRawUnsafe(
-            `SELECT * FROM users
-            WHERE id = '70cc9a01-9d4c-4d2a-a6a9-68b9888bf5ce'`
+            `SELECT * FROM users`
         );
 
         console.log("✅ Found users:", users);
