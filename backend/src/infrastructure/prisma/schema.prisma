@@ -141,7 +141,7 @@ model registrations {
 
 model users {
   id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username            String
+  username        String
   email           String            @unique @db.VarChar(255)
   password_hash   String
   role            user_role         @default(volunteer)
