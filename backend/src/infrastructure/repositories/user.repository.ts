@@ -28,6 +28,8 @@ import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 
 import logger from "../../logger";
+import { validate as isUuid } from 'uuid';
+import "dotenv/config";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;
@@ -60,19 +62,21 @@ export class UserRepository implements IUserRepository {
     }
 
     async findById(id: string): Promise<User> {
-        logger.debug({ id }, "Fetching user by ID");
-        const users = await this.prisma.$queryRawUnsafe<PrismaUser[]>(
-            `SELECT * FROM users WHERE id = $1::uuid LIMIT 1;`,
-            id
-        );
+        if (!isUuid(id)) {
+            throw new UserNotFoundError(id);
+        }
 
-        if (!users || users.length === 0) {
+        logger.debug({ id }, "Fetching user by ID");
+        const user = await this.prisma.users.findUnique({
+            where: { id },
+        });
+
+        if (!user) {
             logger.warn({ id }, "User not found in findById()");
             throw new UserNotFoundError(id);
         }
 
         logger.debug({ id }, "Found user in DB, resolving relations");
-        const user = users[0];
         const [
             participatedEventIds,
             registeredEventIds,
@@ -182,8 +186,12 @@ export class UserRepository implements IUserRepository {
     // Public View
     async fetchPublicProfile(userId: string): Promise<PublicUserProfile | null> {
         logger.debug({ userId }, "Fetching public profile");
+        await this.checkRootAdminAndExistedId(userId);
         const user = await this.prisma.users.findUnique({
-            where: { id: userId },
+            where: {
+                id: userId,
+                status: { notIn: ['deleted', 'locked'] },
+            },
             select: {
                 id: true,
                 username: true,
@@ -233,6 +241,8 @@ export class UserRepository implements IUserRepository {
 
     // Admin view
     async fetchAdminUserView(userId: string): Promise<AdminUserView | null> {
+        await this.checkRootAdminAndExistedId(userId);
+
         const user = await this.prisma.users.findUnique({
             where: { id: userId },
             select: {
@@ -261,7 +271,7 @@ export class UserRepository implements IUserRepository {
         };
     }
 
-    async listUsers(
+    async listUsers( // failed. too hard. will implement later
         filter?: ListUserFilterDto,
         pagination?: Pagination,
         sort?: SortOption
@@ -273,11 +283,11 @@ export class UserRepository implements IUserRepository {
         let idx = 1;
 
         if (filter?.role) {
-            conditions.push(`role = $${idx++}`);
+            conditions.push(`role = $${idx++}::user_role`);
             params.push(filter.role);
         }
         if (filter?.status) {
-            conditions.push(`status = $${idx++}`);
+            conditions.push(`status = $${idx++}::user_status`);
             params.push(filter.status);
         }
         if (filter?.search) {
@@ -287,6 +297,7 @@ export class UserRepository implements IUserRepository {
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        console.log("where clause: " + whereClause);
 
         // Order clause
         const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'created_at DESC';
@@ -297,22 +308,38 @@ export class UserRepository implements IUserRepository {
         logger.debug({ whereClause, orderBy, page, limit }, "Executing user list query");
 
         // Total count
-        const countResult = await this.prisma.$queryRaw<{ count: string }[]>`
-            SELECT COUNT(*) AS count FROM users ${Prisma.sql([whereClause])}
-        `;
-        const total = parseInt(countResult[0].count, 10);
+        const total = await this.count(filter);
 
         // Fetch items
-        const itemsRaw: any[] = await this.prisma.$queryRaw`
-            SELECT id, username, email, avatar_url, status, role, created_at, last_login
-            FROM users
-            ${Prisma.sql([whereClause])}
-            ORDER BY ${Prisma.raw(orderBy)}
+        console.log(`SELECT id, username, email, avatar_url, status, role, created_at, last_login
+            FROM users 
+            ${whereClause}
+            ORDER BY ${orderBy}
             OFFSET ${page}
-            LIMIT ${limit}
-        `;
+            LIMIT ${limit};,
+            ${params}`
+        );
 
-        // Map to DTO
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<{
+            id: string;
+            username: string;
+            email: string;
+            avatar_url: string | null;
+            status: string;
+            role: string;
+            created_at: Date;
+            last_login: Date | null;
+        }[]>(`
+            SELECT id, username, email, avatar_url, status, role, created_at, last_login
+            FROM users 
+            ${whereClause}
+            ORDER BY ${orderBy}
+            OFFSET ${page}
+            LIMIT ${limit};`,
+            ...params
+        );
+
+        //Map to DTO
         const items: AdminUserView[] = itemsRaw.map(u => ({
             id: u.id,
             username: u.username,
@@ -336,29 +363,30 @@ export class UserRepository implements IUserRepository {
     }
 
     async count(filter?: ListUserFilterDto): Promise<number> {
-        const whereClauses: string[] = [`"deletedAt" IS NULL`];
+        const conditions: string[] = [];
         const params: any[] = [];
-        let paramIndex = 1;
+        let idx = 1;
 
         if (filter?.role) {
-            whereClauses.push(`"role" = $${paramIndex++}`);
+            conditions.push(`role = $${idx++}::user_role`);
             params.push(filter.role);
         }
         if (filter?.status) {
-            whereClauses.push(`"status" = $${paramIndex++}`);
+            conditions.push(`status = $${idx++}::user_status`);
             params.push(filter.status);
         }
         if (filter?.search) {
-            whereClauses.push(
-                `(LOWER("username") LIKE LOWER($${paramIndex}) OR LOWER("email") LIKE LOWER($${paramIndex}))`
-            );
+            conditions.push(`(LOWER(username) LIKE LOWER($${idx}) OR LOWER(email) LIKE LOWER($${idx}))`);
             params.push(`%${filter.search}%`);
-            paramIndex++;
+            idx++;
         }
 
-        const whereSQL = whereClauses.length ? `WHERE ${whereClauses.join(" AND ")}` : "";
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        console.log("where clause: " + whereClause);
+
+        // Total count
         const result = await this.prisma.$queryRawUnsafe<{ count: bigint }[]>(
-            `SELECT COUNT(*) as count FROM "User" ${whereSQL};`,
+            `SELECT COUNT(*) as count FROM "users" ${whereClause};`,
             ...params
         );
 
@@ -366,6 +394,10 @@ export class UserRepository implements IUserRepository {
     }
 
     private async checkRootAdminAndExistedId(id: string) {
+        if (!isUuid(id)) {
+            throw new UserNotFoundError(id);
+        }
+
         if (id === ROOT_ADMIN_ID) {
             logger.error({ id }, "Attempted modification of root admin");
             throw new CannotModifyRootAdminError();
@@ -450,7 +482,7 @@ export class UserRepository implements IUserRepository {
         logger.trace({ id: prismaUser.id }, "Mapping PrismaUser to domain User");
         return new User({
             id: prismaUser.id,
-            name: prismaUser.username,
+            username: prismaUser.username,
             email: prismaUser.email,
             passwordHash: prismaUser.password_hash,
             avatarUrl: prismaUser.avatar_url,
