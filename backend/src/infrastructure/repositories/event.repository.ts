@@ -1,15 +1,15 @@
-import { PrismaClient, events as PrismaEvent } from '../prisma/generated/client';
-import { IEventRepository } from '../../domain/repositories/event.irepository';
+import { PrismaClient, events as PrismaEvent } from "../prisma/generated/client";
+import { IEventRepository } from "../../domain/repositories/event.irepository";
 import {
     CreateEventDto,
     UpdateEventDto,
     EventFilterDto,
     PublicEventView,
-} from '../../application/dtos/event.dto';
-import { Pagination } from '../../application/dtos/pagination.dto';
-import { SortOption } from '../../application/dtos/sort-option.dto';
-import { ListResult } from '../../application/dtos/list-result.dto';
-import { PublicUserProfile } from '../../application/dtos/user.dto';
+} from "../../application/dtos/event.dto";
+import { Pagination } from "../../application/dtos/pagination.dto";
+import { SortOption } from "../../application/dtos/sort-option.dto";
+import { ListResult } from "../../application/dtos/list-result.dto";
+import { PublicUserProfile } from "../../application/dtos/user.dto";
 import {
     EventNotFoundError,
     EventAlreadyApprovedError,
@@ -17,19 +17,19 @@ import {
     EventCapacityExceededError,
     EventCapacityInvalidError,
     EventTimeInvalidError,
-} from '../../domain/errors/event.error';
+} from "../../domain/errors/event.error";
 import { EventStatus, EventCategory } from "../../domain/entities/enums";
-import { Event } from '../../domain/entities/event.entity';
-import { CreateEventProps } from '../../domain/dtos/event.dtos';
-import { UserRepository } from './user.repository';
-import { validate as isUuid } from 'uuid';
-import logger from '../../logger';
+import { Event } from "../../domain/entities/event.entity";
+import { CreateEventProps } from "../../domain/dtos/event.dtos";
+import { UserRepository } from "./user.repository";
+import { validate as isUuid } from "uuid";
+import logger from "../../logger";
 
 export class EventRepository implements IEventRepository {
     constructor(
         private readonly prisma: PrismaClient,
         private readonly userRepo: UserRepository
-    ) { }
+    ) {}
 
     // Core CRUD
     async create(event: CreateEventDto): Promise<Event> {
@@ -101,7 +101,7 @@ export class EventRepository implements IEventRepository {
 
         await this.prisma.events.update({
             where: { id },
-            data: { status: 'cancelled' },
+            data: { status: "cancelled" },
         });
         logger.debug(`Event=${id} soft deleted`);
     }
@@ -128,7 +128,8 @@ export class EventRepository implements IEventRepository {
             },
         });
 
-        if (!event) { // redundant check but typescipt requires it
+        if (!event) {
+            // redundant check but typescipt requires it
             logger.warn(`Approved event not found: ${id}`);
             throw new EventNotFoundError(id);
         }
@@ -154,7 +155,7 @@ export class EventRepository implements IEventRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PublicEventView>> {
-        logger.info({ filters, pagination, sort }, 'Searching events');
+        logger.info({ filters, pagination, sort }, "Searching events");
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -184,11 +185,11 @@ export class EventRepository implements IEventRepository {
             idx += 2;
         }
 
-        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
         logger.debug(`Where clause: ${whereClause}`);
 
         // Order clause
-        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'start_time DESC';
+        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : "start_time DESC";
 
         // Pagination
         const page = pagination?.page ?? 0;
@@ -198,19 +199,22 @@ export class EventRepository implements IEventRepository {
         const total = await this.count(filters);
 
         // Fetch items
-        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<{
-            id: string;
-            name: string;
-            location: string;
-            startTime: Date;
-            endTime: Date | null;
-            description: string;
-            imageUrl: string;
-            ownerId: string;
-            categories: EventCategory[];
-            registerCount: number;
-            capacity: number;
-        }[]>(`
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+            {
+                id: string;
+                name: string;
+                location: string;
+                startTime: Date;
+                endTime: Date | null;
+                description: string;
+                imageUrl: string;
+                ownerId: string;
+                categories: EventCategory[];
+                registerCount: number;
+                capacity: number;
+            }[]
+        >(
+            `
             SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity            FROM users 
             FROM events
             ${whereClause}
@@ -221,7 +225,7 @@ export class EventRepository implements IEventRepository {
         );
 
         //Map to DTO
-        const items: PublicEventView[] = itemsRaw.map(e => ({
+        const items: PublicEventView[] = itemsRaw.map((e) => ({
             id: e.id,
             name: e.name,
             description: e.description,
@@ -295,7 +299,11 @@ export class EventRepository implements IEventRepository {
         logger.info(`Cancelling event=${id}`);
         const event = await this.prisma.events.findUnique({ where: { id } });
 
-        if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+        if (
+            !event ||
+            event.status === EventStatus.Pending ||
+            event.status === EventStatus.Rejected
+        ) {
             logger.warn(`Event not found or invalid status: ${id}`);
             throw new EventNotFoundError(id);
         }
@@ -350,7 +358,11 @@ export class EventRepository implements IEventRepository {
     async getEventManagersByEventId(eventId: string): Promise<PublicUserProfile[]> {
         logger.info(`Fetching managers for event=${eventId}`);
         const event = await this.prisma.events.findUnique({ where: { id: eventId } });
-        if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+        if (
+            !event ||
+            event.status === EventStatus.Pending ||
+            event.status === EventStatus.Rejected
+        ) {
             logger.warn(`Event not found or invalid status: ${eventId}`);
             throw new EventNotFoundError(eventId);
         }
@@ -373,9 +385,9 @@ export class EventRepository implements IEventRepository {
     async listEvents(
         filters?: EventFilterDto,
         pagination?: Pagination,
-        sort?: SortOption,
+        sort?: SortOption
     ): Promise<ListResult<PublicEventView>> {
-        logger.info({ filters, pagination, sort }, 'Listing events for admin');
+        logger.info({ filters, pagination, sort }, "Listing events for admin");
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -410,10 +422,10 @@ export class EventRepository implements IEventRepository {
             idx++;
         }
 
-        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
         logger.debug(`Where clause: ${whereClause}`);
         // Order clause
-        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'start_time DESC';
+        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : "start_time DESC";
 
         // Pagination
         const page = pagination?.page ?? 0;
@@ -423,19 +435,22 @@ export class EventRepository implements IEventRepository {
         const total = await this.count(filters);
 
         // Fetch items
-        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<{
-            id: string;
-            name: string;
-            location: string;
-            startTime: Date;
-            endTime: Date | null;
-            description: string;
-            imageUrl: string;
-            ownerId: string;
-            categories: EventCategory[];
-            registerCount: number;
-            capacity: number;
-        }[]>(`
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+            {
+                id: string;
+                name: string;
+                location: string;
+                startTime: Date;
+                endTime: Date | null;
+                description: string;
+                imageUrl: string;
+                ownerId: string;
+                categories: EventCategory[];
+                registerCount: number;
+                capacity: number;
+            }[]
+        >(
+            `
             SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity            FROM users 
             FROM events
             ${whereClause}
@@ -446,7 +461,7 @@ export class EventRepository implements IEventRepository {
         );
 
         //Map to DTO
-        const items: PublicEventView[] = itemsRaw.map(e => ({
+        const items: PublicEventView[] = itemsRaw.map((e) => ({
             id: e.id,
             name: e.name,
             description: e.description,
@@ -500,7 +515,7 @@ export class EventRepository implements IEventRepository {
     }
 
     async count(filters?: EventFilterDto): Promise<number> {
-        logger.info({ filters }, 'Counting events');
+        logger.info({ filters }, "Counting events");
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -535,9 +550,10 @@ export class EventRepository implements IEventRepository {
             idx++;
         }
 
-        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-        const [result] = await this.prisma.$queryRawUnsafe<{ count: bigint }[]>(`
+        const [result] = await this.prisma.$queryRawUnsafe<{ count: bigint }[]>(
+            `
             SELECT COUNT(*) FROM events
             ${whereClause};`,
             ...params
@@ -562,7 +578,7 @@ export class EventRepository implements IEventRepository {
     private async getApprovedVolunteerIds(eventId: string): Promise<string[]> {
         logger.debug(`Fetching approved volunteer IDs for event=${eventId}`);
         const approves = await this.prisma.registrations.findMany({
-            where: { event_id: eventId, status: 'approved' },
+            where: { event_id: eventId, status: "approved" },
             select: { user_id: true },
         });
 
@@ -612,19 +628,24 @@ export class EventRepository implements IEventRepository {
         }
 
         const existing = await this.prisma.events.findUnique({ where: { id } });
-        if (!existing || existing.status === EventStatus.Rejected ||
-            existing.status === EventStatus.Pending) {
+        if (
+            !existing ||
+            existing.status === EventStatus.Rejected ||
+            existing.status === EventStatus.Pending
+        ) {
             logger.warn(`Event not found or not approved: ${id}`);
             throw new EventNotFoundError(id);
         }
         logger.debug(`Event ${id} exists and is approved`);
     }
 
-    private toDomain(prismaEvent: PrismaEvent & {
-        participantIds: string[];
-        registerUserIds: string[];
-        postIds: string[];
-    }): Event {
+    private toDomain(
+        prismaEvent: PrismaEvent & {
+            participantIds: string[];
+            registerUserIds: string[];
+            postIds: string[];
+        }
+    ): Event {
         logger.debug(`Mapping Prisma event to domain: id=${prismaEvent.id}`);
         return new Event({
             id: prismaEvent.id,
