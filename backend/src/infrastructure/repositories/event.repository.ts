@@ -62,6 +62,249 @@ export class EventRepository implements IEventRepository {
         });
     }
 
+    async update(id: string, changes: UpdateEventDto): Promise<Event> {
+        await this.checkExistedAndApprovedEvent(id);
+
+        if (changes.capacity && changes.capacity <= 0) throw new EventCapacityInvalidError();
+        if (changes.endTime && changes.startTime && changes.endTime <= changes.startTime) {
+            throw new EventTimeInvalidError();
+        }
+
+        await this.prisma.events.update({ where: { id }, data: changes });
+
+        return this.findById(id);
+    }
+
+    async softDelete(id: string) {
+        await this.checkExistedAndApprovedEvent(id);
+
+        await this.prisma.events.update({
+            where: { id },
+            data: { status: 'cancelled' },
+        });
+    }
+
+    // Public view
+    async fetchPublicView(id: string): Promise<PublicEventView> {
+        await this.checkExistedAndApprovedEvent(id);
+
+        const event = await this.prisma.events.findUnique({
+            where: { id, status: EventStatus.Approved },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                start_time: true,
+                end_time: true,
+                location: true,
+                owner_id: true,
+                image_url: true,
+                categories: true,
+                capacity: true,
+                register_count: true,
+            },
+        });
+
+        if (!event) {
+            throw new EventNotFoundError(id);
+        }
+
+        return {
+            id: event.id,
+            name: event.name,
+            description: event.description,
+            startTime: event.start_time,
+            endTime: event.end_time ?? null,
+            location: event.location,
+            imageUrl: event.image_url,
+            ownerId: event.owner_id,
+            categories: event.categories,
+            capacity: event.capacity,
+            registerCount: event.register_count,
+        };
+    }
+
+    async searchEvent(filters?: EventFilterDto): Promise<PublicEventView[]> {
+        // const where: Prisma.EventWhereInput = {
+        //     deletedAt: null,
+        //     status: EventStatus.APPROVED,
+        // };
+
+        // if (filters?.search) {
+        //     where.OR = [
+        //         { title: { contains: filters.search, mode: 'insensitive' } },
+        //         { description: { contains: filters.search, mode: 'insensitive' } },
+        //         { location: { contains: filters.search, mode: 'insensitive' } },
+        //     ];
+        // }
+
+        // if (filters?.category) where.category = filters.category;
+        // if (filters?.fromDate && filters?.toDate)
+        //     where.startDate = { gte: filters.fromDate, lte: filters.toDate };
+
+        // return prisma.event.findMany({
+        //     where,
+        //     select: {
+        //         id: true,
+        //         title: true,
+        //         location: true,
+        //         startDate: true,
+        //         endDate: true,
+        //         category: true,
+        //         owner: { select: { id: true, name: true, avatar: true } },
+        //     },
+        //     orderBy: { startDate: 'asc' },
+        // }) as Promise<PublicEventView[]>;
+    }
+
+    // Event manager
+    async approveEvent(id: string) {
+        const event = await this.prisma.events.findUnique({ where: { id } });
+        if (!event) {
+            throw new EventNotFoundError(id);
+        }
+
+        if (event.status === EventStatus.Approved) {
+            throw new EventAlreadyApprovedError(id);
+        }
+
+        await this.prisma.events.update({
+            where: { id },
+            data: { status: EventStatus.Approved },
+        });
+    }
+
+    async rejectEvent(id: string, reason: string) {
+        const event = await this.prisma.events.findUnique({ where: { id } });
+        if (!event) {
+            throw new EventNotFoundError(id);
+        }
+
+        await this.prisma.events.update({
+            where: { id },
+            data: { status: EventStatus.Rejected },
+        });
+    }
+
+    async completeEvent(id: string) {
+        await this.checkExistedAndApprovedEvent(id);
+
+        await this.prisma.events.update({
+            where: { id },
+            data: { status: EventStatus.Completed },
+        });
+    }
+
+    async cancelEvent(id: string) {
+        const event = await this.prisma.events.findUnique({ where: { id } });
+
+        if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+            throw new EventNotFoundError(id);
+        }
+
+        if (event.status === EventStatus.Cancelled || event.status === EventStatus.Completed) {
+            throw new EventCannotBeCancelledError(id, event.status);
+        }
+
+        await this.prisma.events.update({
+            where: { id },
+            data: { status: EventStatus.Cancelled },
+        });
+    }
+
+    // Participant handling
+    async getParticipantsByEventId(eventId: string): Promise<PublicUserProfile[]> {
+        await this.checkExistedAndApprovedEvent(eventId);
+        const approvedUserIds = await this.getApprovedVolunteerIds(eventId);
+        if (approvedUserIds.length === 0) {
+            return [];
+        }
+
+        const profiles = await Promise.all(
+            approvedUserIds.map((userId) => this.userRepo.fetchPublicProfile(userId))
+        );
+
+        return profiles;
+    }
+
+    async getRegisteredUsersByEventId(eventId: string): Promise<PublicUserProfile[]> {
+        await this.checkExistedAndApprovedEvent(eventId);
+        const registeredUserIds = await this.getRegisteredVolunteerIds(eventId);
+        if (registeredUserIds.length === 0) {
+            return [];
+        }
+
+        const profiles = await Promise.all(
+            registeredUserIds.map((userId) => this.userRepo.fetchPublicProfile(userId))
+        );
+
+        return profiles;
+    }
+
+    async getEventManagersByEventId(eventId: string): Promise<PublicUserProfile[]> {
+        const event = await this.prisma.events.findUnique({ where: { id: eventId } });
+        if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+            throw new EventNotFoundError(eventId);
+        }
+
+        const managerIds = event.event_manager_ids;
+        if (managerIds.length === 0) {
+            return [];
+        }
+
+        const profiles = await Promise.all(
+            managerIds.map((userId) => this.userRepo.fetchPublicProfile(userId))
+        );
+
+        return profiles;
+    }
+
+    // Admin view
+    async listEvents(
+        filters?: EventFilterDto,
+        pagination?: Pagination,
+        sort?: SortOption,
+    ): Promise<ListResult<PublicEventView>> {
+        return null;
+    }
+
+    async findByOwnerId(ownerId: string): Promise<PublicEventView[]> {
+        const events = await this.prisma.events.findMany({
+            where: { owner_id: ownerId },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                start_time: true,
+                end_time: true,
+                location: true,
+                owner_id: true,
+                image_url: true,
+                categories: true,
+                capacity: true,
+                register_count: true,
+            },
+        });
+
+        return events.map((e) => ({
+            id: e.id,
+            name: e.name,
+            description: e.description,
+            startTime: e.start_time,
+            endTime: e.end_time ? e.end_time : null,
+            location: e.location,
+            ownerId: e.owner_id,
+            imageUrl: e.image_url,
+            categories: e.categories,
+            capacity: e.capacity,
+            registerCount: e.register_count,
+        }));
+    }
+
+    async count(filters?: EventFilterDto): Promise<number> {
+        return 0;
+    }
+
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {
         const registers = await this.prisma.registrations.findMany({
             where: { event_id: eventId },
