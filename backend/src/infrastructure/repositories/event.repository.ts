@@ -48,7 +48,7 @@ export class EventRepository implements IEventRepository {
         if (!isUuid(id)) {
             throw new EventNotFoundError(id);
         }
-        
+
         const eventPrisma = await this.prisma.events.findUnique({ where: { id } });
         if (!eventPrisma) {
             throw new EventNotFoundError(id);
@@ -219,6 +219,10 @@ export class EventRepository implements IEventRepository {
 
     // Event manager
     async approveEvent(id: string) {
+        if (!isUuid(id)) {
+            throw new EventNotFoundError(id);
+        }
+        
         const event = await this.prisma.events.findUnique({ where: { id } });
         if (!event) {
             throw new EventNotFoundError(id);
