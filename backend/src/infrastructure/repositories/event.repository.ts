@@ -434,8 +434,9 @@ export class EventRepository implements IEventRepository {
         const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : "start_time DESC";
 
         // Pagination
-        const page = pagination?.page ?? 0;
+        const page = pagination?.page ?? 1;
         const limit = pagination?.limit ?? 10;
+        const offset = (page - 1) * limit;
 
         // Total count
         const total = await this.count(filters);
@@ -457,11 +458,11 @@ export class EventRepository implements IEventRepository {
             }[]
         >(
             `
-            SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity            FROM users 
+            SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity
             FROM events
             ${whereClause}
             ORDER BY ${orderBy}
-            OFFSET ${page}
+            OFFSET ${offset}
             LIMIT ${limit};`,
             ...params
         );
