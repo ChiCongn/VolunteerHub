@@ -31,7 +31,7 @@ export class EventRepository implements IEventRepository {
     ) { }
 
     // Core CRUD
-    async create(event: CreateEventProps): Promise<Event> {
+    async create(event: CreateEventDto): Promise<Event> {
         if (event.capacity <= 0) {
             throw new EventCapacityInvalidError();
         }
@@ -45,6 +45,10 @@ export class EventRepository implements IEventRepository {
     }
 
     async findById(id: string): Promise<Event> {
+        if (!isUuid(id)) {
+            throw new EventNotFoundError(id);
+        }
+        
         const eventPrisma = await this.prisma.events.findUnique({ where: { id } });
         if (!eventPrisma) {
             throw new EventNotFoundError(id);

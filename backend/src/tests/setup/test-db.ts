@@ -7,7 +7,7 @@ import path from 'path';
 const prisma = new PrismaClient();
 const DB_NAME = 'volunteerhub_test';
 const DB_USER = 'chicongn';
-const SNAPSHOT_PATH = 'src/tests/setup/seed_data_snapshot.dump';
+const SNAPSHOT_PATH = 'src/tests/setup/events_snapshot.dump';
 
 export async function resetDatabase(): Promise<void> {
     try {
