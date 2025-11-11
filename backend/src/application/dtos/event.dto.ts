@@ -40,6 +40,7 @@ export interface PublicEventView {
     endTime: Date | null;
     description: string;
     imageUrl: string;
+    ownerId: string;
     categories: EventCategory[];
     registerCount: number;
     capacity: number;
