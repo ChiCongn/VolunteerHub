@@ -23,6 +23,7 @@ import { Event } from '../../domain/entities/event.entity';
 import { CreateEventProps } from '../../domain/dtos/event.dtos';
 import { UserRepository } from './user.repository';
 import { validate as isUuid } from 'uuid';
+import logger from '../../logger';
 
 export class EventRepository implements IEventRepository {
     constructor(
@@ -32,25 +33,32 @@ export class EventRepository implements IEventRepository {
 
     // Core CRUD
     async create(event: CreateEventDto): Promise<Event> {
+        logger.info(`Creating event: ${event.name} by owner=${event.ownerId}`);
         if (event.capacity <= 0) {
+            logger.warn(`Invalid capacity=${event.capacity}`);
             throw new EventCapacityInvalidError();
         }
 
         if (event.endTime && new Date(event.endTime) <= new Date(event.startTime)) {
+            logger.warn(`Invalid time range: ${event.startTime} - ${event.endTime}`);
             throw new EventTimeInvalidError();
         }
 
         const eventId = await this.insert(event);
+        logger.debug(`Event created with id=${eventId}`);
         return this.findById(eventId);
     }
 
     async findById(id: string): Promise<Event> {
+        logger.info(`Fetching event by id=${id}`);
         if (!isUuid(id)) {
+            logger.warn(`Invalid UUID: ${id}`);
             throw new EventNotFoundError(id);
         }
 
         const eventPrisma = await this.prisma.events.findUnique({ where: { id } });
         if (!eventPrisma) {
+            logger.warn(`Event not found: ${id}`);
             throw new EventNotFoundError(id);
         }
         const [registeredUserIds, approvedUserIds, postIds] = await Promise.all([
@@ -59,6 +67,7 @@ export class EventRepository implements IEventRepository {
             this.getPostIds(id),
         ]);
 
+        logger.debug(`Fetched event ${id} with ${approvedUserIds.length} participants`);
         return this.toDomain({
             ...eventPrisma,
             participantIds: approvedUserIds,
@@ -68,31 +77,38 @@ export class EventRepository implements IEventRepository {
     }
 
     async update(id: string, changes: UpdateEventDto): Promise<Event> {
+        logger.info({ changes }, `Updating event=${id}`);
         await this.checkExistedAndApprovedEvent(id);
 
-        if (changes.capacity !== undefined  && changes.capacity <= 0) {
+        if (changes.capacity !== undefined && changes.capacity <= 0) {
+            logger.warn(`Rejected update: invalid capacity=${changes.capacity}`);
             throw new EventCapacityInvalidError();
         }
         if (changes.endTime && changes.startTime && changes.endTime <= changes.startTime) {
+            logger.warn(`Rejected update: invalid time range`);
             throw new EventTimeInvalidError();
         }
 
         await this.prisma.events.update({ where: { id }, data: changes });
+        logger.debug(`Event=${id} updated successfully`);
 
         return this.findById(id);
     }
 
     async softDelete(id: string) {
+        logger.info(`Soft deleting event=${id}`);
         await this.checkExistedAndApprovedEvent(id);
 
         await this.prisma.events.update({
             where: { id },
             data: { status: 'cancelled' },
         });
+        logger.debug(`Event=${id} soft deleted`);
     }
 
     // Public view
     async fetchPublicView(id: string): Promise<PublicEventView> {
+        logger.info(`Fetching public view for event=${id}`);
         await this.checkExistedAndApprovedEvent(id);
 
         const event = await this.prisma.events.findUnique({
@@ -112,10 +128,12 @@ export class EventRepository implements IEventRepository {
             },
         });
 
-        if (!event) {
+        if (!event) { // redundant check but typescipt requires it
+            logger.warn(`Approved event not found: ${id}`);
             throw new EventNotFoundError(id);
         }
 
+        logger.debug(`Fetched public view for event=${id}`);
         return {
             id: event.id,
             name: event.name,
@@ -136,6 +154,7 @@ export class EventRepository implements IEventRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PublicEventView>> {
+        logger.info({ filters, pagination, sort }, 'Searching events');
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -166,7 +185,7 @@ export class EventRepository implements IEventRepository {
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-        console.log("where clause: " + whereClause);
+        logger.debug(`Where clause: ${whereClause}`);
 
         // Order clause
         const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'start_time DESC';
@@ -216,21 +235,26 @@ export class EventRepository implements IEventRepository {
             registerCount: e.register_count,
         }));
 
+        logger.debug(`Search returned ${items.length} items out of ${total}`);
         return { items, total, page, limit };
     }
 
     // Event manager
     async approveEvent(id: string) {
+        logger.info(`Approving event=${id}`);
         if (!isUuid(id)) {
+            logger.warn(`Invalid UUID: ${id}`);
             throw new EventNotFoundError(id);
         }
 
         const event = await this.prisma.events.findUnique({ where: { id } });
         if (!event) {
+            logger.warn(`Event not found: ${id}`);
             throw new EventNotFoundError(id);
         }
 
         if (event.status === EventStatus.Approved) {
+            logger.warn(`Event already approved: ${id}`);
             throw new EventAlreadyApprovedError(id);
         }
 
@@ -238,11 +262,14 @@ export class EventRepository implements IEventRepository {
             where: { id },
             data: { status: EventStatus.Approved },
         });
+        logger.debug(`Event=${id} approved`);
     }
 
     async rejectEvent(id: string, reason: string) {
+        logger.info(`Rejecting event=${id} with reason="${reason}"`);
         const event = await this.prisma.events.findUnique({ where: { id } });
         if (!event) {
+            logger.warn(`Event not found: ${id}`);
             throw new EventNotFoundError(id);
         }
 
@@ -250,25 +277,31 @@ export class EventRepository implements IEventRepository {
             where: { id },
             data: { status: EventStatus.Rejected },
         });
+        logger.debug(`Event=${id} rejected`);
     }
 
     async completeEvent(id: string) {
+        logger.info(`Mark event=${id} as completed`);
         await this.checkExistedAndApprovedEvent(id);
 
         await this.prisma.events.update({
             where: { id },
             data: { status: EventStatus.Completed },
         });
+        logger.debug(`Event=${id} completed`);
     }
 
     async cancelEvent(id: string) {
+        logger.info(`Cancelling event=${id}`);
         const event = await this.prisma.events.findUnique({ where: { id } });
 
         if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+            logger.warn(`Event not found or invalid status: ${id}`);
             throw new EventNotFoundError(id);
         }
 
         if (event.status === EventStatus.Cancelled || event.status === EventStatus.Completed) {
+            logger.warn(`Event cannot be cancelled: status=${event.status}, id=${id}`);
             throw new EventCannotBeCancelledError(id, event.status);
         }
 
@@ -276,13 +309,16 @@ export class EventRepository implements IEventRepository {
             where: { id },
             data: { status: EventStatus.Cancelled },
         });
+        logger.debug(`Event=${id} cancelled`);
     }
 
     // Participant handling
     async getParticipantsByEventId(eventId: string): Promise<PublicUserProfile[]> {
+        logger.info(`Fetching participants for event=${eventId}`);
         await this.checkExistedAndApprovedEvent(eventId);
         const approvedUserIds = await this.getApprovedVolunteerIds(eventId);
         if (approvedUserIds.length === 0) {
+            logger.debug(`No participants for event=${eventId}`);
             return [];
         }
 
@@ -290,13 +326,16 @@ export class EventRepository implements IEventRepository {
             approvedUserIds.map((userId) => this.userRepo.fetchPublicProfile(userId))
         );
 
+        logger.debug(`Fetched ${profiles.length} participants for event=${eventId}`);
         return profiles;
     }
 
     async getRegisteredUsersByEventId(eventId: string): Promise<PublicUserProfile[]> {
+        logger.info(`Fetching registered users for event=${eventId}`);
         await this.checkExistedAndApprovedEvent(eventId);
         const registeredUserIds = await this.getRegisteredVolunteerIds(eventId);
         if (registeredUserIds.length === 0) {
+            logger.debug(`No registered users for event=${eventId}`);
             return [];
         }
 
@@ -304,17 +343,21 @@ export class EventRepository implements IEventRepository {
             registeredUserIds.map((userId) => this.userRepo.fetchPublicProfile(userId))
         );
 
+        logger.debug(`Fetched ${profiles.length} registered users for event=${eventId}`);
         return profiles;
     }
 
     async getEventManagersByEventId(eventId: string): Promise<PublicUserProfile[]> {
+        logger.info(`Fetching managers for event=${eventId}`);
         const event = await this.prisma.events.findUnique({ where: { id: eventId } });
         if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+            logger.warn(`Event not found or invalid status: ${eventId}`);
             throw new EventNotFoundError(eventId);
         }
 
         const managerIds = event.event_manager_ids;
         if (managerIds.length === 0) {
+            logger.debug(`No managers for event=${eventId}`);
             return [];
         }
 
@@ -322,6 +365,7 @@ export class EventRepository implements IEventRepository {
             managerIds.map((userId) => this.userRepo.fetchPublicProfile(userId))
         );
 
+        logger.debug(`Fetched ${profiles.length} managers for event=${eventId}`);
         return profiles;
     }
 
@@ -331,6 +375,7 @@ export class EventRepository implements IEventRepository {
         pagination?: Pagination,
         sort?: SortOption,
     ): Promise<ListResult<PublicEventView>> {
+        logger.info({ filters, pagination, sort }, 'Listing events for admin');
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -366,8 +411,7 @@ export class EventRepository implements IEventRepository {
         }
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-        console.log("where clause: " + whereClause);
-
+        logger.debug(`Where clause: ${whereClause}`);
         // Order clause
         const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'start_time DESC';
 
@@ -416,10 +460,12 @@ export class EventRepository implements IEventRepository {
             registerCount: e.register_count,
         }));
 
+        logger.debug(`List returned ${items.length} items out of ${total}`);
         return { items, total, page, limit };
     }
 
     async findByOwnerId(ownerId: string): Promise<PublicEventView[]> {
+        logger.info(`Fetching events by ownerId=${ownerId}`);
         const events = await this.prisma.events.findMany({
             where: { owner_id: ownerId },
             select: {
@@ -437,6 +483,7 @@ export class EventRepository implements IEventRepository {
             },
         });
 
+        logger.debug(`Fetched ${events.length} events for owner=${ownerId}`);
         return events.map((e) => ({
             id: e.id,
             name: e.name,
@@ -453,6 +500,7 @@ export class EventRepository implements IEventRepository {
     }
 
     async count(filters?: EventFilterDto): Promise<number> {
+        logger.info({ filters }, 'Counting events');
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -489,41 +537,54 @@ export class EventRepository implements IEventRepository {
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-        return await this.prisma.$queryRawUnsafe<number>(`
+        const [result] = await this.prisma.$queryRawUnsafe<{ count: bigint }[]>(`
             SELECT COUNT(*) FROM events
             ${whereClause};`,
             ...params
-        ) as number;
+        );
+        const total = Number(result.count);
+        logger.debug(`Count result: ${total}`);
+        return total;
     }
 
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {
+        logger.debug(`Fetching registered volunteer IDs for event=${eventId}`);
         const registers = await this.prisma.registrations.findMany({
             where: { event_id: eventId },
             select: { user_id: true },
         });
 
-        return registers.map((r: { user_id: string }) => r.user_id);
+        const ids = registers.map((r: { user_id: string }) => r.user_id);
+        logger.debug(`Found ${ids.length} registered volunteers for event=${eventId}`);
+        return ids;
     }
 
     private async getApprovedVolunteerIds(eventId: string): Promise<string[]> {
+        logger.debug(`Fetching approved volunteer IDs for event=${eventId}`);
         const approves = await this.prisma.registrations.findMany({
             where: { event_id: eventId, status: 'approved' },
             select: { user_id: true },
         });
 
-        return approves.map((a: { user_id: string }) => a.user_id);
+        const ids = approves.map((a: { user_id: string }) => a.user_id);
+        logger.debug(`Found ${ids.length} approved volunteers for event=${eventId}`);
+        return ids;
     }
 
     private async getPostIds(eventId: string): Promise<string[]> {
+        logger.debug(`Fetching post IDs for event=${eventId}`);
         const posts = await this.prisma.posts.findMany({
             where: { event_id: eventId },
             select: { id: true },
         });
 
-        return posts.map((p: { id: string }) => p.id);
+        const ids = posts.map((p: { id: string }) => p.id);
+        logger.debug(`Found ${ids.length} posts for event=${eventId}`);
+        return ids;
     }
 
     private async insert(event: CreateEventDto): Promise<string> {
+        logger.debug(`Inserting new event: ${event.name}`);
         const createdEvent = await this.prisma.events.create({
             data: {
                 name: event.name,
@@ -539,19 +600,24 @@ export class EventRepository implements IEventRepository {
             select: { id: true },
         });
 
+        logger.debug(`Inserted event with id=${createdEvent.id}`);
         return createdEvent.id;
     }
 
     private async checkExistedAndApprovedEvent(id: string) {
+        logger.debug(`Checking existence and approval of event=${id}`);
         if (!isUuid(id)) {
+            logger.warn(`Invalid UUID: ${id}`);
             throw new EventNotFoundError(id);
         }
 
         const existing = await this.prisma.events.findUnique({ where: { id } });
         if (!existing || existing.status === EventStatus.Rejected ||
             existing.status === EventStatus.Pending) {
+            logger.warn(`Event not found or not approved: ${id}`);
             throw new EventNotFoundError(id);
         }
+        logger.debug(`Event ${id} exists and is approved`);
     }
 
     private toDomain(prismaEvent: PrismaEvent & {
@@ -559,6 +625,7 @@ export class EventRepository implements IEventRepository {
         registerUserIds: string[];
         postIds: string[];
     }): Event {
+        logger.debug(`Mapping Prisma event to domain: id=${prismaEvent.id}`);
         return new Event({
             id: prismaEvent.id,
             name: prismaEvent.name,
