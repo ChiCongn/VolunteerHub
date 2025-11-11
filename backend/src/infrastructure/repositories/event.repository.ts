@@ -22,6 +22,7 @@ import { EventStatus, EventCategory } from "../../domain/entities/enums";
 import { Event } from '../../domain/entities/event.entity';
 import { CreateEventProps } from '../../domain/dtos/event.dtos';
 import { UserRepository } from './user.repository';
+import { validate as isUuid } from 'uuid';
 
 export class EventRepository implements IEventRepository {
     constructor(
@@ -124,37 +125,92 @@ export class EventRepository implements IEventRepository {
         };
     }
 
-    async searchEvent(filters?: EventFilterDto): Promise<PublicEventView[]> {
-        // const where: Prisma.EventWhereInput = {
-        //     deletedAt: null,
-        //     status: EventStatus.APPROVED,
-        // };
+    async searchEvent(
+        filters?: EventFilterDto,
+        pagination?: Pagination,
+        sort?: SortOption
+    ): Promise<ListResult<PublicEventView>> {
+        const conditions: string[] = [];
+        const params: any[] = [];
+        let idx = 1;
 
-        // if (filters?.search) {
-        //     where.OR = [
-        //         { title: { contains: filters.search, mode: 'insensitive' } },
-        //         { description: { contains: filters.search, mode: 'insensitive' } },
-        //         { location: { contains: filters.search, mode: 'insensitive' } },
-        //     ];
-        // }
+        if (filters?.status) {
+            conditions.push(`status = $${idx++}::event_status`);
+            params.push(filters.status);
+        }
+        if (filters?.name) {
+            conditions.push(`LOWER(name) LIKE LOWER($${idx})`);
+            params.push(`%${filters.name}%`);
+            idx++;
+        }
+        if (filters?.location) {
+            conditions.push(`LOWER(location) LIKE LOWER($${idx})`);
+            params.push(`%${filters.location}%`);
+            idx++;
+        }
+        if (filters?.categories && filters.categories.length > 0) {
+            conditions.push(`categories && $${idx}::event_category[]`); // overlap or using @> for contain all
+            params.push(filters.categories);
+            idx++;
+        }
+        if (filters?.dateRange) {
+            conditions.push(`start_time >= $${idx} AND end_time <= $${idx + 1}`);
+            params.push(filters.dateRange[0], filters.dateRange[1]);
+            idx += 2;
+        }
 
-        // if (filters?.category) where.category = filters.category;
-        // if (filters?.fromDate && filters?.toDate)
-        //     where.startDate = { gte: filters.fromDate, lte: filters.toDate };
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        console.log("where clause: " + whereClause);
 
-        // return prisma.event.findMany({
-        //     where,
-        //     select: {
-        //         id: true,
-        //         title: true,
-        //         location: true,
-        //         startDate: true,
-        //         endDate: true,
-        //         category: true,
-        //         owner: { select: { id: true, name: true, avatar: true } },
-        //     },
-        //     orderBy: { startDate: 'asc' },
-        // }) as Promise<PublicEventView[]>;
+        // Order clause
+        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'start_time DESC';
+
+        // Pagination
+        const page = pagination?.page ?? 0;
+        const limit = pagination?.limit ?? 10;
+
+        // Total count
+        const total = await this.count(filters);
+
+        // Fetch items
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<{
+            id: string;
+            name: string;
+            location: string;
+            startTime: Date;
+            endTime: Date | null;
+            description: string;
+            imageUrl: string;
+            ownerId: string;
+            categories: EventCategory[];
+            registerCount: number;
+            capacity: number;
+        }[]>(`
+            SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity            FROM users 
+            FROM events
+            ${whereClause}
+            ORDER BY ${orderBy}
+            OFFSET ${page}
+            LIMIT ${limit};`,
+            ...params
+        );
+
+        //Map to DTO
+        const items: PublicEventView[] = itemsRaw.map(e => ({
+            id: e.id,
+            name: e.name,
+            description: e.description,
+            startTime: e.start_time,
+            endTime: e.end_time ?? null,
+            location: e.location,
+            ownerId: e.owner_id,
+            imageUrl: e.image_url,
+            categories: e.categories,
+            capacity: e.capacity,
+            registerCount: e.register_count,
+        }));
+
+        return { items, total, page, limit };
     }
 
     // Event manager
@@ -265,7 +321,92 @@ export class EventRepository implements IEventRepository {
         pagination?: Pagination,
         sort?: SortOption,
     ): Promise<ListResult<PublicEventView>> {
-        return null;
+        const conditions: string[] = [];
+        const params: any[] = [];
+        let idx = 1;
+
+        if (filters?.status) {
+            conditions.push(`status = $${idx++}::event_status`);
+            params.push(filters.status);
+        }
+        if (filters?.name) {
+            conditions.push(`LOWER(name) LIKE LOWER($${idx})`);
+            params.push(`%${filters.name}%`);
+            idx++;
+        }
+        if (filters?.location) {
+            conditions.push(`LOWER(location) LIKE LOWER($${idx})`);
+            params.push(`%${filters.location}%`);
+            idx++;
+        }
+        if (filters?.categories && filters.categories.length > 0) {
+            conditions.push(`categories && $${idx}::event_category[]`); // overlap or using @> for contain all
+            params.push(filters.categories);
+            idx++;
+        }
+        if (filters?.dateRange) {
+            conditions.push(`start_time >= $${idx} AND end_time <= $${idx + 1}`);
+            params.push(filters.dateRange[0], filters.dateRange[1]);
+            idx += 2;
+        }
+        if (filters?.ownerId) {
+            conditions.push(`owner_id = $${idx}::uuid`);
+            params.push(filters.ownerId);
+            idx++;
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        console.log("where clause: " + whereClause);
+
+        // Order clause
+        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'start_time DESC';
+
+        // Pagination
+        const page = pagination?.page ?? 0;
+        const limit = pagination?.limit ?? 10;
+
+        // Total count
+        const total = await this.count(filters);
+
+        // Fetch items
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<{
+            id: string;
+            name: string;
+            location: string;
+            startTime: Date;
+            endTime: Date | null;
+            description: string;
+            imageUrl: string;
+            ownerId: string;
+            categories: EventCategory[];
+            registerCount: number;
+            capacity: number;
+        }[]>(`
+            SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity            FROM users 
+            FROM events
+            ${whereClause}
+            ORDER BY ${orderBy}
+            OFFSET ${page}
+            LIMIT ${limit};`,
+            ...params
+        );
+
+        //Map to DTO
+        const items: PublicEventView[] = itemsRaw.map(e => ({
+            id: e.id,
+            name: e.name,
+            description: e.description,
+            startTime: e.start_time,
+            endTime: e.end_time ?? null,
+            location: e.location,
+            ownerId: e.owner_id,
+            imageUrl: e.image_url,
+            categories: e.categories,
+            capacity: e.capacity,
+            registerCount: e.register_count,
+        }));
+
+        return { items, total, page, limit };
     }
 
     async findByOwnerId(ownerId: string): Promise<PublicEventView[]> {
@@ -302,7 +443,47 @@ export class EventRepository implements IEventRepository {
     }
 
     async count(filters?: EventFilterDto): Promise<number> {
-        return 0;
+        const conditions: string[] = [];
+        const params: any[] = [];
+        let idx = 1;
+
+        if (filters?.status) {
+            conditions.push(`status = $${idx++}::event_status`);
+            params.push(filters.status);
+        }
+        if (filters?.name) {
+            conditions.push(`LOWER(name) LIKE LOWER($${idx})`);
+            params.push(`%${filters.name}%`);
+            idx++;
+        }
+        if (filters?.location) {
+            conditions.push(`LOWER(location) LIKE LOWER($${idx})`);
+            params.push(`%${filters.location}%`);
+            idx++;
+        }
+        if (filters?.categories && filters.categories.length > 0) {
+            conditions.push(`categories && $${idx}::event_category[]`); // overlap or using @> for contain all
+            params.push(filters.categories);
+            idx++;
+        }
+        if (filters?.dateRange) {
+            conditions.push(`start_time >= $${idx} AND end_time <= $${idx + 1}`);
+            params.push(filters.dateRange[0], filters.dateRange[1]);
+            idx += 2;
+        }
+        if (filters?.ownerId) {
+            conditions.push(`owner_id = $${idx}::uuid`);
+            params.push(filters.ownerId);
+            idx++;
+        }
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+        return await this.prisma.$queryRawUnsafe<number>(`
+            SELECT COUNT(*) FROM events
+            ${whereClause};`,
+            ...params
+        ) as number;
     }
 
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {
@@ -352,6 +533,10 @@ export class EventRepository implements IEventRepository {
     }
 
     private async checkExistedAndApprovedEvent(id: string) {
+        if (!isUuid(id)) {
+            throw new EventNotFoundError(id);
+        }
+
         const existing = await this.prisma.events.findUnique({ where: { id } });
         if (!existing || existing.status === EventStatus.Rejected ||
             existing.status === EventStatus.Pending) {

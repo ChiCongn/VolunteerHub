@@ -20,7 +20,10 @@ export interface IEventRepository {
 
     // Public view
     fetchPublicView(id: string): Promise<PublicEventView | null>;
-    searchEvent(filters?: EventFilterDto): Promise<PublicEventView[]>;
+    searchEvent(filters?: EventFilterDto, 
+        pagination?: Pagination,
+        sort?: SortOption
+    ): Promise<ListResult<PublicEventView>>;
 
     // Event manager
     approveEvent(id: string): Promise<void>;
