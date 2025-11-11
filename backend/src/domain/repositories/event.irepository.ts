@@ -14,7 +14,7 @@ import { PublicUserProfile } from "../../application/dtos/user.dto";
 export interface IEventRepository {
     // Core CRUD
     create(data: CreateEventDto): Promise<Event>;
-    findById(id: string): Promise<Event | null>;
+    findById(id: string): Promise<Event>;
     update(id: string, data: UpdateEventDto): Promise<Event>;
     softDelete(id: string): Promise<void>;
 

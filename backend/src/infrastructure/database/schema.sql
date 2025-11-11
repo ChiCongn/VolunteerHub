@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- -----------------------
 CREATE TYPE user_role AS ENUM ('volunteer', 'event_manager', 'admin');
 CREATE TYPE user_status AS ENUM ('pending', 'active', 'locked', 'deleted');
-CREATE TYPE event_status AS ENUM ('pending', 'approved', 'ongoing', 'cancelled', 'completed');
+CREATE TYPE event_status AS ENUM ('pending', 'approved', 'rejected', 'ongoing', 'cancelled', 'completed');
 CREATE TYPE registration_status AS ENUM ('pending', 'approved', 'rejected');
 CREATE TYPE emoji AS ENUM ('like', 'dislike', 'wow', 'sad', 'angry', 'haha');
 CREATE TYPE notification_type AS ENUM ('system', 'user', 'event');

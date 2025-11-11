@@ -16,6 +16,7 @@ export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
 export const EventStatus = {
     Pending: 'pending',
     Approved: 'approved',
+    Rejected: 'rejected',
     Ongoing: 'ongoing',
     Cancelled: 'cancelled',
     Completed: 'completed',

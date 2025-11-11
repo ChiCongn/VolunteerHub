@@ -183,6 +183,7 @@ enum event_category {
 enum event_status {
   pending
   approved
+  rejected
   ongoing
   cancelled
   completed

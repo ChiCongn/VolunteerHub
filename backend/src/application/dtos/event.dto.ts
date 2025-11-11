@@ -8,7 +8,7 @@ export interface CreateEventDto {
     description: string;
     imageUrl: string;
     capacity: number;
-    categories?: EventCategory[];
+    categories: EventCategory[] | [];
     ownerId: string;
 }
 
