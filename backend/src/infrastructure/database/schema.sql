@@ -46,6 +46,7 @@ CREATE TABLE events (
     capacity INTEGER NOT NULL,
     status event_status NOT NULL DEFAULT 'pending',
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_manager_ids UUID[] DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     CONSTRAINT chk_event_time CHECK (end_time IS NULL OR start_time < end_time),

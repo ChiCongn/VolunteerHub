@@ -15,6 +15,7 @@ export interface CreateEventProps {
     eventManagerIds: string[];
     participantIds: string[];
     registerUserIds: string[];
+    postIds: string[];
     registerCount?: number;
     updatedAt?: Date;
 }

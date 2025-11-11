@@ -17,6 +17,7 @@ export class Event {
     private _eventManagerIds: string[];
     private _participantIds: string[];
     private _registerUserIds: string[];
+    private _postIds: string[];
 
     private _capacity: number;
     private _registerCount: number;
@@ -39,6 +40,7 @@ export class Event {
         this._eventManagerIds = event.eventManagerIds ?? [];
         this._participantIds = event.participantIds ?? [];
         this._registerUserIds = event.registerUserIds ?? [];
+        this._postIds = event.postIds ?? [];
         this._registerCount = event.registerCount ?? 0;
         this._updatedAt = event.updatedAt ?? new Date();
     }
@@ -95,6 +97,7 @@ export class Event {
     get eventManagerIds() { return [...this._eventManagerIds]; }
     get participantIds() { return [...this._participantIds]; }
     get registerUserIds() { return [...this._registerUserIds]; }
+    get postIds() { return [...this._postIds]; }
 
     get capacity() { return this._capacity; }
     get registerCount() { return this._registerCount; }

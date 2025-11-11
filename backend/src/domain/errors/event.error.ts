@@ -1,5 +1,5 @@
 import { DomainError } from "./domain.error";
-import { EventStatus } from "../../application/dtos/enums";
+import { EventStatus } from "../entities/enums";
 
 export class EventNotFoundError extends DomainError {
     constructor(eventId: string) {
