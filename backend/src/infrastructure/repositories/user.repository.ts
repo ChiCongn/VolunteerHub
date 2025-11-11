@@ -303,8 +303,9 @@ export class UserRepository implements IUserRepository {
         const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'created_at DESC';
 
         // Pagination
-        const page = pagination?.page ?? 0;
+        const page = pagination?.page ?? 1;
         const limit = pagination?.limit ?? 10;
+        const offset = (page - 1) * limit;
         logger.debug({ whereClause, orderBy, page, limit }, "Executing user list query");
 
         // Total count
@@ -315,7 +316,7 @@ export class UserRepository implements IUserRepository {
             FROM users 
             ${whereClause}
             ORDER BY ${orderBy}
-            OFFSET ${page}
+            OFFSET ${offset}
             LIMIT ${limit};,
             ${params}`
         );
@@ -334,7 +335,7 @@ export class UserRepository implements IUserRepository {
             FROM users 
             ${whereClause}
             ORDER BY ${orderBy}
-            OFFSET ${page}
+            OFFSET ${offset}
             LIMIT ${limit};`,
             ...params
         );
