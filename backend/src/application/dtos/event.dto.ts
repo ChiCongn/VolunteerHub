@@ -33,6 +33,7 @@ export interface EventFilterDto {
 }
 
 export interface PublicEventView {
+    id: string;
     name: string;
     location: string;
     startTime: Date;
@@ -40,6 +41,6 @@ export interface PublicEventView {
     description: string;
     imageUrl: string;
     categories: EventCategory[];
-    regiesterCount: number;
+    registerCount: number;
     capacity: number;
 }

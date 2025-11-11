@@ -53,7 +53,7 @@ model events {
   description    String
   image_url      String
   categories     event_category[]
-  register_count Int?             @default(0)
+  register_count Int             @default(0)
   capacity       Int
   status         event_status     @default(pending)
   owner_id       String           @db.Uuid

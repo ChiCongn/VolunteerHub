@@ -184,7 +184,7 @@ export class UserRepository implements IUserRepository {
 
 
     // Public View
-    async fetchPublicProfile(userId: string): Promise<PublicUserProfile | null> {
+    async fetchPublicProfile(userId: string): Promise<PublicUserProfile> {
         logger.debug({ userId }, "Fetching public profile");
         await this.checkRootAdminAndExistedId(userId);
         const user = await this.prisma.users.findUnique({
