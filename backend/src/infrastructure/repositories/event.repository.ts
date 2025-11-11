@@ -29,7 +29,7 @@ export class EventRepository implements IEventRepository {
     constructor(
         private readonly prisma: PrismaClient,
         private readonly userRepo: UserRepository
-    ) {}
+    ) { }
 
     // Core CRUD
     async create(event: CreateEventDto): Promise<Event> {
@@ -304,13 +304,14 @@ export class EventRepository implements IEventRepository {
         logger.info(`Cancelling event=${id}`);
         const event = await this.prisma.events.findUnique({ where: { id } });
 
-        if (
-            !event ||
-            event.status === EventStatus.Pending ||
-            event.status === EventStatus.Rejected
-        ) {
-            logger.warn(`Event not found or invalid status: ${id}`);
+        if (!event) {
+            logger.warn(`Event not found: id=${id}`);
             throw new EventNotFoundError(id);
+        }
+
+        if (event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+            logger.warn(`Event not found or invalid status: ${id}`);
+            throw new EventCannotBeCancelledError(id, event.status);
         }
 
         if (event.status === EventStatus.Cancelled || event.status === EventStatus.Completed) {
