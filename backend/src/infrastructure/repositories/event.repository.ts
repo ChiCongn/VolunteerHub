@@ -70,7 +70,9 @@ export class EventRepository implements IEventRepository {
     async update(id: string, changes: UpdateEventDto): Promise<Event> {
         await this.checkExistedAndApprovedEvent(id);
 
-        if (changes.capacity && changes.capacity <= 0) throw new EventCapacityInvalidError();
+        if (changes.capacity !== undefined  && changes.capacity <= 0) {
+            throw new EventCapacityInvalidError();
+        }
         if (changes.endTime && changes.startTime && changes.endTime <= changes.startTime) {
             throw new EventTimeInvalidError();
         }
@@ -222,7 +224,7 @@ export class EventRepository implements IEventRepository {
         if (!isUuid(id)) {
             throw new EventNotFoundError(id);
         }
-        
+
         const event = await this.prisma.events.findUnique({ where: { id } });
         if (!event) {
             throw new EventNotFoundError(id);
