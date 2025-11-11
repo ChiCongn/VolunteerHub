@@ -272,6 +272,10 @@ export class EventRepository implements IEventRepository {
 
     async rejectEvent(id: string, reason: string) {
         logger.info(`Rejecting event=${id} with reason="${reason}"`);
+        if (!isUuid(id)) {
+            logger.warn(`Invalid UUID: ${id}`);
+            throw new EventNotFoundError(id);
+        }
         const event = await this.prisma.events.findUnique({ where: { id } });
         if (!event) {
             logger.warn(`Event not found: ${id}`);
