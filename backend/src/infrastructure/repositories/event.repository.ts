@@ -189,7 +189,25 @@ export class EventRepository implements IEventRepository {
         logger.debug(`Where clause: ${whereClause}`);
 
         // Order clause
-        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : "start_time DESC";
+        const sortableFields = new Set([
+            "name",
+            "location",
+            "status",
+            "categories",
+            "start_time",
+            "end_time",
+            "capacity",
+            "register_count",
+        ]);
+        let orderBy: string;
+
+        if (sort && sortableFields.has(sort.field)) {
+            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+            orderBy = `${sort.field} ${order}`;
+        } else {
+            orderBy = "start_time DESC";
+        }
+        console.log(orderBy);
 
         // Pagination
         const page = pagination?.page ?? 1;
@@ -597,7 +615,7 @@ export class EventRepository implements IEventRepository {
     private async getPostIds(eventId: string): Promise<string[]> {
         logger.debug(`Fetching post IDs for event=${eventId}`);
         const posts = await this.prisma.posts.findMany({
-            where: { 
+            where: {
                 event_id: eventId,
                 deleted_at: null
             },
@@ -630,7 +648,7 @@ export class EventRepository implements IEventRepository {
         return createdEvent.id;
     }
 
-    private async checkExistedAndApprovedEvent(id: string) {
+    async checkExistedAndApprovedEvent(id: string) {
         logger.debug(`Checking existence and approval of event=${id}`);
         if (!isUuid(id)) {
             logger.warn(`Invalid UUID: ${id}`);
