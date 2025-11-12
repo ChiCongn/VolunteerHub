@@ -597,7 +597,10 @@ export class EventRepository implements IEventRepository {
     private async getPostIds(eventId: string): Promise<string[]> {
         logger.debug(`Fetching post IDs for event=${eventId}`);
         const posts = await this.prisma.posts.findMany({
-            where: { event_id: eventId },
+            where: { 
+                event_id: eventId,
+                deleted_at: null
+            },
             select: { id: true },
         });
 
