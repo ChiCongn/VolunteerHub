@@ -24,7 +24,8 @@ export class PostRepository implements IPostRepository {
 
     // Core CRUD
     async create(post: CreatePostDto): Promise<Post> {
-        return null;
+        const postId = await this.insert(post);
+        return this.findById(postId);
     }
     async findById(id: string): Promise<Post> {
         logger.info(`Finding post by id: ${id}`);
@@ -78,6 +79,21 @@ export class PostRepository implements IPostRepository {
     }
     async countByUserId(userId: string): Promise<number> {
 
+    }
+
+    private async insert(post: CreatePostDto): Promise<string> {
+        logger.info(`Inserting new post for event ${post.eventId} by author ${post.authorId}`);
+        await this.checkEventApproval(post.eventId);
+        const postPrisma = await this.prisma.posts.create({
+            data: {
+                event_id: post.eventId,
+                author_id: post.authorId,
+                content: post.content,
+                image_url: post.imageUrl,
+            },
+            select: { id: true }
+        });
+        return postPrisma.id;
     }
 
     private checkExistence(id: string): void {
