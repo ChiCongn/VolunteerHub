@@ -37,14 +37,36 @@ export class PostRepository implements IPostRepository {
         return await this.toDomain(postPrisma);
     }
     async update(id: string, changes: UpdatePostDto): Promise<Post> {
-        return null;
+        logger.info(`Updating post with id: ${id}`);
+        await this.checkExistence(id);
+        await this.prisma.posts.update({
+            where: { id },
+            data: {
+                ...(changes.content && { content: changes.content }),
+                ...(changes.imageUrl && { image_url: changes.imageUrl }),
+            },
+        });
+        logger.debug(`Post with id ${id} updated successfully`);
+        return this.findById(id);
     }
     async softDelete(id: string): Promise<void> {
-        return Promise.resolve();
+        logger.info(`Soft deleting post with id: ${id}`);
+        await this.checkExistence(id);
+        await this.prisma.posts.update({
+            where: { id },
+            data: { deleted_at: new Date() },
+        });
+        logger.debug(`Post with id ${id} soft deleted`);
     }
 
     async restore(id: string): Promise<void> {
-        return Promise.resolve();
+        logger.info(`Restoring post with id: ${id}`);
+        await this.checkExistence(id);
+        await this.prisma.posts.update({
+            where: { id },
+            data: { deleted_at: null },
+        });
+        logger.debug(`Post with id ${id} restored`);
     }
 
     // Public view
