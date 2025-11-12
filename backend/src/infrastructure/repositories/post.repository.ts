@@ -17,10 +17,13 @@ import { SortOption } from '../../application/dtos/sort-option.dto';
 import { ListResult } from '../../application/dtos/list-result.dto';
 import logger from '../../logger';
 import { EventStatus } from '../../domain/entities/enums';
-import { log } from 'console';
+import { EventRepository } from './event.repository';
 
 export class PostRepository implements IPostRepository {
-    constructor(private readonly prisma: PrismaClient) { }
+    constructor(
+        private readonly prisma: PrismaClient,
+        private readonly eventRepo: EventRepository
+    ) { }
 
     // Core CRUD
     async create(post: CreatePostDto): Promise<Post> {
@@ -71,10 +74,19 @@ export class PostRepository implements IPostRepository {
 
     // Public view
     async findByEventId(
-        eventId?: string,
+        eventId: string,
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
+        await this.eventRepo.checkExistedAndApprovedEvent(eventId);
+
+        // Order clause
+        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : "start_time DESC";
+
+        // Pagination
+        const page = pagination?.page ?? 1;
+        const limit = pagination?.limit ?? 10;
+        const offset = (page - 1) * limit;
 
     }
 
@@ -88,6 +100,7 @@ export class PostRepository implements IPostRepository {
 
     // Search by keyword
     async search(
+        eventId: string,
         keyword: string,
         pagination?: Pagination,
         sort?: SortOption
@@ -97,10 +110,22 @@ export class PostRepository implements IPostRepository {
 
     // Stats
     async countByEventId(eventId: string): Promise<number> {
-
+        logger.info(`Counting posts for eventId: ${eventId}`);
+        return this.prisma.posts.count({
+            where: {
+                event_id: eventId,
+                deleted_at: null,
+            },
+        });
     }
     async countByUserId(userId: string): Promise<number> {
-
+        logger.info(`Counting posts for userId: ${userId}`);
+        return this.prisma.posts.count({
+            where: {
+                author_id: userId,
+                deleted_at: null,
+            },
+        });
     }
 
     private async insert(post: CreatePostDto): Promise<string> {

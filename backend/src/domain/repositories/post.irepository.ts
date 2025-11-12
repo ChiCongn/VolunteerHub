@@ -19,7 +19,7 @@ export interface IPostRepository {
 
     // Public view
     findByEventId(
-        eventId?: string,
+        eventId: string,
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>>;
@@ -32,6 +32,7 @@ export interface IPostRepository {
 
     // Search by keyword
     search(
+        eventId: string,
         keyword: string,
         pagination?: Pagination, 
         sort?: SortOption
