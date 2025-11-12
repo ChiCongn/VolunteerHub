@@ -16,13 +16,15 @@ import { Pagination } from '../../application/dtos/pagination.dto';
 import { SortOption } from '../../application/dtos/sort-option.dto';
 import { ListResult } from '../../application/dtos/list-result.dto';
 import logger from '../../logger';
-import { EventStatus } from '../../domain/entities/enums';
+import { EventStatus, UserStatus } from '../../domain/entities/enums';
 import { EventRepository } from './event.repository';
+import { UserRepository } from './user.repository';
 
 export class PostRepository implements IPostRepository {
     constructor(
         private readonly prisma: PrismaClient,
-        private readonly eventRepo: EventRepository
+        private readonly eventRepo: EventRepository,
+        private readonly userRepo: UserRepository
     ) { }
 
     // Core CRUD
@@ -78,16 +80,65 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
+        logger.info(`Finding posts by eventId: ${eventId}`);
         await this.eventRepo.checkExistedAndApprovedEvent(eventId);
 
         // Order clause
-        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : "start_time DESC";
+        const sortableFields = new Set([
+            "created_at",
+            "author_id",
+        ]);
+        let orderBy: string;
+
+        if (sort && sortableFields.has(sort.field)) {
+            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+            orderBy = `${sort.field} ${order}`;
+        } else {
+            orderBy = "created_at DESC";
+        }
 
         // Pagination
         const page = pagination?.page ?? 1;
         const limit = pagination?.limit ?? 10;
         const offset = (page - 1) * limit;
 
+        // Total count
+        const total = await this.countByEventId(eventId);
+
+        // Fetch items
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+            {
+                id: string;
+                event_id: string;
+                author_id: string;
+                content: string;
+                image_url: string | null;
+                created_at: Date;
+            }[]
+        >(
+            `
+            SELECT id, event_id, author_id, content, image_url, created_at
+            FROM events
+            WHERE event_id = $1 AND deleted_at IS NULL
+            ORDER BY ${orderBy}
+            OFFSET ${offset}
+            LIMIT ${limit};`,
+            eventId
+        );
+        const items: PostView[] = [];
+        for (const itemRaw of itemsRaw) {
+            const authorProfile = await this.userRepo.fetchPublicProfile(itemRaw.author_id);
+            items.push({
+                id: itemRaw.id,
+                author: authorProfile,
+                content: itemRaw.content,
+                imageUrl: itemRaw.image_url ?? undefined,
+                createddAt: itemRaw.created_at,
+            });
+        }
+
+        logger.debug(`Found ${items.length} posts for eventId: ${eventId}`);
+        return {items, total, page, limit};
     }
 
     async findByAuthor(
@@ -95,6 +146,68 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
+        logger.info(`Finding posts by authorId: ${authorId}`);
+        const user = await this.userRepo.findById(authorId);
+        if (!user || user.status === UserStatus.Deleted || user.status === UserStatus.Pending) {
+            logger.warn(`Author with id ${authorId} is not found or deactivated`);
+            throw new PostNotFoundError(`Author with id ${authorId} is is not existed or deactivated`);
+        }
+        // Order clause
+        const sortableFields = new Set([
+            "created_at",
+            "event_id",
+        ]);
+        let orderBy: string;
+
+        if (sort && sortableFields.has(sort.field)) {
+            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+            orderBy = `${sort.field} ${order}`;
+        } else {
+            orderBy = "created_at DESC";
+        }
+
+        // Pagination
+        const page = pagination?.page ?? 1;
+        const limit = pagination?.limit ?? 10;
+        const offset = (page - 1) * limit;
+
+        // Total count
+        const total = await this.countByUserId(authorId);
+
+        // Fetch items
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+            {
+                id: string;
+                event_id: string;
+                author_id: string;
+                content: string;
+                image_url: string | null;
+                created_at: Date;
+            }[]
+        >(
+            `
+            SELECT id, event_id, author_id, content, image_url, created_at
+            FROM events
+            WHERE author_id = $1 AND deleted_at IS NULL
+            ORDER BY ${orderBy}
+            OFFSET ${offset}
+            LIMIT ${limit};`,
+            authorId
+        );
+        const items: PostView[] = [];
+        for (const itemRaw of itemsRaw) {
+            const authorProfile = await this.userRepo.fetchPublicProfile(itemRaw.author_id);
+            items.push({
+                id: itemRaw.id,
+                author: authorProfile,
+                content: itemRaw.content,
+                imageUrl: itemRaw.image_url ?? undefined,
+                createddAt: itemRaw.created_at,
+            });
+        }
+
+        logger.debug(`Found ${items.length} posts by authorId: ${authorId}`);
+        return {items, total, page, limit}; 
 
     }
 
@@ -105,7 +218,72 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
+        logger.info(`Searching posts by eventId: ${eventId} with keyword: ${keyword}`);
+        await this.eventRepo.checkExistedAndApprovedEvent(eventId);
 
+        // Order clause
+        const sortableFields = new Set([
+            "created_at",
+            "author_id",
+        ]);
+        let orderBy: string;
+
+        if (sort && sortableFields.has(sort.field)) {
+            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+            orderBy = `${sort.field} ${order}`;
+        } else {
+            orderBy = "created_at DESC";
+        }
+
+        // Pagination
+        const page = pagination?.page ?? 1;
+        const limit = pagination?.limit ?? 10;
+        const offset = (page - 1) * limit;
+
+        // Total count
+        const total = await this.prisma.posts.count({
+            where: {
+                event_id: eventId,
+                content: { contains: keyword },
+                deleted_at: null,
+            },
+        });
+
+        // Fetch items
+        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+            {
+                id: string;
+                event_id: string;
+                author_id: string;
+                content: string;
+                image_url: string | null;
+                created_at: Date;
+            }[]
+        >(
+            `
+            SELECT id, event_id, author_id, content, image_url, created_at
+            FROM events
+            WHERE event_id = $1 AND content ILIKE '%' || $2 || '%' AND deleted_at IS NULL
+            ORDER BY ${orderBy}
+            OFFSET ${offset}
+            LIMIT ${limit};`,
+            eventId,
+            keyword
+        );
+        const items: PostView[] = [];
+        for (const itemRaw of itemsRaw) {
+            const authorProfile = await this.userRepo.fetchPublicProfile(itemRaw.author_id);
+            items.push({
+                id: itemRaw.id,
+                author: authorProfile,
+                content: itemRaw.content,
+                imageUrl: itemRaw.image_url ?? undefined,
+                createddAt: itemRaw.created_at,
+            });
+        }
+
+        logger.debug(`Search found ${items.length} posts for eventId ${eventId} with keyword "${keyword}"`);
+        return {items, total, page, limit};
     }
 
     // Stats
