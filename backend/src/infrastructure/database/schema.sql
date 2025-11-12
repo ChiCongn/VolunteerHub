@@ -86,7 +86,8 @@ CREATE TABLE posts (
     content TEXT NOT NULL,
     image_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ;
 );
 
 -- -----------------------
