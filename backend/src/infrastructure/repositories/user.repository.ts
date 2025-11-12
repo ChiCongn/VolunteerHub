@@ -271,7 +271,7 @@ export class UserRepository implements IUserRepository {
         };
     }
 
-    async listUsers( // failed. too hard. will implement later
+    async listUsers(
         filter?: ListUserFilterDto,
         pagination?: Pagination,
         sort?: SortOption
@@ -300,7 +300,22 @@ export class UserRepository implements IUserRepository {
         console.log("where clause: " + whereClause);
 
         // Order clause
-        const orderBy = sort ? `${sort.field} ${sort.order.toUpperCase()}` : 'created_at DESC';
+        const sortableFields = new Set([
+            "role",
+            "status",
+            "username",
+            "email",
+            "created_at",
+            "last_login",
+        ]);
+        let orderBy: string;
+
+        if (sort && sortableFields.has(sort.field)) {
+            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+            orderBy = `${sort.field} ${order}`;
+        } else {
+            orderBy = "created_at DESC";
+        }
 
         // Pagination
         const page = pagination?.page ?? 1;
