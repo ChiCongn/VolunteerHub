@@ -118,8 +118,8 @@ export class PostRepository implements IPostRepository {
         >(
             `
             SELECT id, event_id, author_id, content, image_url, created_at
-            FROM events
-            WHERE event_id = $1 AND deleted_at IS NULL
+            FROM posts
+            WHERE event_id = $1::uuid AND deleted_at IS NULL
             ORDER BY ${orderBy}
             OFFSET ${offset}
             LIMIT ${limit};`,
@@ -187,8 +187,8 @@ export class PostRepository implements IPostRepository {
         >(
             `
             SELECT id, event_id, author_id, content, image_url, created_at
-            FROM events
-            WHERE author_id = $1 AND deleted_at IS NULL
+            FROM posts
+            WHERE author_id = $1::uuid AND deleted_at IS NULL
             ORDER BY ${orderBy}
             OFFSET ${offset}
             LIMIT ${limit};`,
@@ -262,8 +262,8 @@ export class PostRepository implements IPostRepository {
         >(
             `
             SELECT id, event_id, author_id, content, image_url, created_at
-            FROM events
-            WHERE event_id = $1 AND content ILIKE '%' || $2 || '%' AND deleted_at IS NULL
+            FROM posts
+            WHERE event_id = $1::uuid AND content ILIKE '%' || $2 || '%' AND deleted_at IS NULL
             ORDER BY ${orderBy}
             OFFSET ${offset}
             LIMIT ${limit};`,
