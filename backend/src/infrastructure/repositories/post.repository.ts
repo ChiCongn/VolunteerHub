@@ -1,14 +1,23 @@
 import { IPostRepository } from '../../domain/repositories/post.irepository';
-import { PrismaClient } from '../prisma/generated/client';
+import { PrismaClient, posts as PrismaPost } from '../prisma/generated/client';
 import { Post } from '../../domain/entities/post.entity';
 import {
     CreatePostDto,
     UpdatePostDto,
     PostView
 } from '../../application/dtos/post.dto';
+import {
+    PostNotFoundError,
+    NotPostAuthorError,
+    PostInUnapprovedEventError,
+    ReactionAlreadyExistsError
+} from '../../domain/errors/post.error';
 import { Pagination } from '../../application/dtos/pagination.dto';
 import { SortOption } from '../../application/dtos/sort-option.dto';
 import { ListResult } from '../../application/dtos/list-result.dto';
+import logger from '../../logger';
+import { EventStatus } from '../../domain/entities/enums';
+import { log } from 'console';
 
 export class PostRepository implements IPostRepository {
     constructor(private readonly prisma: PrismaClient) { }
@@ -17,8 +26,14 @@ export class PostRepository implements IPostRepository {
     async create(post: CreatePostDto): Promise<Post> {
         return null;
     }
-    async findById(id: string): Promise<Post | null> {
-        return null;    
+    async findById(id: string): Promise<Post> {
+        logger.info(`Finding post by id: ${id}`);
+        const postPrisma = await this.prisma.posts.findUnique({ where: { id } });
+        if (!postPrisma) {
+            logger.warn(`Post with id ${id} not found`);
+            throw new PostNotFoundError(id);
+        }
+        return await this.toDomain(postPrisma);
     }
     async update(id: string, changes: UpdatePostDto): Promise<Post> {
         return null;
@@ -37,7 +52,7 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
-        
+
     }
 
     async findByAuthor(
@@ -62,6 +77,59 @@ export class PostRepository implements IPostRepository {
 
     }
     async countByUserId(userId: string): Promise<number> {
-        
+
+    }
+
+    private checkExistence(id: string): void {
+        logger.info(`Checking existence of post with id ${id}`);
+        const post = this.prisma.posts.findUnique({ where: { id } });
+        if (!post) {
+            logger.warn(`Post with id ${id} not found`);
+            throw new PostNotFoundError(id);
+        }
+    }
+
+    private async checkAuthor(postId: string, userId: string): Promise<void> {
+        logger.info(`Checking if user ${userId} is author of post ${postId}`);
+        const post = await this.prisma.posts.findUnique({ where: { id: postId } });
+        if (post?.author_id !== userId) {
+            logger.warn(`User ${userId} is not author of post ${postId}`);
+            throw new NotPostAuthorError(postId, userId);
+        }
+    }
+
+    private async checkEventApproval(eventId: string): Promise<void> {
+        logger.info(`Checking if event ${eventId} is approved`);
+        const event = await this.prisma.events.findUnique({ where: { id: eventId } });
+        if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
+            logger.warn(`Event ${eventId} is not approved`);
+            throw new PostInUnapprovedEventError(eventId);
+        }
+    }
+
+    private async checkReactionExists(postId: string, userId: string): Promise<void> {
+        logger.info(`Checking if user ${userId} has already reacted to post ${postId}`);
+        const reaction = await this.prisma.reactions.findFirst({
+            where: {
+                post_id: postId,
+                user_id: userId
+            }
+        });
+        if (reaction) {
+            logger.warn(`User ${userId} has already reacted to post ${postId}`);
+            throw new ReactionAlreadyExistsError(postId, userId);
+        }
+    }
+
+    private toDomain(postPrisma: PrismaPost): Post {
+        logger.info(`Mapping Prisma post to domain post for post id ${postPrisma.id}`);
+        return new Post({
+            id: postPrisma.id,
+            eventId: postPrisma.event_id,
+            authorId: postPrisma.author_id,
+            content: postPrisma.content,
+            imageUrl: postPrisma.image_url ?? "",
+            createdAt: postPrisma.created_at,
+        });
     }
 }
