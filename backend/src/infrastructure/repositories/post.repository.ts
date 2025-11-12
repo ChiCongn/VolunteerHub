@@ -244,7 +244,7 @@ export class PostRepository implements IPostRepository {
         const total = await this.prisma.posts.count({
             where: {
                 event_id: eventId,
-                content: { contains: keyword },
+                content: { contains: keyword, mode: "insensitive" },
                 deleted_at: null,
             },
         });
