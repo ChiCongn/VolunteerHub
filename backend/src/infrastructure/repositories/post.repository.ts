@@ -321,9 +321,9 @@ export class PostRepository implements IPostRepository {
         return postPrisma.id;
     }
 
-    private checkExistence(id: string): void {
+    private async checkExistence(id: string): Promise<void> {
         logger.info(`Checking existence of post with id ${id}`);
-        const post = this.prisma.posts.findUnique({ where: { id } });
+        const post = await this.prisma.posts.findUnique({ where: { id } });
         if (!post) {
             logger.warn(`Post with id ${id} not found`);
             throw new PostNotFoundError(id);

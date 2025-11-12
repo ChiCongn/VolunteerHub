@@ -8,8 +8,8 @@ const logger = pino({
     timestamp: pino.stdTimeFunctions.isoTime,
 });
 
-if (process.env.NODE_ENV === 'test') {
-    logger.level = 'silent';
-}
+// if (process.env.NODE_ENV === 'test') {
+//     logger.level = 'silent';
+// }
 
 export default logger;
