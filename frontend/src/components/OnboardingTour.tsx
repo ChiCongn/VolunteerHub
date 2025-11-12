@@ -1,14 +1,7 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "./ui/dialog";
-import { CheckCircle } from "lucide-react";
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { CheckCircle } from 'lucide-react';
 
 interface OnboardingTourProps {
   isOpen: boolean;
@@ -20,39 +13,29 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
 
   const steps = [
     {
-      title: "👋 Welcome to VolunteerHub!",
-      description:
-        "Your journey to making a difference starts here. Let us show you around!",
-      image:
-        "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&h=300&fit=crop",
+      title: '👋 Welcome to VolunteerHub!',
+      description: 'Your journey to making a difference starts here. Let us show you around!',
+      image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&h=300&fit=crop',
     },
     {
-      title: "📅 Discover Events",
-      description:
-        'Browse through various volunteer opportunities filtered by category, location, and your interests. Click "Join Event" to register!',
-      image:
-        "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=400&h=300&fit=crop",
+      title: '📅 Discover Events',
+      description: 'Browse through various volunteer opportunities filtered by category, location, and your interests. Click "Join Event" to register!',
+      image: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=400&h=300&fit=crop',
     },
     {
-      title: "💬 Share Your Experience",
-      description:
-        'Use the floating "+" button to create posts, share your volunteer stories, and inspire others in the community.',
-      image:
-        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=300&fit=crop",
+      title: '💬 Share Your Experience',
+      description: 'Use the floating "+" button to create posts, share your volunteer stories, and inspire others in the community.',
+      image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=300&fit=crop',
     },
     {
-      title: "👤 Manage Your Profile",
-      description:
-        "Track your volunteer hours, update your bio, and showcase your impact. Your profile helps us recommend relevant events.",
-      image:
-        "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop",
+      title: '👤 Manage Your Profile',
+      description: 'Track your volunteer hours, update your bio, and showcase your impact. Your profile helps us recommend relevant events.',
+      image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop',
     },
     {
-      title: "🎉 You're All Set!",
-      description:
-        "Start exploring events, connect with fellow volunteers, and make a positive impact in your community!",
-      image:
-        "https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?w=400&h=300&fit=crop",
+      title: '🎉 You\'re All Set!',
+      description: 'Start exploring events, connect with fellow volunteers, and make a positive impact in your community!',
+      image: 'https://images.unsplash.com/photo-1593113646773-028c64a8f1b8?w=400&h=300&fit=crop',
     },
   ];
 
@@ -99,7 +82,9 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
               <div
                 key={index}
                 className={`h-2 rounded-full transition-all ${
-                  index === currentStep ? "w-8 bg-[#43A047]" : "w-2 bg-muted"
+                  index === currentStep
+                    ? 'w-8 bg-[#43A047]'
+                    : 'w-2 bg-muted'
                 }`}
               />
             ))}
@@ -107,10 +92,14 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         </div>
 
         <DialogFooter className="flex-row justify-between sm:justify-between">
-          <Button variant="ghost" onClick={handleSkip} disabled={isLastStep}>
+          <Button
+            variant="ghost"
+            onClick={handleSkip}
+            disabled={isLastStep}
+          >
             Skip Tour
           </Button>
-
+          
           <div className="flex gap-2">
             {currentStep > 0 && (
               <Button variant="outline" onClick={handlePrev}>
@@ -127,7 +116,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
                   Get Started
                 </>
               ) : (
-                "Next"
+                'Next'
               )}
             </Button>
           </div>

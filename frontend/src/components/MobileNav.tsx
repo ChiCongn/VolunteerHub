@@ -1,7 +1,7 @@
-import { Home, Calendar, Bell, User } from "lucide-react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { cn } from "./ui/utils";
+import { Home, Calendar, Bell, User } from 'lucide-react';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { cn } from './ui/utils';
 
 interface MobileNavProps {
   currentView: string;
@@ -9,21 +9,12 @@ interface MobileNavProps {
   unreadNotifications: number;
 }
 
-export function MobileNav({
-  currentView,
-  onViewChange,
-  unreadNotifications,
-}: MobileNavProps) {
+export function MobileNav({ currentView, onViewChange, unreadNotifications }: MobileNavProps) {
   const navItems = [
-    { id: "dashboard", label: "Home", icon: Home },
-    { id: "events", label: "Events", icon: Calendar },
-    {
-      id: "notifications",
-      label: "Alerts",
-      icon: Bell,
-      badge: unreadNotifications,
-    },
-    { id: "profile", label: "Profile", icon: User },
+    { id: 'dashboard', label: 'Home', icon: Home },
+    { id: 'events', label: 'Events', icon: Calendar },
+    { id: 'notifications', label: 'Alerts', icon: Bell, badge: unreadNotifications },
+    { id: 'profile', label: 'Profile', icon: User },
   ];
 
   return (
@@ -38,8 +29,8 @@ export function MobileNav({
               key={item.id}
               variant="ghost"
               className={cn(
-                "h-full rounded-none flex flex-col gap-1 relative",
-                isActive && "text-[#43A047]"
+                'h-full rounded-none flex flex-col gap-1 relative',
+                isActive && 'text-[#43A047]'
               )}
               onClick={() => onViewChange(item.id)}
             >

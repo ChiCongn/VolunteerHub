@@ -1,8 +1,8 @@
-import { Search, Bell, Moon, Sun, Menu } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
+import { Search, Bell, Moon, Sun, Menu } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Badge } from './ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { type User } from "../lib/mockData";
+} from './ui/dropdown-menu';
+import type { User } from '../lib/mockData';
 
 interface HeaderProps {
   currentUser: User;
@@ -43,7 +43,7 @@ export function Header({
           >
             <Menu className="w-5 h-5" />
           </Button>
-
+          
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-[#43A047] rounded-lg flex items-center justify-center">
               <span className="text-white font-semibold">VH</span>
@@ -94,15 +94,9 @@ export function Header({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="relative h-10 w-10 rounded-full"
-              >
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar>
-                  <AvatarImage
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
-                  />
+                  <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
                   <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -119,7 +113,7 @@ export function Header({
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
-              {currentUser.role === "admin" && (
+              {currentUser.role === 'admin' && (
                 <DropdownMenuItem>Admin Dashboard</DropdownMenuItem>
               )}
               <DropdownMenuSeparator />

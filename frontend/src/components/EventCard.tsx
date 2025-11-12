@@ -1,14 +1,12 @@
-import { Calendar, MapPin, Users } from "lucide-react";
-import {
-  type Event,
-  getUserById,
-  categoryIcons,
-  categoryColors,
-} from "../lib/mockData";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Progress } from "./ui/progress";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { Calendar, MapPin, Users } from 'lucide-react';
+import type { Event } from '../lib/mockData';
+import { getUserById } from '../lib/mockData';
+import { categoryIcons } from '../lib/mockData';
+import { categoryColors } from '../lib/mockData';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface EventCardProps {
   event: Event;
@@ -16,11 +14,7 @@ interface EventCardProps {
   onViewDetails?: (eventId: string) => void;
 }
 
-export function EventCard({
-  event,
-  onRegister,
-  onViewDetails,
-}: EventCardProps) {
+export function EventCard({ event, onRegister, onViewDetails }: EventCardProps) {
   const manager = getUserById(event.managerId);
   const registrationPercentage = (event.registered / event.capacity) * 100;
   const spotsLeft = event.capacity - event.registered;
@@ -40,10 +34,10 @@ export function EventCard({
           </Badge>
         </div>
       </div>
-
+      
       <div className="p-4 space-y-3">
         <div>
-          <h3
+          <h3 
             className="cursor-pointer hover:text-primary transition-colors"
             onClick={() => onViewDetails?.(event.id)}
           >
@@ -58,14 +52,14 @@ export function EventCard({
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4 h-4" />
             <span className="text-sm">
-              {new Date(event.date).toLocaleDateString("en-US", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
+              {new Date(event.date).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
               })}
             </span>
           </div>
-
+          
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="w-4 h-4" />
             <span className="text-sm">{event.location}</span>
@@ -82,7 +76,7 @@ export function EventCard({
         <div className="space-y-1">
           <Progress value={registrationPercentage} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {spotsLeft > 0 ? `${spotsLeft} spots left` : "Event full"}
+            {spotsLeft > 0 ? `${spotsLeft} spots left` : 'Event full'}
           </p>
         </div>
 
@@ -95,15 +89,15 @@ export function EventCard({
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button
+          <Button 
             className="flex-1 bg-[#FFC107] hover:bg-[#FFB300] text-[#212121]"
             onClick={() => onRegister?.(event.id)}
             disabled={spotsLeft === 0}
           >
-            {spotsLeft === 0 ? "Full" : "Join Event"}
+            {spotsLeft === 0 ? 'Full' : 'Join Event'}
           </Button>
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             className="flex-1"
             onClick={() => onViewDetails?.(event.id)}
           >

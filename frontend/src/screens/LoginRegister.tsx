@@ -1,34 +1,52 @@
-import { useState } from "react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { useState } from 'react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { Eye, EyeOff } from "lucide-react";
+} from '../components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginRegisterProps {
   onLogin: (email: string, password: string) => void;
-  onRegister: (
-    name: string,
-    email: string,
-    password: string,
-    role: string
-  ) => void;
+  onRegister: (name: string, email: string, password: string, role: string) => void;
 }
 
-export function LoginRegister() {
+export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  
+  const [registerName, setRegisterName] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [registerRole, setRegisterRole] = useState('volunteer');
+
+  const getPasswordStrength = (password: string) => {
+    if (password.length === 0) return { strength: 0, label: '' };
+    if (password.length < 6) return { strength: 33, label: 'Weak', color: 'bg-[#F44336]' };
+    if (password.length < 10) return { strength: 66, label: 'Medium', color: 'bg-[#FFC107]' };
+    return { strength: 100, label: 'Strong', color: 'bg-[#43A047]' };
+  };
+
+  const passwordStrength = getPasswordStrength(registerPassword);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    onLogin(loginEmail, loginPassword);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    onRegister(registerName, registerEmail, registerPassword, registerRole);
+  };
+
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
@@ -44,33 +62,26 @@ export function LoginRegister() {
             </div>
             <h1 className="text-4xl text-white">Welcome to VolunteerHub</h1>
             <p className="text-xl text-white/90">
-              Connect with your community, discover meaningful volunteer
-              opportunities, and make a difference together.
+              Connect with your community, discover meaningful volunteer opportunities, and make a difference together.
             </p>
             <div className="space-y-3 pt-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                   <span className="text-white">✓</span>
                 </div>
-                <p className="text-white/90">
-                  Find events that match your interests
-                </p>
+                <p className="text-white/90">Find events that match your interests</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                   <span className="text-white">✓</span>
                 </div>
-                <p className="text-white/90">
-                  Track your volunteer hours and impact
-                </p>
+                <p className="text-white/90">Track your volunteer hours and impact</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                   <span className="text-white">✓</span>
                 </div>
-                <p className="text-white/90">
-                  Connect with like-minded volunteers
-                </p>
+                <p className="text-white/90">Connect with like-minded volunteers</p>
               </div>
             </div>
           </div>
@@ -93,13 +104,15 @@ export function LoginRegister() {
             </TabsList>
 
             <TabsContent value="login" className="space-y-4">
-              <form className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
                   <Input
                     id="login-email"
                     type="email"
                     placeholder="you@example.com"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -109,8 +122,10 @@ export function LoginRegister() {
                   <div className="relative">
                     <Input
                       id="login-password"
-                      type={"password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
                       required
                     />
                     <Button
@@ -118,20 +133,14 @@ export function LoginRegister() {
                       variant="ghost"
                       size="icon"
                       className="absolute right-0 top-0 h-full"
+                      onClick={() => setShowPassword(!showPassword)}
                     >
-                      {true ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-[#43A047] hover:bg-[#388E3C]"
-                >
+                <Button type="submit" className="w-full bg-[#43A047] hover:bg-[#388E3C]">
                   Login
                 </Button>
 
@@ -142,13 +151,15 @@ export function LoginRegister() {
             </TabsContent>
 
             <TabsContent value="register" className="space-y-4">
-              <form className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="register-name">Full Name</Label>
                   <Input
                     id="register-name"
                     type="text"
                     placeholder="John Doe"
+                    value={registerName}
+                    onChange={(e) => setRegisterName(e.target.value)}
                     required
                   />
                 </div>
@@ -159,6 +170,8 @@ export function LoginRegister() {
                     id="register-email"
                     type="email"
                     placeholder="you@example.com"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -168,8 +181,10 @@ export function LoginRegister() {
                   <div className="relative">
                     <Input
                       id="register-password"
-                      type={true ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
                       required
                     />
                     <Button
@@ -177,37 +192,40 @@ export function LoginRegister() {
                       variant="ghost"
                       size="icon"
                       className="absolute right-0 top-0 h-full"
+                      onClick={() => setShowPassword(!showPassword)}
                     >
-                      {true ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
+                  {registerPassword && (
+                    <div className="space-y-1">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${passwordStrength.color}`}
+                          style={{ width: `${passwordStrength.strength}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Password strength: {passwordStrength.label}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="register-role">I want to</Label>
-                  <Select>
+                  <Select value={registerRole} onValueChange={setRegisterRole}>
                     <SelectTrigger id="register-role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="volunteer">
-                        Volunteer for events
-                      </SelectItem>
-                      <SelectItem value="manager">
-                        Organize and manage events
-                      </SelectItem>
+                      <SelectItem value="volunteer">Volunteer for events</SelectItem>
+                      <SelectItem value="manager">Organize and manage events</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-[#43A047] hover:bg-[#388E3C]"
-                >
+                <Button type="submit" className="w-full bg-[#43A047] hover:bg-[#388E3C]">
                   Sign Up
                 </Button>
               </form>

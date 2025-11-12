@@ -1,14 +1,14 @@
-import { Search, Filter, SlidersHorizontal } from "lucide-react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Badge } from "./ui/badge";
+} from './ui/select';
+import { Badge } from './ui/badge';
 
 interface FilterBarProps {
   onSearch?: (query: string) => void;
@@ -22,23 +22,23 @@ export function FilterBar({
   onSearch,
   onCategoryChange,
   onSortChange,
-  selectedCategory = "all",
-  selectedSort = "date",
+  selectedCategory = 'all',
+  selectedSort = 'date',
 }: FilterBarProps) {
   const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "environment", label: "🌿 Environment" },
-    { value: "education", label: "📚 Education" },
-    { value: "health", label: "❤️ Health" },
-    { value: "community", label: "🤝 Community" },
-    { value: "animals", label: "🐾 Animals" },
+    { value: 'all', label: 'All Categories' },
+    { value: 'environment', label: '🌿 Environment' },
+    { value: 'education', label: '📚 Education' },
+    { value: 'health', label: '❤️ Health' },
+    { value: 'community', label: '🤝 Community' },
+    { value: 'animals', label: '🐾 Animals' },
   ];
 
   const sortOptions = [
-    { value: "date", label: "Date" },
-    { value: "popularity", label: "Most Popular" },
-    { value: "spots", label: "Spots Available" },
-    { value: "recent", label: "Recently Added" },
+    { value: 'date', label: 'Date' },
+    { value: 'popularity', label: 'Most Popular' },
+    { value: 'spots', label: 'Spots Available' },
+    { value: 'recent', label: 'Recently Added' },
   ];
 
   return (
@@ -89,13 +89,13 @@ export function FilterBar({
         </div>
       </div>
 
-      {selectedCategory !== "all" && (
+      {selectedCategory !== 'all' && (
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Active filters:</span>
           <Badge variant="secondary" className="gap-1">
             {categories.find((c) => c.value === selectedCategory)?.label}
             <button
-              onClick={() => onCategoryChange?.("all")}
+              onClick={() => onCategoryChange?.('all')}
               className="ml-1 hover:text-destructive"
             >
               ×

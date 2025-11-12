@@ -1,26 +1,14 @@
-import { useState } from "react";
-import { type Event, getUserById, categoryIcons } from "../lib/mockData";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Progress } from "../components/ui/progress";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import {
-  Calendar,
-  MapPin,
-  Users,
-  Clock,
-  Share2,
-  QrCode,
-  CheckCircle,
-} from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import type { Event } from '../lib/mockData';
+import { getUserById, categoryIcons } from '../lib/mockData';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Progress } from '../components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { Calendar, MapPin, Users, Clock, Share2, QrCode, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface EventDetailsProps {
   event: Event;
@@ -29,12 +17,7 @@ interface EventDetailsProps {
   isManager?: boolean;
 }
 
-export function EventDetails({
-  event,
-  onBack,
-  onRegister,
-  isManager = false,
-}: EventDetailsProps) {
+export function EventDetails({ event, onBack, onRegister, isManager = false }: EventDetailsProps) {
   const manager = getUserById(event.managerId);
   const registrationPercentage = (event.registered / event.capacity) * 100;
   const spotsLeft = event.capacity - event.registered;
@@ -43,28 +26,13 @@ export function EventDetails({
   const handleRegister = () => {
     setIsRegistered(true);
     onRegister(event.id);
-    toast.success("Successfully registered for event!");
+    toast.success('Successfully registered for event!');
   };
 
   const mockRegistrations = [
-    {
-      id: "1",
-      name: "Sarah Johnson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      status: "approved",
-    },
-    {
-      id: "2",
-      name: "David Kim",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-      status: "approved",
-    },
-    {
-      id: "3",
-      name: "Lisa Anderson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
-      status: "pending",
-    },
+    { id: '1', name: 'Sarah Johnson', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah', status: 'approved' },
+    { id: '2', name: 'David Kim', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David', status: 'approved' },
+    { id: '3', name: 'Lisa Anderson', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa', status: 'pending' },
   ];
 
   return (
@@ -92,9 +60,7 @@ export function EventDetails({
                   <AvatarImage src={manager.avatar} alt={manager.name} />
                   <AvatarFallback>{manager.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-white/90">
-                  Organized by {manager.name}
-                </span>
+                <span className="text-sm text-white/90">Organized by {manager.name}</span>
               </div>
             )}
           </div>
@@ -107,11 +73,11 @@ export function EventDetails({
               <div>
                 <p className="text-sm text-muted-foreground">Date & Time</p>
                 <p className="font-medium">
-                  {new Date(event.date).toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
+                  {new Date(event.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
                   })}
                 </p>
               </div>
@@ -157,10 +123,7 @@ export function EventDetails({
                 <h3 className="mb-3">About This Event</h3>
                 <p className="text-muted-foreground">{event.description}</p>
                 <p className="text-muted-foreground mt-4">
-                  Join us for this amazing volunteer opportunity! This event is
-                  perfect for anyone looking to make a difference in the
-                  community. All skill levels are welcome, and we'll provide all
-                  necessary supplies and training.
+                  Join us for this amazing volunteer opportunity! This event is perfect for anyone looking to make a difference in the community. All skill levels are welcome, and we'll provide all necessary supplies and training.
                 </p>
               </div>
 
@@ -185,40 +148,22 @@ export function EventDetails({
             <TabsContent value="registrations" className="space-y-4 pt-4">
               <div className="space-y-3">
                 {mockRegistrations.map((registration) => (
-                  <div
-                    key={registration.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                  >
+                  <div key={registration.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        <AvatarImage
-                          src={registration.avatar}
-                          alt={registration.name}
-                        />
-                        <AvatarFallback>
-                          {registration.name.charAt(0)}
-                        </AvatarFallback>
+                        <AvatarImage src={registration.avatar} alt={registration.name} />
+                        <AvatarFallback>{registration.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium">{registration.name}</p>
-                        <Badge
-                          variant={
-                            registration.status === "approved"
-                              ? "default"
-                              : "secondary"
-                          }
-                          className="text-xs"
-                        >
+                        <Badge variant={registration.status === 'approved' ? 'default' : 'secondary'} className="text-xs">
                           {registration.status}
                         </Badge>
                       </div>
                     </div>
-                    {isManager && registration.status === "pending" && (
+                    {isManager && registration.status === 'pending' && (
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          className="bg-[#43A047] hover:bg-[#388E3C]"
-                        >
+                        <Button size="sm" className="bg-[#43A047] hover:bg-[#388E3C]">
                           Approve
                         </Button>
                         <Button size="sm" variant="outline">
@@ -240,10 +185,7 @@ export function EventDetails({
 
           <div className="flex gap-3 pt-4 border-t border-border">
             {isRegistered ? (
-              <Button
-                className="flex-1 bg-[#43A047] hover:bg-[#388E3C]"
-                disabled
-              >
+              <Button className="flex-1 bg-[#43A047] hover:bg-[#388E3C]" disabled>
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Registered
               </Button>
@@ -253,7 +195,7 @@ export function EventDetails({
                 onClick={handleRegister}
                 disabled={spotsLeft === 0}
               >
-                {spotsLeft === 0 ? "Event Full" : "Register for Event"}
+                {spotsLeft === 0 ? 'Event Full' : 'Register for Event'}
               </Button>
             )}
             <Button variant="outline" className="gap-2">

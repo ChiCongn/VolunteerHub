@@ -1,6 +1,6 @@
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Search, Home } from "lucide-react";
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Search, Home } from 'lucide-react';
 
 interface ErrorPageProps {
   onGoHome: () => void;
@@ -11,13 +11,10 @@ export function ErrorPage({ onGoHome }: ErrorPageProps) {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="space-y-4">
-          <div className="text-[120px] leading-none font-semibold text-[#43A047]">
-            404
-          </div>
+          <div className="text-[120px] leading-none font-semibold text-[#43A047]">404</div>
           <h1>Oops! Page Not Found</h1>
           <p className="text-muted-foreground">
-            The page you're looking for seems to have gone on a volunteer
-            mission. Let's help you find your way back!
+            The page you're looking for seems to have gone on a volunteer mission. Let's help you find your way back!
           </p>
         </div>
 

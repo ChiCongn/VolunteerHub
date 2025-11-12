@@ -1,19 +1,14 @@
-import { useState } from "react";
-import { ProfileCard } from "../components/ProfileCard";
-import type { User } from "../lib/mockData";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Switch } from "../components/ui/switch";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import { Separator } from "../components/ui/separator";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { ProfileCard } from '../components/ProfileCard';
+import type { User } from '../lib/mockData';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { Switch } from '../components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Separator } from '../components/ui/separator';
+import { toast } from 'sonner';
 
 interface ProfileProps {
   user: User;
@@ -22,48 +17,50 @@ interface ProfileProps {
 
 export function Profile({ user, onUpdateProfile }: ProfileProps) {
   const [name, setName] = useState(user.name);
-  const [bio, setBio] = useState(user.bio || "");
+  const [bio, setBio] = useState(user.bio || '');
   const [email, setEmail] = useState(user.email);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [eventReminders, setEventReminders] = useState(true);
 
   const handleUpdateProfile = () => {
     onUpdateProfile({ name, bio, email });
-    toast.success("Profile updated successfully!");
+    toast.success('Profile updated successfully!');
   };
 
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error('Passwords do not match');
       return;
     }
     if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error('Password must be at least 6 characters');
       return;
     }
-    toast.success("Password changed successfully!");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
+    toast.success('Password changed successfully!');
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1>Profile & Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account and preferences
-        </p>
+        <p className="text-muted-foreground">Manage your account and preferences</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <ProfileCard user={user} eventsAttended={12} hoursVolunteered={48} />
+          <ProfileCard
+            user={user}
+            eventsAttended={12}
+            hoursVolunteered={48}
+          />
         </div>
 
         <div className="lg:col-span-2">
@@ -168,9 +165,7 @@ export function Profile({ user, onUpdateProfile }: ProfileProps) {
                   <Button
                     onClick={handleChangePassword}
                     className="bg-[#43A047] hover:bg-[#388E3C]"
-                    disabled={
-                      !currentPassword || !newPassword || !confirmPassword
-                    }
+                    disabled={!currentPassword || !newPassword || !confirmPassword}
                   >
                     Update Password
                   </Button>
@@ -236,7 +231,7 @@ export function Profile({ user, onUpdateProfile }: ProfileProps) {
 
                 <div className="flex justify-end">
                   <Button
-                    onClick={() => toast.success("Preferences saved!")}
+                    onClick={() => toast.success('Preferences saved!')}
                     className="bg-[#43A047] hover:bg-[#388E3C]"
                   >
                     Save Preferences
