@@ -6,7 +6,7 @@ export interface CreatePostProps {
     authorId: string,
     content: string,
     imageUrl: string,
-    updatedAt: Date,
+    createdAt: Date,
 }
 
 export interface UpdatePostProps {
