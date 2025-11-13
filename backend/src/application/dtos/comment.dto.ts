@@ -14,5 +14,5 @@ export interface CommentView {
     id: string;
     author: PublicUserProfile;
     content: string;
-    updatedAt: Date;
+    createdAt: Date;
 }
