@@ -26,12 +26,11 @@ const prisma = new PrismaClient();
 const userRepo = new UserRepository(prisma);
 const repo = new EventRepository(prisma, userRepo);
 
-beforeAll(() => {
-    restoreSnapshot();
-})
-
-beforeEach(() => {
-    restoreSnapshot();
+beforeAll(async () => {
+    await restoreSnapshot();
+});
+beforeEach(async () => {
+    await restoreSnapshot();
 });
 
 afterAll(async () => {
@@ -171,7 +170,7 @@ describe('IEventRepository Implementation', () => {
     describe('searchEvent', () => {
         it('should search events with filters', async () => {
             const event1 = await createEvent({ name: 'Health Fair', location: 'Community Center', capacity: 50 });
-            await repo.approveEvent(event1.id); 
+            await repo.approveEvent(event1.id);
             const event2 = await createEvent({ name: 'Tech Workshop', location: 'Library', capacity: 30 });
             await repo.approveEvent(event2.id);
             const event3 = await createEvent({ name: 'Health Seminar', location: 'Hospital', capacity: 70 });
@@ -365,7 +364,7 @@ describe('IEventRepository Implementation', () => {
     // 16: count
     describe('count', () => {
         it('should count events with filters', async () => {
-            await createEvent({ name: 'Count Event 1', location: 'Location A', capacity: 50 }); 
+            await createEvent({ name: 'Count Event 1', location: 'Location A', capacity: 50 });
             await createEvent({ name: 'Count Event 2', location: 'Location B', capacity: 30 });
             await createEvent({ name: 'Other Event', location: 'Location C', capacity: 70 });
 

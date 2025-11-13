@@ -92,8 +92,7 @@ export class CommentRepository implements ICommentRepository {
 
         const items: CommentView[] = [];
         for (const prismaComment of prismaComments) {
-            const domainComment = this.toDomain(prismaComment);
-            const commentView = await this.toView(domainComment);
+            const commentView = await this.toView(prismaComment);
             items.push(commentView);
         }
         return { items, total, page, limit };
@@ -140,14 +139,14 @@ export class CommentRepository implements ICommentRepository {
         return comment;
     }
 
-    private async toView(comment: Comment): Promise<CommentView> {
+    private async toView(comment: PrismaComment): Promise<CommentView> {
         logger.debug(`Mapping to CommentView: ${JSON.stringify(comment)}`);
-        const author = await this.userRepository.fetchPublicProfile(comment.authorId);
+        const author = await this.userRepository.fetchPublicProfile(comment.author_id);
         return {
             id: comment.id,
             author: author,
             content: comment.content,
-            createdAt: comment.createdAt,
+            createdAt: comment.created_at,
         };
 
     }
