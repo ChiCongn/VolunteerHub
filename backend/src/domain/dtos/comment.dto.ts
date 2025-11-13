@@ -3,7 +3,7 @@ export interface CreateCommentProps {
     postId: string,
     authorId: string,
     content: string,
-    updatedAt: Date;
+    createdAt: Date;
 }
 
 export interface UpdateCommentProps {

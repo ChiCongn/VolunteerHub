@@ -13,8 +13,7 @@ export interface ICommentRepository {
     create(comment: CreateCommentDto): Promise<Comment>;
     findById(id: string): Promise<Comment | null>;
     update(id: string, changes: UpdateCommentDto): Promise<Comment>;
-    softDelete(id: string): Promise<void>;
-    restore(id: string): Promise<void>;
+    delete(id: string): Promise<void>;
 
     // Public view
     findByPostId(
