@@ -1,4 +1,3 @@
-// backend/src/domain/repositories/stats.repository.ts
 import {
     OverviewStatsDto,
     EventsStatsDto,
@@ -8,7 +7,7 @@ import {
     TimeSeriesDto,
 } from "../../application/dtos/stats";
 
-export interface StatsRepository {
+export interface IStatsRepository {
     /** Global dashboard numbers */
     getOverviewStats(): Promise<OverviewStatsDto>;
 
