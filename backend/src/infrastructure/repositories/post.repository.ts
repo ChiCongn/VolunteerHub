@@ -1,48 +1,75 @@
-import { IPostRepository } from '../../domain/repositories/post.irepository';
-import { PrismaClient, posts as PrismaPost } from '../prisma/generated/client';
-import { Post } from '../../domain/entities/post.entity';
-import {
-    CreatePostDto,
-    UpdatePostDto,
-    PostView
-} from '../../application/dtos/post.dto';
+import { IPostRepository } from "../../domain/repositories/post.irepository";
+import { PrismaClient, posts as PrismaPost } from "../prisma/generated/client";
+import { Post } from "../../domain/entities/post.entity";
+import { CreatePostDto, UpdatePostDto, PostView } from "../../application/dtos/post.dto";
 import {
     PostNotFoundError,
     NotPostAuthorError,
     PostInUnapprovedEventError,
-    ReactionAlreadyExistsError
-} from '../../domain/errors/post.error';
-import { Pagination } from '../../application/dtos/pagination.dto';
-import { SortOption } from '../../application/dtos/sort-option.dto';
-import { ListResult } from '../../application/dtos/list-result.dto';
-import logger from '../../logger';
-import { EventStatus, UserStatus } from '../../domain/entities/enums';
-import { EventRepository } from './event.repository';
-import { UserRepository } from './user.repository';
+    ReactionAlreadyExistsError,
+} from "../../domain/errors/post.error";
+import { Pagination } from "../../application/dtos/pagination.dto";
+import { SortOption } from "../../application/dtos/sort-option.dto";
+import { ListResult } from "../../application/dtos/list-result.dto";
+import logger from "../../logger";
+import { EventStatus, UserStatus } from "../../domain/entities/enums";
+import { EventRepository } from "./event.repository";
+import { UserRepository } from "./user.repository";
 
 export class PostRepository implements IPostRepository {
     constructor(
         private readonly prisma: PrismaClient,
         private readonly eventRepo: EventRepository,
         private readonly userRepo: UserRepository
-    ) { }
+    ) {}
 
     // Core CRUD
     async create(post: CreatePostDto): Promise<Post> {
+        logger.debug(
+            {
+                authorId: post.authorId,
+                eventId: post.eventId,
+                action: "create post",
+            },
+            "[PostRepository] Creating new post on event"
+        );
+
         const postId = await this.insert(post);
         return this.findById(postId);
     }
     async findById(id: string): Promise<Post> {
-        logger.info(`Finding post by id: ${id}`);
+        logger.debug(
+            {
+                postId: id,
+                action: "find post by id",
+            },
+            "[PostRepository] Finding post by id"
+        );
+
         const postPrisma = await this.prisma.posts.findUnique({ where: { id } });
         if (!postPrisma) {
-            logger.warn(`Post with id ${id} not found`);
+            logger.warn(
+                {
+                    postId: id,
+                    action: "find post by id",
+                },
+                "[PostRepository] Post not found"
+            );
+
             throw new PostNotFoundError(id);
         }
         return await this.toDomain(postPrisma);
     }
     async update(id: string, changes: UpdatePostDto): Promise<Post> {
-        logger.info(`Updating post with id: ${id}`);
+        logger.debug(
+            {
+                postId: id,
+                changes,
+                action: "update post",
+            },
+            "[PostRepository] Updating post"
+        );
+
         await this.checkExistence(id);
         await this.prisma.posts.update({
             where: { id },
@@ -51,27 +78,33 @@ export class PostRepository implements IPostRepository {
                 ...(changes.imageUrl && { image_url: changes.imageUrl }),
             },
         });
-        logger.debug(`Post with id ${id} updated successfully`);
         return this.findById(id);
     }
     async softDelete(id: string): Promise<void> {
-        logger.info(`Soft deleting post with id: ${id}`);
+        logger.debug(
+            {
+                postId: id,
+                action: "soft delete post",
+            },
+            "[PostRepository] Soft deleting post"
+        );
         await this.checkExistence(id);
         await this.prisma.posts.update({
             where: { id },
             data: { deleted_at: new Date() },
         });
-        logger.debug(`Post with id ${id} soft deleted`);
     }
 
     async restore(id: string): Promise<void> {
-        logger.info(`Restoring post with id: ${id}`);
+        logger.debug(
+            { postId: id, action: "restore post" },
+            "[PostRepository] Restoring soft-deleted post"
+        );
         await this.checkExistence(id);
         await this.prisma.posts.update({
             where: { id },
             data: { deleted_at: null },
         });
-        logger.debug(`Post with id ${id} restored`);
     }
 
     // Public view
@@ -80,14 +113,14 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
-        logger.info(`Finding posts by eventId: ${eventId}`);
+        logger.debug(
+            { eventId, pagination, sort, action: "list posts by event" },
+            "[PostRepository] Finding posts by eventId"
+        );
         await this.eventRepo.checkExistedAndApprovedEvent(eventId);
 
         // Order clause
-        const sortableFields = new Set([
-            "created_at",
-            "author_id",
-        ]);
+        const sortableFields = new Set(["created_at", "author_id"]);
         let orderBy: string;
 
         if (sort && sortableFields.has(sort.field)) {
@@ -137,8 +170,7 @@ export class PostRepository implements IPostRepository {
             });
         }
 
-        logger.debug(`Found ${items.length} posts for eventId: ${eventId}`);
-        return {items, total, page, limit};
+        return { items, total, page, limit };
     }
 
     async findByAuthor(
@@ -146,17 +178,19 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
-        logger.info(`Finding posts by authorId: ${authorId}`);
+        logger.debug(
+            { authorId, pagination, sort, action: "list posts by author" },
+            "[PostRepository] Finding posts by authorId"
+        );
         const user = await this.userRepo.findById(authorId);
         if (!user || user.status === UserStatus.Deleted || user.status === UserStatus.Pending) {
             logger.warn(`Author with id ${authorId} is not found or deactivated`);
-            throw new PostNotFoundError(`Author with id ${authorId} is is not existed or deactivated`);
+            throw new PostNotFoundError(
+                `Author with id ${authorId} is is not existed or deactivated`
+            );
         }
         // Order clause
-        const sortableFields = new Set([
-            "created_at",
-            "event_id",
-        ]);
+        const sortableFields = new Set(["created_at", "event_id"]);
         let orderBy: string;
 
         if (sort && sortableFields.has(sort.field)) {
@@ -206,9 +240,7 @@ export class PostRepository implements IPostRepository {
             });
         }
 
-        logger.debug(`Found ${items.length} posts by authorId: ${authorId}`);
-        return {items, total, page, limit}; 
-
+        return { items, total, page, limit };
     }
 
     // Search by keyword
@@ -218,14 +250,14 @@ export class PostRepository implements IPostRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
-        logger.info(`Searching posts by eventId: ${eventId} with keyword: ${keyword}`);
+        logger.debug(
+            { eventId, keyword, pagination, sort, action: "search posts" },
+            "[PostRepository] Searching posts by keyword"
+        );
         await this.eventRepo.checkExistedAndApprovedEvent(eventId);
 
         // Order clause
-        const sortableFields = new Set([
-            "created_at",
-            "author_id",
-        ]);
+        const sortableFields = new Set(["created_at", "author_id"]);
         let orderBy: string;
 
         if (sort && sortableFields.has(sort.field)) {
@@ -282,13 +314,15 @@ export class PostRepository implements IPostRepository {
             });
         }
 
-        logger.debug(`Search found ${items.length} posts for eventId ${eventId} with keyword "${keyword}"`);
-        return {items, total, page, limit};
+        return { items, total, page, limit };
     }
 
     // Stats
     async countByEventId(eventId: string): Promise<number> {
-        logger.info(`Counting posts for eventId: ${eventId}`);
+        logger.debug(
+            { eventId, action: "count posts by event" },
+            "[PostRepository] Counting posts by eventId"
+        );
         return this.prisma.posts.count({
             where: {
                 event_id: eventId,
@@ -297,7 +331,10 @@ export class PostRepository implements IPostRepository {
         });
     }
     async countByUserId(userId: string): Promise<number> {
-        logger.info(`Counting posts for userId: ${userId}`);
+        logger.debug(
+            { userId, action: "count posts by user id" },
+            "[PostRepository] Counting posts by userId"
+        );
         return this.prisma.posts.count({
             where: {
                 author_id: userId,
@@ -307,7 +344,10 @@ export class PostRepository implements IPostRepository {
     }
 
     private async insert(post: CreatePostDto): Promise<string> {
-        logger.info(`Inserting new post for event ${post.eventId} by author ${post.authorId}`);
+        logger.trace(
+            { eventId: post.eventId, authorId: post.authorId, action: "insert post" },
+            "[PostRepository] Inserting new post into DB"
+        );
         await this.checkEventApproval(post.eventId);
         const postPrisma = await this.prisma.posts.create({
             data: {
@@ -316,54 +356,85 @@ export class PostRepository implements IPostRepository {
                 content: post.content,
                 image_url: post.imageUrl,
             },
-            select: { id: true }
+            select: { id: true },
         });
         return postPrisma.id;
     }
 
     async checkExistence(id: string): Promise<void> {
-        logger.info(`Checking existence of post with id ${id}`);
+        logger.debug(
+            { postId: id, action: "check post existence" },
+            "[PostRepository] Checking post existence"
+        );
         const post = await this.prisma.posts.findUnique({ where: { id } });
         if (!post) {
-            logger.warn(`Post with id ${id} not found`);
+            logger.warn(
+                { postId: id, action: "check post existence" },
+                "[PostRepository] Post does not exist"
+            );
             throw new PostNotFoundError(id);
         }
     }
 
-    private async checkAuthor(postId: string, userId: string): Promise<void> {
-        logger.info(`Checking if user ${userId} is author of post ${postId}`);
+    async checkAuthor(postId: string, userId: string): Promise<void> {
+        logger.debug(
+            { postId, userId, action: "verify post author" },
+            "[PostRepository] Verifying post authorship"
+        );
         const post = await this.prisma.posts.findUnique({ where: { id: postId } });
         if (post?.author_id !== userId) {
-            logger.warn(`User ${userId} is not author of post ${postId}`);
+            logger.warn(
+                { postId, userId, actualAuthor: post?.author_id, action: "verify post author" },
+                "[PostRepository] User is not post author"
+            );
             throw new NotPostAuthorError(postId, userId);
         }
     }
 
-    private async checkEventApproval(eventId: string): Promise<void> {
-        logger.info(`Checking if event ${eventId} is approved`);
+    async checkEventApproval(eventId: string): Promise<void> {
+        logger.info(
+            { eventId, action: "check event approval" },
+            "[PostRepository] Checking event approval status"
+        );
         const event = await this.prisma.events.findUnique({ where: { id: eventId } });
-        if (!event || event.status === EventStatus.Pending || event.status === EventStatus.Rejected) {
-            logger.warn(`Event ${eventId} is not approved`);
+        if (
+            !event ||
+            event.status === EventStatus.Pending ||
+            event.status === EventStatus.Rejected
+        ) {
+            logger.warn(
+                { eventId, status: event?.status, action: "check event approval" },
+                "[PostRepository] Event not approved"
+            );
             throw new PostInUnapprovedEventError(eventId);
         }
     }
 
-    private async checkReactionExists(postId: string, userId: string): Promise<void> {
-        logger.info(`Checking if user ${userId} has already reacted to post ${postId}`);
+    async checkReactionExists(postId: string, userId: string): Promise<void> {
+        logger.debug(
+            { postId, userId, action: "check reaction exists" },
+            "[PostRepository] Checking existing reaction"
+        );
         const reaction = await this.prisma.reactions.findFirst({
             where: {
                 post_id: postId,
-                user_id: userId
-            }
+                user_id: userId,
+            },
         });
         if (reaction) {
-            logger.warn(`User ${userId} has already reacted to post ${postId}`);
+            logger.warn(
+                { postId, userId, action: "check reaction exists" },
+                "[PostRepository] Reaction already exists"
+            );
             throw new ReactionAlreadyExistsError(postId, userId);
         }
     }
 
     private toDomain(postPrisma: PrismaPost): Post {
-        logger.info(`Mapping Prisma post to domain post for post id ${postPrisma.id}`);
+        logger.debug(
+            { postId: postPrisma.id, action: "map to domain" },
+            "[PostRepository] Mapping Prisma → Domain"
+        );
         return new Post({
             id: postPrisma.id,
             eventId: postPrisma.event_id,

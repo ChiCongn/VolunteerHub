@@ -21,10 +21,10 @@ function dateRange(days: number) {
 }
 
 export class StatsRepository implements IStatsRepository {
-
-    constructor(private readonly prisma: PrismaClient) { }
+    constructor(private readonly prisma: PrismaClient) {}
 
     async getOverviewStats(): Promise<OverviewStatsDto> {
+        logger.debug("[StatsRepository] get overview of app");
         const today = dateRange(1);
         const week = dateRange(7);
 
@@ -57,6 +57,21 @@ export class StatsRepository implements IStatsRepository {
             (SELECT COUNT(*) FROM registrations WHERE created_at >= ${week.start}) AS regs_week
         `;
 
+        logger.debug(
+            {
+                totalUsers: row.total_users.toString(),
+                activeUsers: row.active_users.toString(),
+                newUsersToday: row.new_users_today.toString(),
+                totalEvents: row.total_events.toString(),
+                activeEvents: row.active_events.toString(),
+                upcomingEvents: row.upcoming_events.toString(),
+                totalRegistrations: row.total_regs.toString(),
+                regsToday: row.regs_today.toString(),
+                regsWeek: row.regs_week.toString(),
+            },
+            "[StatsRepository] getOverviewStats result"
+        );
+
         return {
             users: {
                 total: Number(row.total_users),
@@ -77,6 +92,12 @@ export class StatsRepository implements IStatsRepository {
     }
 
     async getEventsStats(): Promise<EventsStatsDto> {
+        logger.debug(
+            {
+                action: "getEventsStats",
+            },
+            "[StatsRepository] get overview of all events"
+        );
         const [row] = await this.prisma.$queryRaw<
             Array<{
                 total_events: bigint;
@@ -130,12 +151,28 @@ export class StatsRepository implements IStatsRepository {
         daysCurrent: number,
         daysPrevious: number
     ): Promise<EventStatsDto> {
+        logger.debug(
+            {
+                eventId: eventId,
+                currentDay: daysCurrent,
+                previousDay: daysPrevious,
+                action: "getEventStats",
+            },
+            "[StatsRepository] Geting stats for event"
+        );
+
         const event = await this.prisma.events.findUnique({
             where: { id: eventId },
             select: { id: true, name: true },
         });
         if (!event) {
-            logger.warn(`Event with id: ${eventId} not found`);
+            logger.warn(
+                {
+                    eventId: eventId,
+                    action: "getEventStats",
+                },
+                "[StatsRepository] Event not found"
+            );
             throw new EventNotFoundError(eventId);
         }
 
@@ -211,6 +248,13 @@ export class StatsRepository implements IStatsRepository {
     }
 
     async getTrendingEvents(days: number, limit = 10): Promise<TrendingEventDto[]> {
+        logger.debug(
+            {
+                action: "getTrendingEvents",
+            },
+            "[StatsRepository] Getting tredning events"
+        );
+
         const { start, end } = dateRange(days);
 
         const rows = await this.prisma.$queryRaw<
@@ -269,8 +313,14 @@ export class StatsRepository implements IStatsRepository {
         });
     }
 
-
     async getVolunteerStats(): Promise<VolunteerStatsDto> {
+        logger.debug(
+            {
+                action: "getVolunteerStats",
+            },
+            "[StatsRepository] Getting volunteer stats"
+        );
+
         const today = dateRange(1);
         const week = dateRange(7);
 
@@ -315,8 +365,6 @@ export class StatsRepository implements IStatsRepository {
         };
     }
 
-
-
     async getTimeSeries(
         metric: "users" | "registrations" | "posts",
         days: number
@@ -326,24 +374,23 @@ export class StatsRepository implements IStatsRepository {
         end.setUTCHours(0, 0, 0, 0);
 
         // Build raw daily counts
-        const raw = await this.prisma.$queryRaw<
-            { date: string; value: number }[]
-        >`
+        const raw = await this.prisma.$queryRaw<{ date: string; value: number }[]>`
         SELECT
             date_trunc('day', "createdAt")::date AS date,
             COUNT(*)::int AS value
         FROM
-            ${metric === "users"
-                ? this.prisma.users
-                : metric === "registrations"
-                    ? this.prisma.registrations
-                    : this.prisma.posts}
+            ${
+                metric === "users"
+                    ? this.prisma.users
+                    : metric === "registrations"
+                      ? this.prisma.registrations
+                      : this.prisma.posts
+            }
         WHERE
             "createdAt" >= ${start}
         GROUP BY date_trunc('day', "createdAt")
         ORDER BY date
         `;
-
 
         const filled: TimeSeriesPoint[] = [];
         const cur = new Date(start);
@@ -359,8 +406,8 @@ export class StatsRepository implements IStatsRepository {
                 metric === "users"
                     ? "New Users"
                     : metric === "registrations"
-                        ? "Registrations"
-                        : "Posts",
+                      ? "Registrations"
+                      : "Posts",
             data: filled,
         };
     }

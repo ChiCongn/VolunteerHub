@@ -6,36 +6,38 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 import logger from "../../logger";
 import {
     CreateNotificationDto,
-    NotificationFilterDto
+    NotificationFilterDto,
 } from "../../application/dtos/notification.dto";
 import { Notification } from "../../domain/entities/notification.entity";
-import {
-    NotificationNotFoundError,
-    CannotMarkOthersNotificationError
-} from "../../domain/errors/notification.error";
+import { NotificationNotFoundError } from "../../domain/errors/notification.error";
 import { UserNotFoundError } from "../../domain/errors/user.error";
-import { asyncWrapProviders } from "node:async_hooks";
 
 export class NotificationRepository implements INotificationRepository {
-    constructor(
-        private readonly prisma: PrismaClient,
-    ) { }
+    constructor(private readonly prisma: PrismaClient) {}
 
     async create(data: CreateNotificationDto): Promise<Notification> {
-        logger.info(`Creating notification for user=${data.userId}`);
+        logger.debug(
+            { userId: data.userId, action: "create notification" },
+            "[NotificationRepository] Creating notification for user"
+        );
         const notifId = await this.insert(data);
         return this.findById(notifId);
     }
 
     async findById(id: string): Promise<Notification> {
-        logger.info(`Fetching notification id=${id}`);
-
+        logger.debug(
+            { notificationId: id, action: "find notification by id" },
+            "[NotificationRepository] Fetching notification by id"
+        );
         const notification = await this.prisma.notifications.findUnique({
             where: { id },
         });
 
         if (!notification) {
-            logger.warn(`Notification not found: ${id}`);
+            logger.warn(
+                { notificationId: id, action: "find notification by id" },
+                "[NotificationRepository] Notification not found"
+            );
             throw new NotificationNotFoundError(id);
         }
 
@@ -48,8 +50,10 @@ export class NotificationRepository implements INotificationRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<Notification>> {
-        logger.info(`Fetching notifications for user=${userId}`);
-
+        logger.debug(
+            { userId, filters, pagination, sort, action: "list notifications" },
+            "[NotificationRepository] Fetching notifications for user"
+        );
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -73,10 +77,7 @@ export class NotificationRepository implements INotificationRepository {
         logger.debug(`Where clause: ${whereClause}`);
 
         // Order clause
-        const sortableFields = new Set([
-            "type",
-            "created_at"
-        ]);
+        const sortableFields = new Set(["type", "created_at"]);
         let orderBy: string;
 
         if (sort && sortableFields.has(sort.field)) {
@@ -95,8 +96,8 @@ export class NotificationRepository implements INotificationRepository {
         // Total count
         const total = await this.count(userId, filters);
 
-        const prismaNotifications = await this.prisma.$queryRawUnsafe<PrismaNotification[]>
-            (`
+        const prismaNotifications = await this.prisma.$queryRawUnsafe<PrismaNotification[]>(
+            `
             SELECT id, user_id, message, type, redirect_url, created_at
             FROM notifications
             ${whereClause}
@@ -114,6 +115,10 @@ export class NotificationRepository implements INotificationRepository {
     }
 
     async count(userId: string, filters?: NotificationFilterDto) {
+        logger.debug(
+            { userId, filters, action: "count notifications" },
+            "[NotificationRepository] Counting notifications for user"
+        );
         const conditions: string[] = [];
         const params: any[] = [];
         let idx = 1;
@@ -143,22 +148,30 @@ export class NotificationRepository implements INotificationRepository {
             ...params
         );
         const total = Number(result.count);
-        logger.debug(`Count result: ${total}`);
         return total;
     }
 
     async countByUserId(userId: string): Promise<number> {
-        logger.debug(`Counting notifications for user=${userId}`);
+        logger.debug(
+            { userId, action: "count unread notifications" },
+            "[NotificationRepository] Counting total notifications for user"
+        );
         return this.prisma.notifications.count({
             where: { user_id: userId },
         });
     }
 
     async markAsRead(id: string): Promise<void> {
-        logger.debug(`Marking notification as read id=${id}`);
-        const noti = await this.prisma.notifications.findUnique({where: {id}});
+        logger.debug(
+            { notificationId: id, action: "mark as read" },
+            "[NotificationRepository] Marking notification as read"
+        );
+        const noti = await this.prisma.notifications.findUnique({ where: { id } });
         if (!noti) {
-            logger.warn(`Notification with id: ${id} not found`);
+            logger.warn(
+                { notificationId: id, action: "mark as read" },
+                "[NotificationRepository] Notification not found"
+            );
             throw new NotificationNotFoundError(id);
         }
         await this.prisma.notifications.update({
@@ -168,10 +181,16 @@ export class NotificationRepository implements INotificationRepository {
     }
 
     async markAllAsRead(userId: string): Promise<void> {
-        logger.debug(`Marking all notifications as read for user=${userId}`);
+        logger.debug(
+            { userId, action: "mark all as read" },
+            "[NotificationRepository] Marking all notifications as read"
+        );
         const user = await this.prisma.users.findUnique({ where: { id: userId } });
         if (!user) {
-            logger.warn(`User with id: ${userId} not found`);
+            logger.warn(
+                { userId, action: "mark all as read" },
+                "[NotificationRepository] User not found"
+            );
             throw new UserNotFoundError(userId);
         }
         await this.prisma.notifications.updateMany({
@@ -181,10 +200,16 @@ export class NotificationRepository implements INotificationRepository {
     }
 
     private async insert(data: CreateNotificationDto): Promise<string> {
-        logger.debug(`Insert notification of user: ${data.userId} into database`);
+        logger.trace(
+            { userId: data.userId, type: data.type, action: "insert notification" },
+            "[NotificationRepository] Inserting notification into database"
+        );
         const user = await this.prisma.users.findUnique({ where: { id: data.userId } });
         if (!user) {
-            logger.warn(`User with id: ${data.userId} not found`);
+            logger.warn(
+                { userId: data.userId, action: "insert notification" },
+                "[NotificationRepository] User not found"
+            );
             throw new UserNotFoundError(data.userId);
         }
         const notification = await this.prisma.notifications.create({
@@ -192,15 +217,17 @@ export class NotificationRepository implements INotificationRepository {
                 user_id: data.userId,
                 message: data.message,
                 type: data.type,
-                redirect_url: data.redirectUrl ?? ""
-            }
+                redirect_url: data.redirectUrl ?? "",
+            },
         });
         return notification.id;
     }
 
     private toDomain(p: PrismaNotification): Notification {
-        logger.debug(`Mapping Prisma notification -> domain Notification: ${p.id}`);
-
+        logger.debug(
+            { notificationId: p.id, action: "map to domain" },
+            "[NotificationRepository] Mapping Prisma → Domain Notification"
+        );
         return new Notification({
             id: p.id,
             userId: p.user_id,
