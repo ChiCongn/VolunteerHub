@@ -1,8 +1,8 @@
-import { NotificationCard } from './NotificationCard';
-import type { Notification } from '../lib/mockData';
-import { Button } from './ui/button';
-import { X } from 'lucide-react';
-import { ScrollArea } from './ui/scroll-area';
+import { NotificationCard } from "./NotificationCard";
+import type { Notification } from "../lib/mockData";
+import { Button } from "./ui/button";
+import { X } from "lucide-react";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface NotificationsPanelProps {
   notifications: Notification[];
@@ -21,17 +21,16 @@ export function NotificationsPanel({
 
   return (
     <div className="fixed inset-0 z-50 md:relative md:inset-auto">
-      <div
-        className="fixed inset-0 bg-black/50 md:hidden"
-        onClick={onClose}
-      />
-      
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-background border-l border-border md:relative md:h-auto md:max-h-[600px] md:rounded-lg md:shadow-lg z-50">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="fixed inset-0 bg-black/50 md:hidden" onClick={onClose} />
+
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-background dark:bg-[#212121] border-l border-border md:relative md:h-auto md:max-h-[600px] md:rounded-xl md:border md:border-border/70 md:bg-card md:shadow-[0_40px_80px_-32px_rgba(15,23,42,0.55)] md:shadow-black/40 dark:md:bg-[#212121] z-50">
+        <div className="flex items-center justify-between p-4 border-b border-border/80">
           <div>
             <h2>Notifications</h2>
             {unreadCount > 0 && (
-              <p className="text-sm text-muted-foreground">{unreadCount} unread</p>
+              <p className="text-sm text-muted-foreground">
+                {unreadCount} unread
+              </p>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -64,7 +63,9 @@ export function NotificationsPanel({
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <p>No notifications yet</p>
-                <p className="text-sm mt-2">We'll notify you when something happens</p>
+                <p className="text-sm mt-2">
+                  We'll notify you when something happens
+                </p>
               </div>
             )}
           </div>

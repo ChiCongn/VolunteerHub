@@ -20,6 +20,7 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
   unreadNotifications: number;
   onNotificationsClick: () => void;
+  onLogout: () => void;
 }
 
 export function Header({
@@ -29,6 +30,7 @@ export function Header({
   onToggleSidebar,
   unreadNotifications,
   onNotificationsClick,
+  onLogout,
 }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -117,7 +119,7 @@ export function Header({
                 <DropdownMenuItem>Admin Dashboard</DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onLogout()}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

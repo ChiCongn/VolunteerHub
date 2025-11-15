@@ -13,22 +13,91 @@ import { Profile } from './screens/Profile';
 import { ErrorPage } from './screens/ErrorPage';
 import { Toaster } from './components/ui/sonner';
 import type { User } from './lib/mockData';
-import { mockUsers } from './lib/mockData';
-import { mockEvents } from './lib/mockData';
-import { mockNotifications } from './lib/mockData';
-import { getEventById } from './lib/mockData';
+import { mockEvents, mockNotifications, getEventById } from './lib/mockData';
 import { toast } from 'sonner';
 
+const API_BASE_URL = 'http://localhost:8000/api';
+
 function App() {
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState(
+    () => mockNotifications.map((notification) => ({ ...notification }))
+  );
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const mapApiUserToUser = (apiUser: any): User => {
+    const normalizedRole =
+      apiUser?.role === 'organizer'
+        ? 'manager'
+        : apiUser?.role === 'volunteer' || apiUser?.role === 'manager' || apiUser?.role === 'admin'
+          ? apiUser.role
+          : 'volunteer';
+
+    return {
+      id: apiUser?.id ?? '',
+      name: apiUser?.name ?? 'User',
+      email: apiUser?.email ?? '',
+      role: normalizedRole,
+      avatar:
+        apiUser?.avatar ??
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(apiUser?.name ?? 'User')}`,
+      bio: apiUser?.bio ?? '',
+    };
+  };
+
+  useEffect(() => {
+    const bootstrapAuth = async () => {
+      if (typeof window === 'undefined') {
+        setIsBootstrapping(false);
+        return;
+      }
+
+      const storedToken = localStorage.getItem('authToken');
+      if (!storedToken) {
+        setIsBootstrapping(false);
+        return;
+      }
+
+      setAuthToken(storedToken);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Không thể tải thông tin người dùng');
+        }
+
+        const data = await response.json();
+        if (!data?.user) {
+          throw new Error('Không tìm thấy dữ liệu người dùng');
+        }
+
+        setCurrentUser(mapApiUserToUser(data.user));
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Failed to bootstrap auth', error);
+        localStorage.removeItem('authToken');
+        setAuthToken(null);
+        setIsAuthenticated(false);
+      } finally {
+        setIsBootstrapping(false);
+      }
+    };
+
+    bootstrapAuth();
+  }, []);
 
   useEffect(() => {
     if (darkMode) {
@@ -38,31 +107,110 @@ function App() {
     }
   }, [darkMode]);
 
-  const handleLogin = (email: string, password: string) => {
-    // Mock login - in real app, this would call an API
-    const user = mockUsers.find((u) => u.email === email);
-    if (user) {
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? 'Đăng nhập thất bại');
+      }
+
+      const user = mapApiUserToUser(data.user);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', data.token);
+      }
+      setAuthToken(data.token);
       setCurrentUser(user);
       setIsAuthenticated(true);
-      toast.success(`Welcome back, ${user.name}!`);
-    } else {
-      toast.error('Invalid credentials');
+      toast.success(`Chào mừng trở lại, ${user.name}!`);
+    } catch (error) {
+      console.error('Login failed', error);
+      toast.error(error instanceof Error ? error.message : 'Đăng nhập thất bại');
     }
   };
 
-  const handleRegister = (name: string, email: string, password: string, role: string) => {
-    // Mock registration
-    const newUser: User = {
-      id: (mockUsers.length + 1).toString(),
-      name,
-      email,
-      role: role as User['role'],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-      bio: '',
-    };
-    setCurrentUser(newUser);
-    setIsAuthenticated(true);
-    toast.success(`Welcome to VolunteerHub, ${name}!`);
+  const handleRegister = async (name: string, email: string, password: string, role: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message ?? 'Đăng ký thất bại');
+      }
+
+      const user = mapApiUserToUser(data.user);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', data.token);
+      }
+      setAuthToken(data.token);
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      toast.success(`Chào mừng đến với VolunteerHub, ${user.name}!`);
+    } catch (error) {
+      console.error('Register failed', error);
+      toast.error(error instanceof Error ? error.message : 'Đăng ký thất bại');
+    }
+  };
+
+  const handleLogout = async () => {
+    let errorMessage: string | null = null;
+
+    if (authToken) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok && response.status !== 401) {
+          const data = await response.json().catch(() => null);
+          errorMessage = data?.message ?? 'Đăng xuất thất bại từ máy chủ';
+        }
+      } catch (error) {
+        console.error('Logout failed', error);
+        errorMessage = error instanceof Error ? error.message : 'Đăng xuất thất bại từ máy chủ';
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+    }
+
+    setAuthToken(null);
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setCurrentView('dashboard');
+    setSelectedEventId(null);
+    setShowNotifications(false);
+    setNotifications(mockNotifications.map((notification) => ({ ...notification })));
+
+    if (errorMessage) {
+      toast.error(errorMessage);
+    } else {
+      toast.success('Đã đăng xuất');
+    }
   };
 
   const handleViewChange = (view: string) => {
@@ -93,12 +241,16 @@ function App() {
   };
 
   const handleNotificationsClick = () => {
-    if (currentView === 'notifications') {
-      setCurrentView('dashboard');
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+    if (isMobile) {
+      setCurrentView('notifications');
       setShowNotifications(false);
     } else {
-      setCurrentView('notifications');
-      setShowNotifications(true);
+      if (currentView === 'notifications') {
+        setCurrentView('dashboard');
+      }
+      setShowNotifications((prev) => !prev);
     }
   };
 
@@ -116,6 +268,14 @@ function App() {
   };
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
+
+  if (isBootstrapping) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="text-muted-foreground">Đang tải dữ liệu...</span>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !currentUser) {
     return (
@@ -145,6 +305,7 @@ function App() {
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         unreadNotifications={unreadNotifications}
         onNotificationsClick={handleNotificationsClick}
+        onLogout={handleLogout}
       />
 
       <div className="flex">
