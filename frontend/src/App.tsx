@@ -1,36 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { LoginRegister } from "./pages/LoginRegister";
+import { Dashboard } from "./pages/Dashboard";
+import { NotFound } from "./pages/NotFound";
+import { EventDetails } from "./pages/EventDetails";
+import { Profile } from "./pages/Profile";
+import { BrowserRouter, Routes, Route } from "react-router";
+import { Toaster } from "./components/ui/sonner";
+import { Participations } from "./pages/Participations";
+import { UserStats } from "./pages/admin/UsersStats";
+import { Overview } from "./pages/admin/Overview";
+import { EventsStats } from "./pages/admin/EventsStats";
 
 function App() {
-    const [count, setCount] = useState(0)
-
     return (
         <>
-            <div>
-                <a href="https://vite.dev" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo" />
-                </a>
-                <a href="https://react.dev" target="_blank">
-                    <img src={reactLogo} className="logo react" alt="React logo" />
-                </a>
-            </div>
-            <h1 className="text-3xl font-bold underline">    Hello world!  </h1>
-            <h1>Vite + React</h1>
-            <div className="card">
-                <button onClick={() => setCount((count) => count + 1)}>
-                    count is {count}
-                </button>
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
-            </div>
-            <p className="read-the-docs">
-                Click on the Vite and React logos to learn more
-            </p>
+            <Toaster position="top-right" />
+
+            <BrowserRouter>
+                <Routes>
+                    {/* public routes*/}
+                    <Route path="/login" element={<LoginRegister />} />
+
+                    {/* protected routes*/}
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/me" element={<Profile />} />
+                    <Route path="/participants" element={<Participations />} />
+                    <Route path="/event" element={<EventDetails />} />
+
+                    <Route path="/admin/overview" element={<Overview />} />
+                    <Route path="/admin/users" element={<UserStats />} />
+                    <Route path="/admin/events" element={<EventsStats />} />
+
+                    {/* error routes*/}
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </BrowserRouter>
         </>
-    )
+    );
 }
 
-export default App
+export default App;
