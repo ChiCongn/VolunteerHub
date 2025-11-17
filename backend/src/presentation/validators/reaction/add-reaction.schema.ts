@@ -3,7 +3,6 @@ import { EmojiType } from "../../../domain/entities/enums";
 import { PostIdSchema, UserIdSchema } from "../param/id.schema";
 
 export const AddReactionSchema = z.object({
-    userId: UserIdSchema,
     postId: PostIdSchema,
     emoji: z.nativeEnum(EmojiType, "reaction is required"),
 });

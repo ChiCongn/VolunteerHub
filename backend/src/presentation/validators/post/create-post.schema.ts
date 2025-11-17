@@ -2,7 +2,6 @@ import { z } from "zod";
 import { EventIdSchema, UserIdSchema } from "../param/id.schema";
 
 export const CreatePostSchema = z.object({
-    authorId: UserIdSchema,
     eventId: EventIdSchema,
     content: z
         .string()

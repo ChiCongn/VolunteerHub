@@ -3,7 +3,6 @@ import { PostIdSchema, UserIdSchema } from "../param/id.schema";
 
 export const CreateCommentSchema = z.object({
     postId: PostIdSchema,
-    authorId: UserIdSchema,
     content: z
         .string()
         .trim()
