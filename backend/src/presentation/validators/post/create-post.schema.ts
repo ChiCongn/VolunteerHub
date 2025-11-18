@@ -6,7 +6,6 @@ export const CreatePostSchema = {
         eventId: EventIdSchema,
     }),
     body: z.object({
-        eventId: EventIdSchema,
         content: z
             .string()
             .min(1, "Content is required")
