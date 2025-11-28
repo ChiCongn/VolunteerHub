@@ -141,6 +141,20 @@ model registrations {
   @@index([user_id], map: "idx_registrations_user")
 }
 
+model refresh_token {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+  revoked    Boolean  @default(false)
+
+  user       users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, revoked])
+}
+
+
 model users {
   id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username        String
