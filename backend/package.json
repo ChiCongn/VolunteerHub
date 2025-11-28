@@ -50,6 +50,7 @@
         "globals": "^16.4.0",
         "jiti": "^2.6.1",
         "prettier": "^3.6.2",
+        "prisma": "^6.19.0",
         "supertest": "^7.1.4",
         "ts-node": "^10.9.2",
         "ts-node-dev": "^2.0.0",

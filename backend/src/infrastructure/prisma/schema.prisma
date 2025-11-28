@@ -175,6 +175,7 @@ model users {
   posts           posts[]
   reactions       reactions[]
   registrations   registrations[]
+  refresh_token   refresh_token[]
 }
 
 enum emoji {
