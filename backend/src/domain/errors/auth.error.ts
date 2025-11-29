@@ -35,3 +35,33 @@ export class UnauthorizedError extends DomainError {
         super("UNAUTHORIZED", `Authentication required to ${action}`);
     }
 }
+
+export class LoginFailedError extends DomainError {
+    constructor() {
+        super("LOGIN_FAILED", "Login failed due to invalid credentials or account issues");
+    }
+}
+
+export class InvalidRefreshTokenError extends DomainError {
+    constructor() {
+        super("INVALID_REFRESH_TOKEN", "The provided refresh token is invalid or expired");
+    }
+}
+
+export class RefreshTokenNotFoundError extends DomainError {
+    constructor() {
+        super("REFRESH_TOKEN_NOT_FOUND", "Refresh token is invalid or does not exist");
+    }
+}
+
+export class RefreshTokenRevokedError extends DomainError {
+    constructor() {
+        super("REFRESH_TOKEN_REVOKED", "Refresh token has been revoked");
+    }
+}
+
+export class RefreshTokenExpiredError extends DomainError {
+    constructor() {
+        super("REFRESH_TOKEN_EXPIRED", "Refresh token has expired");
+    }
+}
