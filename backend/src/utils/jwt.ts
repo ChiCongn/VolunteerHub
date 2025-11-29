@@ -27,6 +27,7 @@ export interface AccessTokenPayload {
 export interface RefreshTokenPayload {
     sub: string;
     email: string;
+    role: UserRole;
 }
 
 const COMMON_SIGN_OPTIONS: SignOptions = {
@@ -54,7 +55,7 @@ export const signRefreshToken = (claims: RefreshTokenPayload): string => {
 
 export const verifyAccessToken = (token: string) => {
     try {
-        return jwt.verify(token, JWT_SECRET) as AccessTokenPayload & jwt.JwtPayload;
+        return jwt.verify(token, JWT_SECRET) as AccessTokenPayload;
     } catch (err) {
         throw new Error("Invalid or expired access token");
     }
@@ -62,7 +63,7 @@ export const verifyAccessToken = (token: string) => {
 
 export const verifyRefreshToken = (token: string) => {
     try {
-        return jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload & jwt.JwtPayload;
+        return jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
     } catch (err) {
         throw new Error("Invalid or expired refresh token");
     }
