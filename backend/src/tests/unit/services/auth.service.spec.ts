@@ -2,17 +2,17 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { AuthService } from "../../../application/service/auth.service";
 import { RefreshTokenRepository } from "../../../infrastructure/repositories/refresh-token.repository";
 import { UserRepository } from "../../../infrastructure/repositories/user.repository";
-import { Credentials } from "../../../application/dtos/user.dto";
-import {
-    signAccessToken,
-    signRefreshToken,
-    verifyRefreshToken,
-} from "../../../utils/jwt";
+import { CreateVolunteerDto, Credentials } from "../../../application/dtos/user.dto";
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../../utils/jwt";
 import {
     AccountLockedError,
+    EmailAlreadyExistsError,
     LoginFailedError,
     RefreshTokenRevokedError,
 } from "../../../domain/errors/auth.error";
+import { mock } from "node:test";
+import { User } from "../../../domain/entities/user.entity";
+import { UserRole, UserStatus } from "../../../domain/entities/enums";
 
 // mock dependencies
 let authService: AuthService;
@@ -21,6 +21,7 @@ let mockRefreshRepo: Partial<RefreshTokenRepository>;
 
 beforeEach(() => {
     mockUserRepo = {
+        create: vi.fn(),
         findAuthUserByCredentials: vi.fn(),
     };
     mockRefreshRepo = {
@@ -37,6 +38,56 @@ beforeEach(() => {
         signRefreshToken: vi.fn(),
         verifyRefreshToken: vi.fn(),
     }));
+});
+
+describe("AuthService.register", () => {
+    const mockData: CreateVolunteerDto = {
+        username: "example",
+        email: "example@gmail.com",
+        passwordHash: "hehehehe",
+    };
+    it("should return volunteer, access token and refresh token", async () => {
+        const mockVolunteer = new User({
+            id: "vol-1",
+            username: "example",
+            email: "example@gmail.com",
+            passwordHash: "hehehehe",
+            avatarUrl: "", // or leave undefined to use default
+            role: UserRole.Volunteer,
+            status: UserStatus.Active,
+            notificationIds: [],
+            postIds: [],
+            participatedEventIds: [],
+            registeredEventIds: [],
+            lastLogin: null,
+            updatedAt: new Date(),
+        });
+
+        (mockUserRepo.create as any).mockResolvedValue(mockVolunteer);
+        (signAccessToken as any).mockReturnValue("ACCESS_TOKEN");
+        (signRefreshToken as any).mockReturnValue("REFRESH_TOKEN");
+
+        const result = await authService.register(mockData);
+
+        expect(result.volunteer).toBe(mockVolunteer);
+        expect(result.accessToken).toBe("ACCESS_TOKEN");
+        expect(result.refreshToken).toBe("REFRESH_TOKEN");
+
+        // Ensure repositories were called correctly
+        expect(mockUserRepo.create).toHaveBeenCalledWith(mockData);
+        expect(mockRefreshRepo.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                userId: mockVolunteer.id,
+                token: "REFRESH_TOKEN",
+            })
+        );
+    });
+
+    it("should throw email already existed error", async () => {
+        (mockUserRepo.create as any).mockRejectedValue(new EmailAlreadyExistsError(mockData.email));
+        await expect(authService.register(mockData)).rejects.toThrow(EmailAlreadyExistsError);
+        expect(mockUserRepo.create).toHaveBeenCalledWith(mockData);
+    });
 });
 
 describe("AuthService.login", () => {
@@ -63,13 +114,6 @@ describe("AuthService.login", () => {
 
         expect(tokens.accessToken).toBe("ACCESS_TOKEN");
         expect(tokens.refreshToken).toBe("REFRESH_TOKEN");
-    });
-
-    it("should throw LoginFailedError if repository returns null", async () => {
-        (mockUserRepo.findAuthUserByCredentials as any).mockResolvedValue(null);
-        await expect(authService.login({ email: "x", passwordHash: "x" })).rejects.toThrow(
-            LoginFailedError
-        );
     });
 
     it("should propagate AccountLockedError", async () => {

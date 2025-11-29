@@ -1,7 +1,7 @@
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/jwt";
 import { RefreshTokenRepository } from "../../infrastructure/repositories/refresh-token.repository";
 import { UserRepository } from "../../infrastructure/repositories/user.repository";
-import { Credentials } from "../dtos/user.dto";
+import { CreateVolunteerDto, Credentials } from "../dtos/user.dto";
 import {
     AccountLockedError,
     AccountPendingError,
@@ -12,6 +12,7 @@ import {
 import { UserNotFoundError } from "../../domain/errors/user.error";
 import { hashPassword } from "../../utils/hash";
 import { JsonWebTokenError } from "jsonwebtoken";
+import { UserStatus } from "../../domain/entities/enums";
 
 export class AuthService {
     constructor(
@@ -19,48 +20,75 @@ export class AuthService {
         private readonly userRepo: UserRepository
     ) {}
 
+    async register(data: CreateVolunteerDto) {
+        const volunteer = await this.userRepo.create(data);
+        const accessToken = signAccessToken({
+            iss: "https://volunteerhub.com",
+            sub: volunteer.id,
+            email: volunteer.email,
+            role: volunteer.role,
+        });
+
+        const refreshToken = signRefreshToken({
+            sub: volunteer.id,
+            email: volunteer.email,
+            role: volunteer.role,
+        });
+
+        // default expires after 7 day, can change it (will replcae by .env)
+        const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+
+        // store refresh token
+        await this.refreshRepo.create({
+            userId: volunteer.id,
+            token: refreshToken,
+            expiresAt,
+        });
+
+        return { volunteer, accessToken, refreshToken };
+    }
+
     async login(credential: Credentials) {
-        try {
-            // stupid name variable, it must be password because dont want to create new dto :(
-            credential.passwordHash = await hashPassword(credential.passwordHash);
-            const authUser = await this.userRepo.findAuthUserByCredentials(credential);
+        // stupid name variable, it must be password because dont want to create new dto :(
+        credential.passwordHash = await hashPassword(credential.passwordHash);
+        const user = await this.userRepo.findAuthUserByCredentials(credential);
 
-            if (!authUser) {
-                throw new UserNotFoundError(credential.email);
-            }
-
-            const accessToken = signAccessToken({
-                iss: "https://volunteerhub.com",
-                sub: authUser.id,
-                email: authUser.email,
-                role: authUser.role,
-            });
-
-            const refreshToken = signRefreshToken({
-                sub: authUser.id,
-                email: authUser.email,
-            });
-
-            // default expires after 7 day, can change it (will replcae by .env)
-            const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
-
-            // store refresh token
-            await this.refreshRepo.create({
-                userId: authUser.id,
-                token: refreshToken,
-                expiresAt,
-            });
-
-            return { accessToken, refreshToken };
-        } catch (err) {
-            if (err instanceof AccountLockedError) {
-                throw err;
-            }
-            if (err instanceof AccountPendingError) {
-                throw err;
-            }
-            throw new LoginFailedError();
+        if (!user) {
+            throw new UserNotFoundError(credential.email);
         }
+
+        if (user.status === UserStatus.Locked) {
+            throw new AccountLockedError();
+        }
+
+        if (user.status === UserStatus.Pending) {
+            throw new AccountPendingError();
+        }
+
+        const accessToken = signAccessToken({
+            iss: "https://volunteerhub.com",
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        });
+
+        const refreshToken = signRefreshToken({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        });
+
+        // default expires after 7 day, can change it (will replcae by .env)
+        const expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+
+        // store refresh token
+        await this.refreshRepo.create({
+            userId: user.id,
+            token: refreshToken,
+            expiresAt,
+        });
+
+        return { accessToken, refreshToken };
     }
 
     async refresh(token: string) {
