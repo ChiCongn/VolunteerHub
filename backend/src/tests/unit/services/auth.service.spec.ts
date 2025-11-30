@@ -92,7 +92,7 @@ describe("AuthService.register", () => {
 
 describe("AuthService.login", () => {
     it("should return access and refresh tokens for valid credentials", async () => {
-        const credentials: Credentials = { email: "test@example.com", passwordHash: "password" };
+        const credentials: Credentials = { email: "test@example.com", password: "password" };
 
         const fakeUser = {
             id: "user-id",
@@ -109,7 +109,7 @@ describe("AuthService.login", () => {
 
         const tokens = await authService.login({
             email: credentials.email,
-            passwordHash: credentials.passwordHash,
+            password: credentials.password,
         });
 
         expect(tokens.accessToken).toBe("ACCESS_TOKEN");
@@ -120,7 +120,7 @@ describe("AuthService.login", () => {
         (mockUserRepo.findAuthUserByCredentials as any).mockImplementation(() => {
             throw new AccountLockedError();
         });
-        await expect(authService.login({ email: "x", passwordHash: "x" })).rejects.toThrow(
+        await expect(authService.login({ email: "x", password: "x" })).rejects.toThrow(
             AccountLockedError
         );
     });

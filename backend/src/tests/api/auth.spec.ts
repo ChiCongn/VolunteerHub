@@ -32,8 +32,8 @@ const mockVolunteer = new User({
 vi.mock("../../application/service/auth.service", () => {
     return {
         authService: {
-            login: vi.fn().mockImplementation(({ email, passwordHash }) => {
-                if (email === "a@b.com" && passwordHash === "123456") {
+            login: vi.fn().mockImplementation(({ email, password }) => {
+                if (email === "a@b.com" && password === "123456") {
                     return { accessToken: "fake-token", refreshToken: "fake-refresh-token" };
                 } else {
                     throw new InvalidCredentialsError();
