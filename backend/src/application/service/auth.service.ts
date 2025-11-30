@@ -11,8 +11,10 @@ import {
 } from "../../domain/errors/auth.error";
 import { UserNotFoundError } from "../../domain/errors/user.error";
 import { hashPassword } from "../../utils/hash";
-import { JsonWebTokenError } from "jsonwebtoken";
+//import { JsonWebTokenError } from "jsonwebtoken";
 import { UserStatus } from "../../domain/entities/enums";
+import { refreshRepo, userRepo } from "../../infrastructure/repositories";
+import logger from "../../logger";
 
 export class AuthService {
     constructor(
@@ -23,7 +25,6 @@ export class AuthService {
     async register(data: CreateVolunteerDto) {
         const volunteer = await this.userRepo.create(data);
         const accessToken = signAccessToken({
-            iss: "https://volunteerhub.com",
             sub: volunteer.id,
             email: volunteer.email,
             role: volunteer.role,
@@ -49,8 +50,6 @@ export class AuthService {
     }
 
     async login(credential: Credentials) {
-        // stupid name variable, it must be password because dont want to create new dto :(
-        credential.passwordHash = await hashPassword(credential.passwordHash);
         const user = await this.userRepo.findAuthUserByCredentials(credential);
 
         if (!user) {
@@ -66,7 +65,6 @@ export class AuthService {
         }
 
         const accessToken = signAccessToken({
-            iss: "https://volunteerhub.com",
             sub: user.id,
             email: user.email,
             role: user.role,
@@ -92,28 +90,25 @@ export class AuthService {
     }
 
     async refresh(token: string) {
-        try {
-            const payload = verifyRefreshToken(token);
-            const stored = await this.refreshRepo.findByToken(token);
+        logger.debug({ token, action: "refresh" }, "[AuthService] Refresh token request");
+        const payload = verifyRefreshToken(token);
+        const stored = await this.refreshRepo.findByToken(token);
 
-            if (!stored || stored.revoked) {
-                throw new RefreshTokenRevokedError();
-            }
-
-            const newAT = signAccessToken({
-                iss: "https://volunteerhub.com",
-                sub: payload.sub,
-                email: payload.email,
-                role: payload.role,
-            });
-
-            return { accessToken: newAT };
-        } catch (err) {
-            if (err instanceof JsonWebTokenError) {
-                throw new InvalidRefreshTokenError();
-            }
-            throw err;
+        if (!stored || stored.revoked) {
+            logger.warn(
+                { token, action: "refresh" },
+                "[AuthService] Refresh token revoked or not found"
+            );
+            throw new RefreshTokenRevokedError();
         }
+
+        const newAT = signAccessToken({
+            sub: payload.sub,
+            email: payload.email,
+            role: payload.role,
+        });
+
+        return { accessToken: newAT };
     }
 
     async logout(token: string) {
@@ -121,10 +116,13 @@ export class AuthService {
             verifyRefreshToken(token);
             await this.refreshRepo.revoke(token);
         } catch (err) {
-            if (err instanceof JsonWebTokenError) {
-                throw new InvalidRefreshTokenError();
-            }
+            // if (err instanceof JsonWebTokenError) {
+            //     throw new InvalidRefreshTokenError();
+            // }
             throw err;
         }
     }
 }
+
+console.log("export authService");
+export const authService = new AuthService(refreshRepo, userRepo);

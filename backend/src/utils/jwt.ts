@@ -2,6 +2,8 @@ import jwt, { SignOptions } from "jsonwebtoken";
 import "dotenv/config";
 import crypto from "crypto";
 import { UserRole } from "../domain/entities/enums";
+import logger from "../logger";
+import { InvalidRefreshTokenError, RefreshTokenExpiredError } from "../domain/errors/auth.error";
 
 // === Fail fast if secrets missing ===
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -36,6 +38,7 @@ const COMMON_SIGN_OPTIONS: SignOptions = {
 };
 
 export const signAccessToken = (claims: AccessTokenPayload) => {
+    logger.debug({ claims }, "[JWT] Signing access token");
     return jwt.sign(claims, JWT_SECRET, {
         ...COMMON_SIGN_OPTIONS,
         expiresIn: "15m", // ACCESS_TOKEN_EXPIRES_IN,
@@ -44,6 +47,7 @@ export const signAccessToken = (claims: AccessTokenPayload) => {
 };
 
 export const signRefreshToken = (claims: RefreshTokenPayload): string => {
+    logger.debug({ claims }, "[JWT] Signing refresh token");
     return jwt.sign(claims, JWT_SECRET, {
         ...COMMON_SIGN_OPTIONS,
         expiresIn: "7d", // REFRESH_TOKEN_EXPIRES_IN,
@@ -52,16 +56,22 @@ export const signRefreshToken = (claims: RefreshTokenPayload): string => {
 
 export const verifyAccessToken = (token: string) => {
     try {
-        return jwt.verify(token, JWT_SECRET) as AccessTokenPayload;
+        const payload = jwt.verify(token, JWT_SECRET) as AccessTokenPayload;
+        logger.debug({ payload }, "[JWT] Access token verified");
+        return payload;
     } catch (err) {
+        logger.error({ error: err, token }, "[JWT] Failed to verify access token");
         throw new Error("Invalid or expired access token");
     }
 };
 
 export const verifyRefreshToken = (token: string) => {
     try {
-        return jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
+        const payload = jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
+        logger.debug({ payload }, "[JWT] Refresh token verified");
+        return payload;
     } catch (err) {
-        throw new Error("Invalid or expired refresh token");
+        logger.error({ error: err, token }, "[JWT] Failed to verify refresh token");
+        throw new InvalidRefreshTokenError;
     }
 };
