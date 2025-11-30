@@ -8,7 +8,6 @@ import { User } from "../../domain/entities/user.entity";
 import { UserRole, UserStatus } from "../../domain/entities/enums";
 
 vi.spyOn(jwtUtils, "verifyAccessToken").mockReturnValue({
-    iss: "https://volunteerhub.com",
     sub: "user-id",
     email: "a@b.com",
     role: "volunteer",
