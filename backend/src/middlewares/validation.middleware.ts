@@ -34,7 +34,7 @@ export const validate = <P = {}, B = {}, Q = {}>(
         } catch (err) {
             if (err instanceof ZodError) {
                 return res.status(400).json({
-                    message: "Validation failed",
+                    message: "Bad Request",
                     errors: err.issues.map((e) => ({
                         path: e.path.join("."),
                         message: e.message,
