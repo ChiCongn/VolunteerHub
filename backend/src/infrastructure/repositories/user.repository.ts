@@ -23,6 +23,7 @@ import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 
 import logger from "../../logger";
+import bcrypt from "bcrypt";
 import "dotenv/config";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
@@ -41,23 +42,10 @@ export class UserRepository implements IUserRepository {
             "[UserRepository] Creating new volunteer user"
         );
 
-        try {
-            const userId = await this.insert(user);
-            const createdUser = await this.findById(userId);
+        const userId = await this.insert(user);
+        const createdUser = await this.findById(userId);
 
-            return createdUser;
-        } catch (err) {
-            logger.error(
-                {
-                    error: err instanceof Error ? err.message : err,
-                    email: user.email,
-                    action: "create",
-                },
-                "[UserRepository] Failed to create user"
-            );
-
-            throw err;
-        }
+        return createdUser;
     }
 
     async findById(id: string): Promise<User> {
@@ -156,16 +144,15 @@ export class UserRepository implements IUserRepository {
             "[UserRepository] Authenticating user credentials"
         );
 
-        const { email, passwordHash } = credentials;
+        const { email, password } = credentials;
         const user = await this.prisma.users.findUnique({ where: { email } });
-        if (!user || passwordHash !== user.password_hash) {
-            logger.warn(
-                {
-                    email: email,
-                },
-                "[UserRepository] Invalid credentials"
-            );
-
+        if (!user) {
+            throw new InvalidCredentialsError();
+        }
+        
+        const match = await bcrypt.compare(password, user.password_hash);
+        if (!match) {
+            logger.warn({ email }, "[UserRepository] Invalid credentials");
             throw new InvalidCredentialsError();
         }
 
