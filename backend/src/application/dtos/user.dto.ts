@@ -38,7 +38,7 @@ export interface AdminUserView {
 
 export interface Credentials {
     email: string;
-    passwordHash: string;
+    password: string;
 }
 
 export interface AuthUser {
