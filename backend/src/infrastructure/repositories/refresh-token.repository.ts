@@ -5,7 +5,7 @@ export class RefreshTokenRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
     async create(data: CreateRefreshTokenDto) {
-        return this.prisma.refresh_token.create({
+        return this.prisma.refresh_tokens.create({
             data: {
                 user_id: data.userId,
                 token: data.token,
@@ -16,10 +16,10 @@ export class RefreshTokenRepository {
     }
 
     async findByToken(token: string) {
-        return this.prisma.refresh_token.findUnique({ where: { token } });
+        return this.prisma.refresh_tokens.findUnique({ where: { token } });
     }
 
     async revoke(token: string) {
-        return this.prisma.refresh_token.update({ where: { token }, data: { revoked: true } });
+        return this.prisma.refresh_tokens.update({ where: { token }, data: { revoked: true } });
     }
 }

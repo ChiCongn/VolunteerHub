@@ -141,7 +141,7 @@ model registrations {
   @@index([user_id], map: "idx_registrations_user")
 }
 
-model refresh_token {
+model refresh_tokens {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id    String   @db.Uuid
   token      String   @unique
@@ -175,7 +175,7 @@ model users {
   posts           posts[]
   reactions       reactions[]
   registrations   registrations[]
-  refresh_token   refresh_token[]
+  refresh_tokens   refresh_tokens[]
 }
 
 enum emoji {
