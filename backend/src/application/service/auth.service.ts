@@ -3,15 +3,10 @@ import { RefreshTokenRepository } from "../../infrastructure/repositories/refres
 import { UserRepository } from "../../infrastructure/repositories/user.repository";
 import { CreateVolunteerDto, Credentials } from "../dtos/user.dto";
 import {
-    AccountLockedError,
-    AccountPendingError,
-    InvalidRefreshTokenError,
-    LoginFailedError,
     RefreshTokenRevokedError,
 } from "../../domain/errors/auth.error";
 import { UserNotFoundError } from "../../domain/errors/user.error";
 import { hashPassword } from "../../utils/hash";
-//import { JsonWebTokenError } from "jsonwebtoken";
 import { UserStatus } from "../../domain/entities/enums";
 import { refreshRepo, userRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
@@ -52,16 +47,9 @@ export class AuthService {
     async login(credential: Credentials) {
         const user = await this.userRepo.findAuthUserByCredentials(credential);
 
+        // redundant because it's handled in repo but typescript requires :(
         if (!user) {
             throw new UserNotFoundError(credential.email);
-        }
-
-        if (user.status === UserStatus.Locked) {
-            throw new AccountLockedError();
-        }
-
-        if (user.status === UserStatus.Pending) {
-            throw new AccountPendingError();
         }
 
         const accessToken = signAccessToken({
@@ -116,9 +104,6 @@ export class AuthService {
             verifyRefreshToken(token);
             await this.refreshRepo.revoke(token);
         } catch (err) {
-            // if (err instanceof JsonWebTokenError) {
-            //     throw new InvalidRefreshTokenError();
-            // }
             throw err;
         }
     }
