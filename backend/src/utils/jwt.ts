@@ -48,7 +48,7 @@ export const signAccessToken = (claims: AccessTokenPayload) => {
 
 export const signRefreshToken = (claims: RefreshTokenPayload): string => {
     logger.debug({ claims }, "[JWT] Signing refresh token");
-    return jwt.sign(claims, JWT_SECRET, {
+    return jwt.sign(claims, JWT_REFRESH_SECRET, {
         ...COMMON_SIGN_OPTIONS,
         expiresIn: "7d", // REFRESH_TOKEN_EXPIRES_IN,
     });
