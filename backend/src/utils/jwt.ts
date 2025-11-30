@@ -18,7 +18,6 @@ const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || "15m";
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || "30d";
 
 export interface AccessTokenPayload {
-    iss: string;    // "https://volunteerhub.com"
     sub: string;
     email: string;
     role: UserRole;
@@ -39,7 +38,6 @@ const COMMON_SIGN_OPTIONS: SignOptions = {
 export const signAccessToken = (claims: AccessTokenPayload) => {
     return jwt.sign(claims, JWT_SECRET, {
         ...COMMON_SIGN_OPTIONS,
-        subject: claims.sub,
         expiresIn: "15m", // ACCESS_TOKEN_EXPIRES_IN,
         jwtid: crypto.randomUUID(),
     });
@@ -48,7 +46,6 @@ export const signAccessToken = (claims: AccessTokenPayload) => {
 export const signRefreshToken = (claims: RefreshTokenPayload): string => {
     return jwt.sign(claims, JWT_SECRET, {
         ...COMMON_SIGN_OPTIONS,
-        subject: claims.sub,
         expiresIn: "7d", // REFRESH_TOKEN_EXPIRES_IN,
     });
 };
