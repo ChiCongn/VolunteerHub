@@ -8,7 +8,7 @@ export interface CreateRegistrationDto {
 
 export interface RejectRegistrationDto {
     regId: string;
-    reason: string;
+    reason?: string;
 }
 
 export interface RegistrationFilterDto {
