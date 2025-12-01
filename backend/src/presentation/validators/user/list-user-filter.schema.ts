@@ -32,4 +32,4 @@ export const ListUserFilterSchema = {
     }),
 };
 
-export type ListUserFilter = z.infer<typeof ListUserFilterSchema>;
+export type ListUserFilter = z.infer<typeof ListUserFilterSchema.query>;
