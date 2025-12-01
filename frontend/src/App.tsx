@@ -18,13 +18,13 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     {/* public routes*/}
-                    <Route path="/login" element={<LoginRegister />} />
+                    <Route path="/" element={<LoginRegister />} />
 
                     {/* protected routes*/}
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/me" element={<Profile />} />
                     <Route path="/participants" element={<Participations />} />
-                    <Route path="/event" element={<EventDetails />} />
+                    <Route path="/events" element={<EventDetails />} />
 
                     <Route path="/admin/overview" element={<Overview />} />
                     <Route path="/admin/users" element={<UserStats />} />

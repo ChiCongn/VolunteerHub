@@ -109,7 +109,19 @@ export class EventRepository implements IEventRepository {
             throw new EventTimeInvalidError();
         }
 
-        await this.prisma.events.update({ where: { id }, data: changes });
+        await this.prisma.events.update({
+            where: { id },
+            data: {
+                name: changes.name,
+                location: changes.location,
+                start_time: changes.startTime,
+                end_time: changes.endTime ?? null,
+                description: changes.description,
+                image_url: changes.imageUrl,
+                capacity: changes.capacity,
+                categories: changes.categories,
+            },
+        });
         return this.findById(id);
     }
 
@@ -118,7 +130,15 @@ export class EventRepository implements IEventRepository {
             { eventId: id, action: "soft delete event" },
             "[EventRepository] Soft deleting event"
         );
-        await this.checkExistedAndApprovedEvent(id);
+        // Check event exists (allow any status: pending, approved, rejected, etc.)
+        const existing = await this.prisma.events.findUnique({ where: { id } });
+        if (!existing) {
+            logger.warn(
+                { eventId: id, action: "soft delete event" },
+                "[EventRepository] Event not found"
+            );
+            throw new EventNotFoundError(id);
+        }
 
         await this.prisma.events.update({
             where: { id },
