@@ -21,7 +21,7 @@ export interface CreateUserProps {
 }
 
 export interface UpdateUserProps {
-    name?: string;
+    username?: string;
     passwordHash?: string;
     avatarUrl?: string;
 }
