@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { authRoutes } from "./presentation/routes/auth.routes";
+import { userRoutes } from "./presentation/routes/user.route";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -14,6 +15,7 @@ app.get("/", (_req: Request, res: Response) => {
 
 // API routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", userRoutes);
 
 // Global error handler (must be last)
 app.use(
