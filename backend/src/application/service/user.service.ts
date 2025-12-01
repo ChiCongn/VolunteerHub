@@ -4,6 +4,7 @@ import { SortOption } from "../dtos/sort-option.dto";
 import { ListUserFilterDto, UpdateUserDto } from "../dtos/user.dto";
 import { hashPassword } from "../../utils/hash";
 import logger from "../../logger";
+import { userRepo } from "../../infrastructure/repositories";
 
 export class UserService {
     constructor(private readonly userRepo: UserRepository) {}
@@ -74,3 +75,5 @@ export class UserService {
         return this.userRepo.searchPublicProfilesByDisplayName(username);
     }
 }
+
+export const userService = new UserService(userRepo);
