@@ -226,6 +226,7 @@ enum user_role {
   volunteer
   event_manager
   admin
+  root_admin
 }
 
 enum user_status {
