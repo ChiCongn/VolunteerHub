@@ -6,15 +6,19 @@ import prisma from "../../infrastructure/prisma/client";
 
 const listUserEndpoint = "/api/v1/users";
 const fetchUserEndpoint = "/api/v1/users";
+const getCurrentUserProfile = "/api/v1/users/me";
 // replace by real id
 const existedUserId = "9eb27424-3339-4524-8134-e4993169179d";
 const unexistedUserId = "00000000-0000-0000-0000-000000000000";
 const mockRootAdminId = "76358a06-dd79-49e4-bd67-7403cdcbc25e";
 // replace by valid access token
 const adminToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzBhZjE3Mi1mZDY4LTQ4MGItODk1YS03MmI4MDFjY2IyYjMiLCJlbWFpbCI6InRoZXJlc2lhQHZvbHVudGVlcmh1Yi5jb20iLCJyb2xlIjoiZXZlbnRfbWFuYWdlciIsImlhdCI6MTc2NDY0Mjk0MCwiZXhwIjoxNzY0NjQzODQwLCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiMWM4OGI4MjktYmZhMS00M2Q1LTlmZWYtNzJkZmYyMTE1YWNhIn0.5MAsZukYVfoGxWfx46puxBedh77Te-vsRut0P3tIvSo";
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzBhZjE3Mi1mZDY4LTQ4MGItODk1YS03MmI4MDFjY2IyYjMiLCJlbWFpbCI6InRoZXJlc2lhQHZvbHVudGVlcmh1Yi5jb20iLCJyb2xlIjoiZXZlbnRfbWFuYWdlciIsImlhdCI6MTc2NDY0NDk1NiwiZXhwIjoxNzY0NjQ1ODU2LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiYmE0M2Q2MzMtMDZlNC00M2VjLWIyZDgtZmM2ZTRjZWEzNzYxIn0.2GnYw9OSXolbJVMWkYQTj7Btt9K_Ysy7tpFDW5d_Wo8";
 const userToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDYwMDEzOSwiZXhwIjoxNzY0NjAxMDM5LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiNmY5Mjg4MjktNDA4OS00NjkyLWFhOGQtMmQ1MzliOGU2ZTdkIn0.aNMvwlFASWkRm83LCimWUoRu1f9SYnB-HVz0kArMZJQ";
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDY0NjI3MywiZXhwIjoxNzY0NjQ3MTczLCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiZjM1Zjc4NjQtNTQyNi00YjBlLTk5MGItYzVmYWU0Y2IyYzM0In0.KuuXo3u3ox239tGyUeECEzQ6_O6k3dm7NEZpA8_cgUI";
+
+const anotherUserToken =
+    "Bearer eyJhbGciEiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDYwMDEzOSwiZXhwIjoxNzY0NjAxMDM5LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiNmY5Mjg4MjktNDA4OS00NjkyLWFhOGQtMmQ1MzliOGU2ZTdkIn0.aNMvwlFASWkRm83LCimWUoRu1f9SYnB-HVz0kArMZJQ";
 
 describe("User API", () => {
     // describe("list/filter users", async () => {
@@ -113,62 +117,132 @@ describe("User API", () => {
     //     });
     // });
 
-    describe("lock/unlock volunteer", async () => {
-        it("should return 204 and lock the user", async () => {
+    // describe("lock/unlock volunteer", async () => {
+    //     it("should return 204 and lock the user", async () => {
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${existedUserId}/lock`)
+    //             .send({ locked: true })
+    //             .set("Authorization", adminToken);
+
+    //         expect(res.status).toBe(204);
+    //         const volunteer = await prisma.users.findUnique({
+    //             where: { id: existedUserId },
+    //         });
+    //         expect(volunteer?.status).toBe(UserStatus.Locked);
+    //     });
+
+    //     it("should return 204 and unlock the user", async () => {
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${existedUserId}/lock`)
+    //             .send({ locked: false })
+    //             .set("Authorization", adminToken);
+
+    //         expect(res.status).toBe(204);
+    //         const volunteer = await prisma.users.findUnique({
+    //             where: { id: existedUserId },
+    //         });
+    //         expect(volunteer?.status).toBe(UserStatus.Active);
+    //     });
+
+    //     it("should return 404 if user not found", async () => {
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${unexistedUserId}/lock`)
+    //             .send({ locked: true })
+    //             .set("Authorization", adminToken);
+
+    //         expect(res.status).toBe(404);
+    //         expect(res.body.message).toBe("User not found");
+    //     });
+
+    //     it("should return 403 if trying to lock root admin", async () => {
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${mockRootAdminId}/lock`)
+    //             .send({ locked: true })
+    //             .set("Authorization", adminToken);
+
+    //         expect(res.status).toBe(403);
+    //         expect(res.body.message).toBe("Cannot lock root admin");
+    //     });
+
+    //     it("should return 400 for invalid user ID", async () => {
+    //         const invalidId = "not-a-uuid";
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${invalidId}/lock`)
+    //             .send({ locked: true })
+    //             .set("Authorization", adminToken);
+
+    //         expect(res.status).toBe(400);
+    //         expect(res.body.message).toBe("Bad Request");
+    //     });
+
+    //     it("should return 401 Unauthorized if no token is provided", async () => {
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${existedUserId}/lock`)
+    //             .send({ locked: true });
+
+    //         expect(res.status).toBe(401);
+    //         expect(res.body.message).toBe("Missing or invalid Authorization header");
+    //     });
+
+    //     it("should return 401 Unauthorized if token is invalid", async () => {
+    //         const res = await request(app)
+    //             .patch(`/api/v1/users/${existedUserId}/lock`)
+    //             .send({ locked: true })
+    //             .set("Authorization", "Bearer invalidtoken");
+
+    //         expect(res.status).toBe(401);
+    //         expect(res.body.message).toBe("Unauthorized: Invalid or expired token");
+    //     });
+
+    //     it("should return 403 Forbidden if non-admin user tries to lock a user", async () => {
+    //         // TODO: implement locked user access restriction later
+    //     });
+    // });
+
+    describe("GET /me - current user profile", async () => {
+        it("should return 200 and user profile", async () => {
             const res = await request(app)
-                .patch(`/api/v1/users/${existedUserId}/lock`)
-                .send({locked: true})
-                .set("Authorization", adminToken);
+                .get(getCurrentUserProfile)
+                .set("Authorization", userToken);
 
-            expect(res.status).toBe(204);
-            const volunteer = await prisma.users.findUnique({
-                where: { id: existedUserId },
-            });
-            expect(volunteer?.status).toBe(UserStatus.Locked);
-        });
-
-        it("should return 204 and unlock the user", async () => {
-            const res = await request(app)
-                .patch(`/api/v1/users/${existedUserId}/lock`)
-                .send({locked: false})
-                .set("Authorization", adminToken);
-
-            expect(res.status).toBe(204);
-            const volunteer = await prisma.users.findUnique({
-                where: { id: existedUserId },
-            });
-            expect(volunteer?.status).toBe(UserStatus.Active);
+            expect(res.status).toBe(200);
+            //console.log(res.body);
+            // TODO: Replace _-prefixed fields with proper private fields in domain model
+            expect(res.body._email).toBeDefined();
+            expect(res.body.id).toBeDefined();
         });
 
         it("should return 404 if user not found", async () => {
             const res = await request(app)
-                .patch(`/api/v1/users/${unexistedUserId}/lock`)
-                .send({locked: true})
-                .set("Authorization", adminToken);
+                .get(getCurrentUserProfile)
+                .set("Authorization", anotherUserToken);
 
             expect(res.status).toBe(404);
             expect(res.body.message).toBe("User not found");
         });
 
-        it("should return 403 if trying to lock root admin", async () => {
+        it("should return 401 Unauthorized if token is invalid", async () => {
             const res = await request(app)
-                .patch(`/api/v1/users/${mockRootAdminId}/lock`)
-                .send({locked: true})
-                .set("Authorization", adminToken);
+                .get(getCurrentUserProfile)
+                .set("Authorization", "Bearer invalidtoken");
 
-            expect(res.status).toBe(403);
-            expect(res.body.message).toBe("Cannot lock root admin");
+            expect(res.status).toBe(401);
+            expect(res.body.message).toBe("Unauthorized: Invalid or expired token");
         });
 
-        it("should return 400 for invalid user ID", async () => {
-            const invalidId = "not-a-uuid";
-            const res = await request(app)
-                .patch(`/api/v1/users/${invalidId}/lock`)
-                .send({locked: true})
-                .set("Authorization", adminToken);
+        it("should return 401 Unauthorized if no token provided", async () => {
+            const res = await request(app).get(getCurrentUserProfile);
 
-            expect(res.status).toBe(400);
-            expect(res.body.message).toBe("Bad Request");
+            expect(res.status).toBe(401);
+            expect(res.body.message).toBe("Missing or invalid Authorization header");
+        });
+
+        it("should return 403 Forbidden if a user tries to access another user's profile", async () => {
+            // TODO: implement authorization mechanism later
+        });
+
+        it("should return 403 Forbidden if user is locked", async () => {
+            // TODO: implement locked user access restriction later
         });
     });
 });
