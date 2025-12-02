@@ -1,129 +1,114 @@
-import { beforeAll, vi, it, expect } from "vitest";
-import * as jwtUtils from "../../utils/jwt";
-import { describe } from "node:test";
-import { app } from "../../server";
 import request from "supertest";
-import { InvalidCredentialsError } from "../../domain/errors/auth.error";
-import { User } from "../../domain/entities/user.entity";
-import { UserRole, UserStatus } from "../../domain/entities/enums";
-
-vi.spyOn(jwtUtils, "verifyAccessToken").mockReturnValue({
-    iss: "https://volunteerhub.com",
-    sub: "user-id",
-    email: "a@b.com",
-    role: "volunteer",
-});
-
-const mockVolunteer = new User({
-    id: "vol-1",
-    username: "example",
-    email: "example@gmail.com",
-    passwordHash: "hehehehe",
-    avatarUrl: "", // or leave undefined to use default
-    role: UserRole.Volunteer,
-    status: UserStatus.Active,
-    notificationIds: [],
-    postIds: [],
-    participatedEventIds: [],
-    registeredEventIds: [],
-    lastLogin: null,
-    updatedAt: new Date(),
-});
-
-vi.mock("../../application/service/auth.service", () => {
-    return {
-        authService: {
-            login: vi.fn().mockImplementation(({ email, passwordHash }) => {
-                if (email === "a@b.com" && passwordHash === "123456") {
-                    return { accessToken: "fake-token", refreshToken: "fake-refresh-token" };
-                } else {
-                    throw new InvalidCredentialsError();
-                }
-            }),
-            register: vi.fn().mockImplementation(({ username, email, passwordHash }) => {
-                return {
-                    volunteer: mockVolunteer,
-                    accessToken: "fake-token",
-                    refreshToken: "fake-refresh-token",
-                };
-            }),
-            refresh: vi.fn().mockResolvedValue({
-                accessToken: "new-fake-token",
-            }),
-            logout: vi.fn().mockResolvedValue(undefined),
-        },
-    };
-});
-
-const loginEndpoint = "/api/v1/auth/login";
-describe("POST /login", () => {
-    it("should return 200 and token when credential are correct", async () => {
-        const res = await request(app)
-            .post(loginEndpoint)
-            .send({ email: "a@b.com", password: "123456" });
-
-        expect(res.status).toBe(200);
-        expect(res.body.accessToken).toBe("fake-token");
-    });
-
-    it("should return 400 Invalid creadential when email or password is wrong", async () => {
-        const res = await request(app)
-            .post(loginEndpoint)
-            .send({ email: "a@b.com", password: "abc123" });
-
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe("Invalid creadential");
-    });
-
-    it("should return 400 Validation failed when password is empty", async () => {
-        const res = await request(app).post(loginEndpoint).send({ email: "a@b.com", password: "" });
-
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe("Bad Request");
-        expect(res.body.errors).toEqual(
-            expect.arrayContaining([expect.objectContaining({ path: "password" })])
-        );
-    });
-
-    it("should return 400 validation failed when email is invalid", async () => {
-        const res = await request(app)
-            .post(loginEndpoint)
-            .send({ email: "invalid email", password: "heheh" });
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe("Bad Request");
-        expect(res.body.errors).toEqual(
-            expect.arrayContaining([expect.objectContaining({ path: "email" })])
-        );
-    });
-});
+import { app } from "../../server";
+import { describe, expect, it } from "vitest";
+import prisma from "../../infrastructure/prisma/client";
 
 const registerEndpoint = "/api/v1/auth/register";
-describe("POST /register", () => {
-    it("should return 201 and new volunteer + access and refresh token", async () => {
-        const res = await request(app)
-            .post(registerEndpoint)
-            .send({ username: "example", email: "example@gmail.com", password: "Asbdvh@13245ndj" });
+const loginEndpoint = "/api/v1/auth/login";
+describe("Auth API", () => {
+    describe("/register", () => {
+        it("should register a new user", async () => {
+            const res = await request(app).post(registerEndpoint).send({
+                username: "user001",
+                email: "user001@gmail.com",
+                password: "Password@123",
+            });
 
-        expect(res.status).toBe(201);
-        expect(res.body.accessToken).toBe("fake-token");
-        expect(res.body.refreshToken).toBe("fake-refresh-token");
+            expect(res.status).toBe(201);
+            expect(res.body.accessToken).not.toBeNull();
+            expect(res.body.refreshToken).not.toBeNull();
+
+            const volunteer = await prisma.users.findUnique({
+                where: { email: "user001@gmail.com" },
+            });
+            expect(volunteer).not.toBeNull();
+        });
+
+        it("should return bad request if invalid input", async () => {
+            const res = await request(app).post(registerEndpoint).send({
+                username: "",
+                email: "invalid-email",
+                password: "Password@123",
+            });
+
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("Bad Request");
+            expect(res.body.errors).toEqual(
+                expect.arrayContaining([expect.objectContaining({ path: "username" })])
+            );
+        });
+
+        it("should return bad request if weak password", async () => {
+            const res = await request(app).post(registerEndpoint).send({
+                username: "user001",
+                email: "user@gmail.com",
+                password: "weakpass",
+            });
+
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("Bad Request");
+            expect(res.body.errors).toEqual(
+                expect.arrayContaining([expect.objectContaining({ path: "password" })])
+            );
+        });
+
+        it("should throw error email existed", async () => {
+            const res = await request(app).post(registerEndpoint).send({
+                username: "user001",
+                email: "user001@gmail.com",
+                password: "Password@123",
+            });
+
+            expect(res.status).toBe(409);
+            expect(res.body.message).toBe("Email user001@gmail.com already exists");
+        });
     });
 
-    it("should return 400 if invalid input", async () => {
-        const res = await request(app)
-            .post(registerEndpoint)
-            .send({ username: "", email: "example@gmail.com", password: "Asbdvh@13245ndj" });
+    describe("/login", () => {
+        it("should login success", async () => {
+            const res = await request(app)
+                .post(loginEndpoint)
+                .send({ email: "user001@gmail.com", password: "Password@123" });
 
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe("Bad Request");
+            expect(res.status).toBe(200);
+            expect(res.body.accessToken).not.toBeNull();
+            expect(res.body.refreshToken).not.toBeNull();
+        });
+
+        it("should return 400 and Invalid creadential", async () => {
+            const res = await request(app)
+                .post(loginEndpoint)
+                .send({ email: "user001@gmail.com", password: "abc123" });
+
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("Invalid creadential");
+        });
+
+        it("should return 400 Bad Request when password is empty", async () => {
+            const res = await request(app)
+                .post(loginEndpoint)
+                .send({ email: "a@b.com", password: "" });
+
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("Bad Request");
+            expect(res.body.errors).toEqual(
+                expect.arrayContaining([expect.objectContaining({ path: "password" })])
+            );
+        });
+
+        it("should return 403 and Account is locked", async () => {
+            const res = await request(app)
+                .post(loginEndpoint)
+                .send({ email: "locked@gmail.com", password: "Example@123" });
+
+            expect(res.status).toBe(403);
+            expect(res.body.message).toBe("Account is locked");
+        });
     });
 
-    it("should return 400 if weak password", async () => {
-        const res = await request(app)
-            .post(registerEndpoint)
-            .send({ username: "heheh", email: "example@gmail.com", password: "13245ndj" });
+    // describe("/refresh", () => {
+    //     it("should return access token", async()=>{
 
-        expect(res.status).toBe(400);
-        expect(res.body.message).toBe("Bad Request");
-    });
+    //     })
+    // });
 });

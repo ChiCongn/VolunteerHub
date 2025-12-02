@@ -43,6 +43,8 @@ export class UserRepository implements IUserRepository {
         );
 
         const userId = await this.insert(user);
+
+        // fetch the full domain entity
         const createdUser = await this.findById(userId);
 
         return createdUser;
@@ -73,6 +75,9 @@ export class UserRepository implements IUserRepository {
             throw new UserNotFoundError(id);
         }
 
+        // NOTE: Currently fetching all related entities (events, posts, notifications),
+        // but some fields may not be needed immediately.
+        // To reduce load, these can be removed here and fetched via separate APIs when required.
         const [participatedEventIds, registeredEventIds, notificationIds, postIds] =
             await Promise.all([
                 this.findParticipatedEventIds(id),
@@ -81,6 +86,7 @@ export class UserRepository implements IUserRepository {
                 this.findPostIdsByUserId(id),
             ]);
 
+        // map Prisma result to domain entity
         return this.toDomain({
             ...user,
             participatedEventIds,
@@ -90,6 +96,7 @@ export class UserRepository implements IUserRepository {
         });
     }
 
+    // update user and return updated domain entity
     async update(id: string, data: UpdateUserDto): Promise<User> {
         logger.debug(
             {
@@ -114,6 +121,7 @@ export class UserRepository implements IUserRepository {
         return await this.findById(id);
     }
 
+    // mark status as deleted not hard delete
     async softDelete(id: string): Promise<void> {
         logger.debug(
             {
@@ -149,13 +157,14 @@ export class UserRepository implements IUserRepository {
         if (!user) {
             throw new InvalidCredentialsError();
         }
-        
+
         const match = await bcrypt.compare(password, user.password_hash);
         if (!match) {
             logger.warn({ email }, "[UserRepository] Invalid credentials");
             throw new InvalidCredentialsError();
         }
 
+        // locked and pending account can not login
         switch (user.status) {
             case "locked":
                 logger.warn(
@@ -227,6 +236,7 @@ export class UserRepository implements IUserRepository {
             "[UserRepository] Fetching public profile"
         );
 
+        // no one can view root profile
         await this.checkRootAdminAndExistedId(userId);
         const user = await this.prisma.users.findUnique({
             where: {
@@ -260,6 +270,7 @@ export class UserRepository implements IUserRepository {
         };
     }
 
+    // search public users (exclude root admin)
     async searchPublicProfilesByDisplayName(username: string): Promise<PublicUserProfile[] | null> {
         logger.debug(
             {
@@ -276,6 +287,7 @@ export class UserRepository implements IUserRepository {
                     mode: "insensitive",
                 },
                 status: { notIn: ["locked", "deleted"] },
+                role: { not: "root_admin" },
             },
             select: {
                 id: true,
@@ -333,6 +345,7 @@ export class UserRepository implements IUserRepository {
         };
     }
 
+    // for admin only (include root admin)
     async listUsers(
         filter?: ListUserFilterDto,
         pagination?: Pagination,
@@ -560,6 +573,7 @@ export class UserRepository implements IUserRepository {
         return newUser.id;
     }
 
+    // fetch related entity IDs
     private async findParticipatedEventIds(userId: string): Promise<string[]> {
         logger.trace(
             {

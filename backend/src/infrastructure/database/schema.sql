@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- -----------------------
 -- ENUM Types
 -- -----------------------
-CREATE TYPE user_role AS ENUM ('volunteer', 'event_manager', 'admin');
+CREATE TYPE user_role AS ENUM ('volunteer', 'event_manager', 'admin', 'root_admin');
 CREATE TYPE user_status AS ENUM ('pending', 'active', 'locked', 'deleted');
 CREATE TYPE event_status AS ENUM ('pending', 'approved', 'rejected', 'ongoing', 'cancelled', 'completed');
 CREATE TYPE registration_status AS ENUM ('pending', 'approved', 'rejected');

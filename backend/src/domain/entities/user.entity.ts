@@ -58,7 +58,7 @@ export class User {
 
     // --- Business Logic ---
     updateProfile(update: UpdateUserProps): void {
-        if (update.name) this._username = update.name;
+        if (update.username) this._username = update.username;
         if (update.passwordHash) this._passwordHash = update.passwordHash;
         if (update.avatarUrl) this._avatarUrl = update.avatarUrl;
         this.touch();

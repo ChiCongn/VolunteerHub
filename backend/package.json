@@ -8,6 +8,8 @@
     },
     "scripts": {
         "test": "vitest run",
+        "test-auth-api": "vitest run src/tests/api/auth.spec.ts",
+        "test-user-api": "vitest run src/tests/api/user.spec.ts",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "dev": "tsx watch src/server.ts",
