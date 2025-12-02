@@ -131,6 +131,81 @@ export class UserController {
             return res.status(500).json({ message: "Failed to get user profile" });
         }
     };
+
+    updateProfile = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+
+        logger.info({ userId, action: "updateProfile" }, "[UserController] Updating user profile");
+
+        try {
+            const { username, password, avatarUrl } = req.body;
+
+            const updated = await this.userService.updateProfile(userId, {
+                username,
+                password,
+                avatarUrl,
+            });
+
+            return res.status(200).json(updated);
+        } catch (err) {
+            if (err instanceof UserNotFoundError) {
+                logger.error(
+                    { userId, action: "updateProfile" },
+                    "[UserController] User not found"
+                );
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (err instanceof CannotModifyRootAdminError) {
+                logger.error(
+                    { userId, action: "updateProfile" },
+                    "[UserController] Cannot modify root admin"
+                );
+                return res.status(403).json({ message: "Cannot modify root admin" });
+            }
+
+            logger.error(
+                { error: err, userId, action: "updateProfile" },
+                "[UserController] Failed to update user profile"
+            );
+
+            return res.status(500).json({ message: "Failed to update user profile" });
+        }
+    };
+
+    softDelete = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+
+        logger.info(
+            { userId, action: "softDelete" },
+            "[UserController] Soft deleting current user"
+        );
+
+        try {
+            await this.userService.softDelete(userId);
+            return res.status(204).send();
+        } catch (err) {
+            if (err instanceof UserNotFoundError) {
+                logger.error({ userId, action: "softDelete" }, "[UserController] User not found");
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (err instanceof CannotModifyRootAdminError) {
+                logger.error(
+                    { userId, action: "softDelete" },
+                    "[UserController] Cannot delete root admin"
+                );
+                return res.status(403).json({ message: "Cannot delete root admin" });
+            }
+
+            logger.error(
+                { error: err, userId, action: "softDelete" },
+                "[UserController] Failed to soft delete user"
+            );
+
+            return res.status(500).json({ message: "Failed to delete user" });
+        }
+    };
 }
 
 export const userController = new UserController(userService);
