@@ -206,6 +206,27 @@ export class UserController {
             return res.status(500).json({ message: "Failed to delete user" });
         }
     };
+
+    searchUserByUsername: RequestHandler<never, any, never, { username: string }> = async (req, res: Response) => {
+        const { username } = req.query;
+        logger.info(
+            { username, action: "searchUserByUsername" },
+            "[UserController] Searching users by username"
+        );
+
+        try {
+            const result = await this.userService.searchPublicProfilesByDisplayName(username);
+            return res.status(200).json(result);
+        } catch (err) {
+            console.log(err);
+            logger.error(
+                { error: err, action: "searchUserByUsername" },
+                "[UserController] Failed to search user"
+            );
+
+            return res.status(500).json({ message: "Failed to search user" });
+        }
+    };
 }
 
 export const userController = new UserController(userService);
