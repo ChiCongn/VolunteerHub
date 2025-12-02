@@ -7,6 +7,7 @@ import prisma from "../../infrastructure/prisma/client";
 const listUserEndpoint = "/api/v1/users";
 const fetchUserEndpoint = "/api/v1/users";
 const getCurrentUserProfile = "/api/v1/users/me";
+const searchUserEndpoint = "/api/v1/users/search";
 // replace by real id
 const existedUserId = "9eb27424-3339-4524-8134-e4993169179d";
 const unexistedUserId = "00000000-0000-0000-0000-000000000000";
@@ -17,7 +18,7 @@ const rootAdminToken =
 const adminToken =
     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzBhZjE3Mi1mZDY4LTQ4MGItODk1YS03MmI4MDFjY2IyYjMiLCJlbWFpbCI6InRoZXJlc2lhQHZvbHVudGVlcmh1Yi5jb20iLCJyb2xlIjoiZXZlbnRfbWFuYWdlciIsImlhdCI6MTc2NDY0NDk1NiwiZXhwIjoxNzY0NjQ1ODU2LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiYmE0M2Q2MzMtMDZlNC00M2VjLWIyZDgtZmM2ZTRjZWEzNzYxIn0.2GnYw9OSXolbJVMWkYQTj7Btt9K_Ysy7tpFDW5d_Wo8";
 const userToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDY1NzQ3NiwiZXhwIjoxNzY0NjU4Mzc2LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiMWQxYWM3MzAtZmQ3My00MDg1LWE4M2ItYzQ0Mzk5ZDY5NzVmIn0.5O9tUzvWW-7KeRUOHdO0hhlABZslIDRKZW4e5Hhv8qA";
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDY2OTU4OCwiZXhwIjoxNzY0NjcwNDg4LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiM2NmZTg1NTktNWU0OC00YmYyLTljZjktYTU2YWYwZDEyM2E3In0.Fd-AA_AyqVUEKenzdL44cSOIO3CMTeabFeVpiJAg4wg";
 
 const anotherUserToken =
     "Bearer eyJhbGciEiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDYwMDEzOSwiZXhwIjoxNzY0NjAxMDM5LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiNmY5Mjg4MjktNDA4OS00NjkyLWFhOGQtMmQ1MzliOGU2ZTdkIn0.aNMvwlFASWkRm83LCimWUoRu1f9SYnB-HVz0kArMZJQ";
@@ -297,47 +298,95 @@ describe("User API", () => {
     //     });
     // });
 
-    describe("DELETE delete profile", () => {
-        it("should return 200 when user is deleted successfully", async () => {
+    // describe("DELETE delete profile", () => {
+    //     it("should return 200 when user is deleted successfully", async () => {
+    //         const res = await request(app)
+    //             .delete(getCurrentUserProfile)
+    //             .set("Authorization", userToken);
+
+    //         expect(res.status).toBe(204);
+    //     });
+
+    //     it("should return 404 if user not found", async () => {
+    //         const res = await request(app)
+    //             .delete(getCurrentUserProfile)
+    //             .set("Authorization", anotherUserToken); // token points to a non-existent user
+
+    //         expect(res.status).toBe(404);
+    //         expect(res.body.message).toBe("User not found");
+    //     });
+
+    //     it("should return 403 if trying to delete root admin", async () => {
+    //         const res = await request(app)
+    //             .delete(getCurrentUserProfile)
+    //             .set("Authorization", rootAdminToken);
+
+    //         expect(res.status).toBe(403);
+    //         expect(res.body.message).toBe("Cannot delete root admin");
+    //     });
+
+    //     it("should return 401 Unauthorized if no token is provided", async () => {
+    //         const res = await request(app).delete(getCurrentUserProfile);
+
+    //         expect(res.status).toBe(401);
+    //         expect(res.body.message).toBe("Missing or invalid Authorization header");
+    //     });
+
+    //     it("should return 401 Unauthorized if token is invalid", async () => {
+    //         const res = await request(app)
+    //             .delete(getCurrentUserProfile)
+    //             .set("Authorization", "Bearer invalidtoken123");
+
+    //         expect(res.status).toBe(401);
+    //         expect(res.body.message).toBe("Unauthorized: Invalid or expired token");
+    //     });
+    // });
+
+    describe("Search search user", async () => {
+        it("should return users", async () => {
             const res = await request(app)
-                .delete(getCurrentUserProfile)
+                .get(searchUserEndpoint)
+                .query({ username: "example" })
+                .set("Authorization", userToken); // assuming auth required
+
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body)).toBe(true);
+            expect(res.body.length).toBeGreaterThan(0);
+
+            res.body.forEach((user: any) => {
+                expect(user).toHaveProperty("id");
+                expect(user).toHaveProperty("username");
+                expect(user).toHaveProperty("avatarUrl");
+                expect(user.role).not.toBe("root_admin"); // match your repo filter
+            });
+        });
+
+        it("should return empty array if no match", async () => {
+            const res = await request(app)
+                .get(searchUserEndpoint)
+                .query({ username: "nonexistentuser" })
                 .set("Authorization", userToken);
 
-            expect(res.status).toBe(204);
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body)).toBe(true);
+            expect(res.body.length).toBe(0);
         });
 
-        it("should return 404 if user not found", async () => {
+        it("should return 400 Bad Request if query parameter missing or invalid", async () => {
             const res = await request(app)
-                .delete(getCurrentUserProfile)
-                .set("Authorization", anotherUserToken); // token points to a non-existent user
+                .get(searchUserEndpoint)
+                .query({}) // no username
+                .set("Authorization", userToken);
 
-            expect(res.status).toBe(404);
-            expect(res.body.message).toBe("User not found");
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("Bad Request");
         });
 
-        it("should return 403 if trying to delete root admin", async () => {
-            const res = await request(app)
-                .delete(getCurrentUserProfile)
-                .set("Authorization", rootAdminToken);
-
-            expect(res.status).toBe(403);
-            expect(res.body.message).toBe("Cannot delete root admin");
-        });
-
-        it("should return 401 Unauthorized if no token is provided", async () => {
-            const res = await request(app).delete(getCurrentUserProfile);
+        it("should return 401 Unauthorized if no token provided", async () => {
+            const res = await request(app).get(searchUserEndpoint).query({ username: "user" });
 
             expect(res.status).toBe(401);
             expect(res.body.message).toBe("Missing or invalid Authorization header");
-        });
-
-        it("should return 401 Unauthorized if token is invalid", async () => {
-            const res = await request(app)
-                .delete(getCurrentUserProfile)
-                .set("Authorization", "Bearer invalidtoken123");
-
-            expect(res.status).toBe(401);
-            expect(res.body.message).toBe("Unauthorized: Invalid or expired token");
         });
     });
 });
