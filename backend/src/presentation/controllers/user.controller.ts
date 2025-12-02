@@ -69,6 +69,40 @@ export class UserController {
             return res.status(500).json({ message: "Failed to fetch user profile" });
         }
     };
+
+    setUserLock = async (req: Request, res: Response) => {
+        logger.info(
+            { userId: req.user.id, action: "setUserLock" },
+            "[UserController] Fetch user public profile"
+        );
+        
+        try {
+            const { userId } = req.params;
+            const { locked } = req.body;
+            await this.userService.setUserLock(userId, locked);
+            return res.status(204).send();
+        } catch (err) {
+            if (err instanceof UserNotFoundError) {
+                logger.error({ action: "setUserLock" }, "[UserController] User not found");
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (err instanceof CannotModifyRootAdminError) {
+                logger.error(
+                    { action: "setUserLock" },
+                    "[UserController] Can not lock root admin profile"
+                );
+                return res.status(403).json({ message: "Cannot lock root admin" });
+            }
+
+            console.log(err);
+            logger.error(
+                { error: err, action: "setUserLock" },
+                "[UserController] lock user failed"
+            );
+            return res.status(500).json({ message: "Failed to lock user profile" });
+        }
+    };
 }
 
 export const userController = new UserController(userService);
