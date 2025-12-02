@@ -16,6 +16,7 @@ import {
 } from "../../domain/errors/event.error";
 import { DomainError } from "../../domain/errors/domain.error";
 import { EventStatus, EventCategory } from "../../domain/entities/enums";
+import { eventRepo } from "../../infrastructure/repositories";
 
 export class EventController {
     constructor(private readonly eventRepository: IEventRepository) {}
@@ -474,3 +475,5 @@ export class EventController {
         }
     }
 }
+
+export const eventController = new EventController(eventRepo);

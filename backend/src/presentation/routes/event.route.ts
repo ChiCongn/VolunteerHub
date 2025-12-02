@@ -1,15 +1,7 @@
-import express from "express";
-import { PrismaClient } from "../../infrastructure/prisma/generated/client";
-import { UserRepository } from "../../infrastructure/repositories/user.repository";
-import { EventRepository } from "../../infrastructure/repositories/event.repository";
-import { EventController } from "../controllers/event.controller";
+import { Router, Request, Response } from "express";
+import { eventController } from "../controllers/event.controller";
 
-export const eventRouter = express.Router();
-
-const prisma = new PrismaClient();
-const userRepo = new UserRepository(prisma);
-const eventRepo = new EventRepository(prisma, userRepo);
-const eventController = new EventController(eventRepo);
+export const eventRouter = Router();
 
 eventRouter.get("/", (req, res) => eventController.getAllEvents(req, res));
 eventRouter.get("/:id", (req, res) => eventController.getEventById(req, res));
