@@ -1,20 +1,18 @@
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/jwt";
-import { RefreshTokenRepository } from "../../infrastructure/repositories/refresh-token.repository";
-import { UserRepository } from "../../infrastructure/repositories/user.repository";
 import { CreateVolunteerDto, Credentials } from "../dtos/user.dto";
 import {
     RefreshTokenRevokedError,
 } from "../../domain/errors/auth.error";
 import { UserNotFoundError } from "../../domain/errors/user.error";
-import { hashPassword } from "../../utils/hash";
-import { UserStatus } from "../../domain/entities/enums";
 import { refreshRepo, userRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
+import { IUserRepository } from "../../domain/repositories/user.irepositoty";
+import { IRefreshTokenRepository } from "../../domain/repositories/refresh-token.irepository";
 
 export class AuthService {
     constructor(
-        private readonly refreshRepo: RefreshTokenRepository,
-        private readonly userRepo: UserRepository
+        private readonly refreshRepo: IRefreshTokenRepository,
+        private readonly userRepo: IUserRepository
     ) {}
 
     async register(data: CreateVolunteerDto) {
@@ -109,5 +107,4 @@ export class AuthService {
     }
 }
 
-console.log("export authService");
 export const authService = new AuthService(refreshRepo, userRepo);

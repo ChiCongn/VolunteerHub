@@ -1,13 +1,13 @@
-import { UserRepository } from "../../infrastructure/repositories/user.repository";
 import { Pagination } from "../dtos/pagination.dto";
 import { SortOption } from "../dtos/sort-option.dto";
 import { ListUserFilterDto, UpdateUserDto } from "../dtos/user.dto";
 import { hashPassword } from "../../utils/hash";
 import logger from "../../logger";
 import { userRepo } from "../../infrastructure/repositories";
+import { IUserRepository } from "../../domain/repositories/user.irepositoty";
 
 export class UserService {
-    constructor(private readonly userRepo: UserRepository) {}
+    constructor(private readonly userRepo: IUserRepository) {}
 
     // admin
     async listUsers(filter?: ListUserFilterDto, pagination?: Pagination, sort?: SortOption) {
