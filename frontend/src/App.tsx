@@ -9,6 +9,7 @@ import { Participations } from "./pages/Participations";
 import { UserStats } from "./pages/admin/UsersStats";
 import { Overview } from "./pages/admin/Overview";
 import { EventsStats } from "./pages/admin/EventsStats";
+import { Post } from "./pages/Post";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     {/* public routes*/}
                     <Route path="/login" element={<LoginRegister />} />
 
+                    <Route path="/post" element={<Post />} />
                     {/* protected routes*/}
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/me" element={<Profile />} />

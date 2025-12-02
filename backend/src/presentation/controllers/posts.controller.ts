@@ -1,0 +1,117 @@
+import { Request, Response } from "express";
+import { PostService } from "../../application/services/post.service";
+
+export class PostsController {
+    private postService: PostService;
+
+    constructor(postService: PostService) {
+        this.postService = postService;
+    }
+
+    // Create Post
+    createPost = async (req: Request, res: Response) => {
+        try {
+            const result = await this.postService.createPost(req.body);
+            return res.status(201).json({
+                message: "Post created successfully",
+                data: result,
+            });
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
+    // Get post by ID
+    getPostById = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            const post = await this.postService.getPostById(id);
+
+            return res.status(200).json({ data: post });
+        } catch (error: any) {
+            return res.status(404).json({ error: error.message });
+        }
+    };
+
+    // Update Post
+    updatePost = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            const updated = await this.postService.updatePost(id, req.body);
+
+            return res.status(200).json({
+                message: "Post updated successfully",
+                data: updated,
+            });
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
+    // Soft Delete
+    deletePost = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            await this.postService.softDeletePost(id);
+
+            return res.status(200).json({
+                message: "Post deleted successfully",
+            });
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
+    // Restore
+    restorePost = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            await this.postService.restorePost(id);
+
+            return res.status(200).json({
+                message: "Post restored successfully",
+            });
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
+    // Get posts in an event
+    getPostsByEvent = async (req: Request, res: Response) => {
+        try {
+            const { eventId } = req.params;
+
+            const { page, size, sortBy, sortOrder } = req.query;
+
+            const posts = await this.postService.getPostsByEvent(
+                eventId,
+                // {
+                //     page: Number(page) || 1,
+                //     size: Number(size) || 10,
+                // },
+                // {
+                //     field: String(sortBy || "createdAt"),
+                //     order: (sortOrder as "asc" | "desc") || "desc",
+                // }
+            );
+
+            return res.status(200).json(posts);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
+    // Search
+    searchPosts = async (req: Request, res: Response) => {
+        try {
+            const { eventId } = req.params;
+            const { q } = req.query;
+
+            const posts = await this.postService.searchPosts(eventId, q as string);
+
+            return res.status(200).json(posts);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+}
