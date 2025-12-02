@@ -38,7 +38,7 @@ export class UserService {
             { userId, action: "fetchCurrentUser" },
             "[UserService] Fetching current user profile"
         );
-        return this.userRepo.fetchPublicProfile(userId);
+        return this.userRepo.findById(userId);
     }
 
     async updateProfile(

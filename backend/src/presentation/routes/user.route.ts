@@ -9,5 +9,6 @@ import { LockUserSchema } from "../validators/user/lock-user.schema";
 export const userRoutes = Router();
 
 userRoutes.get("/", validate(ListUserFilterSchema), userController.listUsers);
+userRoutes.get("/me", authenticate, userController.getCurrentUserProfile);
 userRoutes.get("/:userId", authenticate, validate(GetUserSchema), userController.fetchUserPublicProfile);
 userRoutes.patch("/:userId/lock", authenticate, validate(LockUserSchema), userController.setUserLock);

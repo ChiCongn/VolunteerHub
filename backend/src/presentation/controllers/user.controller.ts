@@ -75,7 +75,7 @@ export class UserController {
             { userId: req.user.id, action: "setUserLock" },
             "[UserController] Fetch user public profile"
         );
-        
+
         try {
             const { userId } = req.params;
             const { locked } = req.body;
@@ -101,6 +101,34 @@ export class UserController {
                 "[UserController] lock user failed"
             );
             return res.status(500).json({ message: "Failed to lock user profile" });
+        }
+    };
+
+    getCurrentUserProfile = async (req: Request, res: Response) => {
+        const currentUserId = req.user.sub;
+
+        logger.info(
+            { userId: currentUserId, action: "getMeProfile" },
+            "[UserController] Fetching current user profile"
+        );
+        try {
+            const result = await this.userService.fetchCurrentUser(currentUserId);
+            return res.status(200).json(result);
+        } catch (err) {
+            if (err instanceof UserNotFoundError) {
+                logger.error(
+                    { userId: currentUserId, action: "getMeProfile" },
+                    "[UserController] User not found"
+                );
+                throw new UserNotFoundError(currentUserId);
+            }
+
+            console.log(err);
+            logger.error(
+                { userId: currentUserId, error: err, action: "getMeProfile" },
+                "[UserController] Failed to fetch current user profile"
+            );
+            return res.status(500).json({ message: "Failed to get user profile" });
         }
     };
 }
