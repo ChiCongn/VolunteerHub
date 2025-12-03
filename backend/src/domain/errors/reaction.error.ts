@@ -1,5 +1,5 @@
 import { DomainError } from "./domain.error";
-import { EmojiType } from "../../application/dtos/enums";
+import { EmojiType } from "../entities/enums";
 
 export class ReactionNotFoundError extends DomainError {
     constructor(postId: string, userId: string) {
