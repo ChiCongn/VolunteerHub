@@ -109,11 +109,13 @@ export function Post() {
         }
     };
 
-    const handleLikePost = (postId: string) => {
+    const handleLikePost = async (postId: string) => {
         try {
-            const updated = await likePost(postId);
+            const updated: Post = await likePost(postId);
 
-            setPosts(posts.map((p) => (p.id === postId ? updated : p)));
+            setPosts((prev) =>
+                prev.map((p) => (p.id === postId ? updated : p))
+            );
         } catch {
             toast.error("Failed to like post");
         }
