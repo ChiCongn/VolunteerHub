@@ -11,6 +11,7 @@ import {
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
+import { AuthContext } from "../../application/policies/helpers";
 
 export interface IUserRepository {
     // Core CRUD
@@ -37,4 +38,5 @@ export interface IUserRepository {
     ): Promise<ListResult<AdminUserView>>;
     count(filter?: ListUserFilterDto): Promise<number>;
     setUserLock(id: string, locked: boolean): Promise<void>;
+    getAuthContext(id: string): Promise<AuthContext>;
 }

@@ -74,6 +74,15 @@ export class UserService {
         );
         return this.userRepo.searchPublicProfilesByDisplayName(username);
     }
+
+    async getAuthContext(id: string) {
+        logger.debug(
+            { userId: id, action: "getAuthContext" },
+            "[UserService] Fetching id, role and status"
+        );
+
+        return this.userRepo.getAuthContext(id);
+    }
 }
 
 export const userService = new UserService(userRepo);

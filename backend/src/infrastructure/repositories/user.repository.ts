@@ -25,6 +25,8 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 import logger from "../../logger";
 import bcrypt from "bcrypt";
 import "dotenv/config";
+import { tr } from "zod/locales";
+import { AuthContext } from "../../application/policies/helpers";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;
@@ -501,6 +503,32 @@ export class UserRepository implements IUserRepository {
         );
 
         return Number(result[0]?.count ?? 0);
+    }
+
+    async getAuthContext(id: string): Promise<AuthContext> {
+        logger.debug(
+            { userId: id, action: "getAuthContext" },
+            "[UserRepository] Fetching id, role and status"
+        );
+
+        const user = await this.prisma.users.findUnique({
+            where: { id },
+            select: { id: true, role: true, status: true },
+        });
+
+        if (!user) {
+            logger.warn(
+                { userId: id, action: "getAuthContext" },
+                "[UserRepository] User not found"
+            );
+            throw new UserNotFoundError(id);
+        }
+
+        return {
+            id: user.id,
+            role: user.role,
+            status: user.status,
+        };
     }
 
     private async checkRootAdminAndExistedId(id: string) {
