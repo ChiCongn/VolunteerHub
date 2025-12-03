@@ -36,7 +36,7 @@ export class UserController {
 
     fetchUserPublicProfile = async (req: Request, res: Response) => {
         logger.info(
-            { userId: req.user.id, action: "fetchUserPublicProfile.start" },
+            { userId: req.user.sub, action: "fetchUserPublicProfile.start" },
             "[UserController] Fetch user public profile"
         );
         const { userId } = req.params;
@@ -72,7 +72,7 @@ export class UserController {
 
     setUserLock = async (req: Request, res: Response) => {
         logger.info(
-            { userId: req.user.id, action: "setUserLock" },
+            { userId: req.user.sub, action: "setUserLock" },
             "[UserController] Fetch user public profile"
         );
 
