@@ -5,13 +5,13 @@ import logger from "../../logger";
 export class PostService {
     constructor(private readonly postRepo: IPostRepository) {}
 
-    async findOwnerId(postId: string) {
+    async findAuthorId(postId: string) {
         logger.debug(
-            { postId, action: "findOwnerId" },
+            { postId, action: "findAuthorId" },
             "[PostService] Fetching author id of this post"
         );
         return this.postRepo.findAuthorId(postId);
-    } 
+    }
 
     async findEventIdByPostId(postId: string) {
         logger.debug(
