@@ -343,6 +343,51 @@ export class PostRepository implements IPostRepository {
         });
     }
 
+    // utils
+    async findAuthorId(postId: string): Promise<string> {
+        logger.debug(
+            { postId, action: "findAuthorId" },
+            "[PostService] Fetching author id of this post"
+        );
+
+        const result = await this.prisma.posts.findUnique({
+            where: { id: postId },
+            select: { author_id: true },
+        });
+
+        if (!result) {
+            logger.warn(
+                { postId, action: "findAuthorId" },
+                "[PostService] Post not found"
+            );
+            throw new PostNotFoundError(postId);
+        }
+
+        return result.author_id;
+    }
+
+    async findEventIdByPostId(postId: string): Promise<string> {
+        logger.debug(
+            { postId, action: "findEventIdByPostId" },
+            "[PostService] Fetching event id that this post belong to"
+        );
+
+        const result = await this.prisma.posts.findUnique({
+            where: { id: postId },
+            select: { event_id: true },
+        });
+
+        if (!result) {
+            logger.warn(
+                { postId, action: "findEventIdByPostId" },
+                "[PostService] Post not found"
+            );
+            throw new PostNotFoundError(postId);
+        }
+
+        return result.event_id;
+    }
+
     private async insert(post: CreatePostDto): Promise<string> {
         logger.trace(
             { eventId: post.eventId, authorId: post.authorId, action: "insert post" },
