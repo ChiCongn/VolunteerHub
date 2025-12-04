@@ -44,4 +44,7 @@ export interface IEventRepository {
     
     findByOwnerId(ownerId: string): Promise<PublicEventView[]>;
     count(filters?: EventFilterDto): Promise<number>;
+
+    findOwner(eventId: string): Promise<string>;
+    findManagers(eventId: string): Promise<string[]>;
 }

@@ -679,6 +679,48 @@ export class EventRepository implements IEventRepository {
         return total;
     }
 
+    async findOwner(eventId: string): Promise<string> {
+        logger.trace(
+            { eventId, action: "findOwner" },
+            "[EventRepository] Fetching owner id of this event"
+        );
+        const result = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: { owner_id: true },
+        });
+
+        if (!result) {
+            logger.warn(
+                { eventId, action: "findOwner" },
+                "[EventRepository] Event not found"
+            );
+            throw new EventNotFoundError(eventId);
+        }
+
+        return result.owner_id;
+    }
+
+    async findManagers(eventId: string): Promise<string[]> {
+        logger.trace(
+            { eventId, action: "findManagers" },
+            "[EventRepository] Fetching manager ids of this event"
+        );
+        const result = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: { event_manager_ids: true },
+        });
+
+        if (!result) {
+            logger.warn(
+                { eventId, action: "findManagers" },
+                "[EventRepository] Event not found"
+            );
+            throw new EventNotFoundError(eventId);
+        }
+
+        return result.event_manager_ids;
+    }
+
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {
         logger.trace(
             { eventId, action: "get registered ids" },
