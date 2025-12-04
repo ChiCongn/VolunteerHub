@@ -17,10 +17,12 @@ import {
     EventCapacityInvalidError,
     EventTimeInvalidError,
 } from "../../domain/errors/event.error";
-import { EventStatus, EventCategory } from "../../domain/entities/enums";
+import { EventStatus, EventCategory, RegistrationStatus } from "../../domain/entities/enums";
 import { Event } from "../../domain/entities/event.entity";
 import { UserRepository } from "./user.repository";
 import logger from "../../logger";
+import { fa } from "zod/locales";
+import { RegistrationNotFoundError } from "../../domain/errors/registration.error";
 
 export class EventRepository implements IEventRepository {
     constructor(
@@ -680,7 +682,7 @@ export class EventRepository implements IEventRepository {
     }
 
     async findOwner(eventId: string): Promise<string> {
-        logger.trace(
+        logger.debug(
             { eventId, action: "findOwner" },
             "[EventRepository] Fetching owner id of this event"
         );
@@ -690,10 +692,7 @@ export class EventRepository implements IEventRepository {
         });
 
         if (!result) {
-            logger.warn(
-                { eventId, action: "findOwner" },
-                "[EventRepository] Event not found"
-            );
+            logger.warn({ eventId, action: "findOwner" }, "[EventRepository] Event not found");
             throw new EventNotFoundError(eventId);
         }
 
@@ -701,7 +700,7 @@ export class EventRepository implements IEventRepository {
     }
 
     async findManagers(eventId: string): Promise<string[]> {
-        logger.trace(
+        logger.debug(
             { eventId, action: "findManagers" },
             "[EventRepository] Fetching manager ids of this event"
         );
@@ -711,14 +710,32 @@ export class EventRepository implements IEventRepository {
         });
 
         if (!result) {
-            logger.warn(
-                { eventId, action: "findManagers" },
-                "[EventRepository] Event not found"
-            );
+            logger.warn({ eventId, action: "findManagers" }, "[EventRepository] Event not found");
             throw new EventNotFoundError(eventId);
         }
 
         return result.event_manager_ids;
+    }
+
+    async getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus> {
+        logger.debug(
+            { eventId, action: "getRegistrationStatus" },
+            "[EventRepository] Fetching registration status"
+        );
+        const register = await this.prisma.registrations.findFirst({
+            where: { user_id: userId, event_id: eventId },
+            select: { status: true },
+        });
+
+        if (!register) {
+            logger.warn(
+                { eventId, action: "getRegistrationStatus" },
+                "[EventRepository] Registration not found"
+            );
+            throw new RegistrationNotFoundError("none");
+        }
+
+        return register.status;
     }
 
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {

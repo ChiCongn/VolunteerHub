@@ -1,15 +1,16 @@
 import { Event } from "../entities/event.entity";
-import { 
-    CreateEventDto, 
+import {
+    CreateEventDto,
     UpdateEventDto,
     EventFilterDto,
-    PublicEventView 
+    PublicEventView,
 } from "../../application/dtos/event.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 import { User } from "../entities/user.entity";
 import { PublicUserProfile } from "../../application/dtos/user.dto";
+import { RegistrationStatus } from "../entities/enums";
 
 export interface IEventRepository {
     // Core CRUD
@@ -20,7 +21,8 @@ export interface IEventRepository {
 
     // Public view
     fetchPublicView(id: string): Promise<PublicEventView | null>;
-    searchEvent(filters?: EventFilterDto, 
+    searchEvent(
+        filters?: EventFilterDto,
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PublicEventView>>;
@@ -41,10 +43,11 @@ export interface IEventRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PublicEventView>>;
-    
+
     findByOwnerId(ownerId: string): Promise<PublicEventView[]>;
     count(filters?: EventFilterDto): Promise<number>;
 
     findOwner(eventId: string): Promise<string>;
     findManagers(eventId: string): Promise<string[]>;
+    getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus>;
 }
