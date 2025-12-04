@@ -7,12 +7,16 @@ export async function getPosts(): Promise<Post[]> {
     return res.json();
 }
 
-export async function createPost(content: string): Promise<Post> {
+export async function createPost(data: {
+    authorId: string;
+    content: string;
+    eventId?: string | null;
+}): Promise<Post> {
     const res = await fetch(`${BACKEND_URL}/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-    }); 
+        body: JSON.stringify(data),
+    });
     return res.json();
 }
 

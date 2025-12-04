@@ -99,7 +99,11 @@ export function Post() {
         if (!newPostContent.trim()) return;
 
         try {
-            const newPost = await createPost(newPostContent);
+            const newPost = await createPost({
+                authorId: "userId từ localStorage hoặc context",
+                content: newPostContent,
+                eventId: null,
+            });
             setPosts([newPost, ...posts]); // cập nhật UI ngay lập tức
             toast.success("Post created successfully!");
             setNewPostContent("");
