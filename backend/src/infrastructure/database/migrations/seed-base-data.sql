@@ -11,8 +11,8 @@ INSERT INTO users (
     gen_random_uuid(),
     'Root Admin',
     'rootadmin@volunteerhub.com',
-    crypt('password', gen_salt('bf')),
-    'admin',
+    'replace-by-hash-password',
+    'root_admin',
     'active',
     '/uploads/avatars/default-avatar.png',
     NOW(),
@@ -23,8 +23,8 @@ INSERT INTO users (
 -- 2. EVENT MANAGERS (Your Custom Data)
 -- ========================================
 INSERT INTO users (id, username, email, password_hash, role, status, avatar_url, created_at, updated_at) VALUES
-(gen_random_uuid(), 'Theresia Van Astrea', 'theresia@volunteerhub.com', crypt('password', gen_salt('bf')), 'event_manager', 'active', '/uploads/avatars/theresia.jpg', NOW(), NOW()),
-(gen_random_uuid(), 'chicongn', 'chicongn@volunteerhub.com', crypt('password', gen_salt('bf')), 'event_manager', 'active', '/uploads/avatars/chicongn.jpg', NOW(), NOW())
+(gen_random_uuid(), 'Theresia Van Astrea', 'theresia@volunteerhub.com', 'replace-by-hash-password', 'event_manager', 'active', '/uploads/avatars/theresia.jpg', NOW(), NOW()),
+(gen_random_uuid(), 'chicongn', 'chicongn@volunteerhub.com', 'replace-by-hash-password', 'event_manager', 'active', '/uploads/avatars/chicongn.jpg', NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
 
 -- ========================================
@@ -131,8 +131,8 @@ SELECT
     e.id,
     u.id,
     CASE
-        WHEN u.email LIKE '%@gmail.com' THEN 'approved'
-        ELSE 'pending'
+        WHEN u.email LIKE '%@gmail.com' THEN 'approved'::registration_status
+        ELSE 'pending'::registration_status
     END,
     NOW(), NOW()
 FROM events e
@@ -145,7 +145,7 @@ ON CONFLICT (event_id, user_id) DO NOTHING;
 -- Update register_count
 UPDATE events SET register_count = (
     SELECT COUNT(*) FROM registrations r 
-    WHERE r.event_id = events.id AND r.status = 'approved'
+    WHERE r.event_id = events.id AND r.status = 'approved'::registration_status
 );
 
 -- ========================================
