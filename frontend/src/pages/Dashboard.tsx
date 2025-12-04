@@ -22,8 +22,10 @@ import { Label } from "../components/ui/label";
 import { toast } from "sonner";
 
 export function Dashboard() {
+    // mock data
     const [events] = useState<Event[]>(mockEvents);
     const [posts] = useState<Post[]>(mockPosts);
+    //states
     const [filteredEvents, setFilteredEvents] = useState<Event[]>(mockEvents);
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [selectedSort, setSelectedSort] = useState("date");
@@ -120,6 +122,7 @@ export function Dashboard() {
         <div>
             <Header/>
             <div className="flex">
+                {/* bên trái cùng*/}
                 <Sidebar/>
 
                 <main className="flex-1 min-w-0">
@@ -249,6 +252,9 @@ export function Dashboard() {
                                     </DialogContent>
                                 </Dialog>
                             </div>
+
+                            
+                            {/* bên phải cùng*/}
                             <RightPanel/>
                         </div>
                     </div>
