@@ -4,6 +4,7 @@ import { CreatePostDto, UpdatePostDto, PostView } from '../dtos/post.dto';
 import { Pagination } from '../dtos/pagination.dto';
 import { SortOption } from '../dtos/sort-option.dto';
 import { ListResult } from '../dtos/list-result.dto';
+import { postRepo } from '../../infrastructure/repositories';
 
 export class PostService {
   constructor(private readonly postRepo: IPostRepository) {}
@@ -64,3 +65,5 @@ export class PostService {
     return this.postRepo.countByUserId(userId);
   }
 }
+
+export const postService = new PostService(postRepo);

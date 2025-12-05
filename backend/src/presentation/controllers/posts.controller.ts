@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PostService } from "../../application/services/post.service";
+import { postService, PostService } from "../../application/services/post.service";
 
 export class PostsController {
     private postService: PostService;
@@ -84,7 +84,7 @@ export class PostsController {
             const { page, size, sortBy, sortOrder } = req.query;
 
             const posts = await this.postService.getPostsByEvent(
-                eventId,
+                eventId
                 // {
                 //     page: Number(page) || 1,
                 //     size: Number(size) || 10,
@@ -115,3 +115,5 @@ export class PostsController {
         }
     };
 }
+
+export const postController = new PostsController(postService);

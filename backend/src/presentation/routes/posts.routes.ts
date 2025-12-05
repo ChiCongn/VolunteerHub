@@ -1,17 +1,13 @@
 import { Router } from "express";
-import { PostsController } from "../controllers/posts.controller";
+import { postController } from "../controllers/posts.controller";
 
-export function createPostRoutes(controller: PostsController) {
-    const router = Router();
+export const postRouter = Router();
 
-    router.post("/", controller.createPost.bind(controller));
-    router.get("/:id", controller.getPostById.bind(controller));
-    router.put("/:id", controller.updatePost.bind(controller));
-    router.delete("/:id", controller.deletePost.bind(controller));
-    router.patch("/:id/restore", controller.restorePost.bind(controller));
+postRouter.post("/", postController.createPost.bind(postController));
+postRouter.get("/:id", postController.getPostById.bind(postController));
+postRouter.put("/:id", postController.updatePost.bind(postController));
+postRouter.delete("/:id", postController.deletePost.bind(postController));
+postRouter.patch("/:id/restore", postController.restorePost.bind(postController));
 
-    router.get("/event/:eventId", controller.getPostsByEvent.bind(controller));
-    router.get("/event/:eventId/search", controller.searchPosts.bind(controller));
-
-    return router;
-}
+postRouter.get("/event/:eventId", postController.getPostsByEvent.bind(postController));
+postRouter.get("/event/:eventId/search", postController.searchPosts.bind(postController));
