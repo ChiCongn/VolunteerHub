@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { AuthService } from "../../../application/service/auth.service";
+import { AuthService } from "../../../application/services/auth.service";
 import { RefreshTokenRepository } from "../../../infrastructure/repositories/refresh-token.repository";
 import { UserRepository } from "../../../infrastructure/repositories/user.repository";
 import { CreateVolunteerDto, Credentials } from "../../../application/dtos/user.dto";

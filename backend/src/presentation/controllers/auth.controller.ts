@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { authService, AuthService } from "../../application/service/auth.service";
+import { authService, AuthService } from "../../application/services/auth.service";
 import {
     AccountLockedError,
     AccountPendingError,

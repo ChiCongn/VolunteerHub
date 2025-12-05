@@ -4,7 +4,7 @@ import { describe } from "node:test";
 import { app } from "../../../server";
 import request from "supertest";
 import { CannotModifyRootAdminError, UserNotFoundError } from "../../../domain/errors/user.error";
-import { UserService } from "../../../application/service/user.service";
+import { UserService } from "../../../application/services/user.service";
 import { UserRepository } from "../../../infrastructure/repositories/user.repository";
 import { User } from "../../../domain/entities/user.entity";
 import { UserRole, UserStatus } from "../../../domain/entities/enums";
@@ -63,7 +63,6 @@ const mockUserRepo: Partial<UserRepository> = {
 
 const userService = new UserService(mockUserRepo as UserRepository);
 
-
 describe("UserService.updateProfile", () => {
     it("should update profile successfully", async () => {
         const result = await userService.updateProfile(existed, {
@@ -76,9 +75,9 @@ describe("UserService.updateProfile", () => {
     });
 
     it("should throw CannotModifyRootAdminError for root user", async () => {
-        await expect(
-            userService.updateProfile(rootId, { username: "hacker" })
-        ).rejects.toThrow(CannotModifyRootAdminError);
+        await expect(userService.updateProfile(rootId, { username: "hacker" })).rejects.toThrow(
+            CannotModifyRootAdminError
+        );
     });
 
     it("should throw UserNotFoundError for non-existent user", async () => {

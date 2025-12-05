@@ -1,5 +1,5 @@
 import { ListUserFilterDto } from "../../application/dtos/user.dto";
-import { userService, UserService } from "../../application/service/user.service";
+import { userService, UserService } from "../../application/services/user.service";
 import { Request, RequestHandler, Response } from "express";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
@@ -207,7 +207,10 @@ export class UserController {
         }
     };
 
-    searchUserByUsername: RequestHandler<never, any, never, { username: string }> = async (req, res: Response) => {
+    searchUserByUsername: RequestHandler<never, any, never, { username: string }> = async (
+        req,
+        res: Response
+    ) => {
         const { username } = req.query;
         logger.info(
             { username, action: "searchUserByUsername" },
