@@ -14,7 +14,7 @@ import { SortOption } from "../../application/dtos/sort-option.dto";
 
 export interface IUserRepository {
     // Core CRUD
-    create(user: CreateVolunteerDto): Promise<User>;
+    create(user: CreateVolunteerDto): Promise<AuthUser>;
     findById(id: string): Promise<User | null>;
     update(id: string, changes: UpdateUserDto): Promise<User>;
     softDelete(id: string): Promise<void>;

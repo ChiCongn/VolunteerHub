@@ -45,6 +45,8 @@ export interface AuthUser {
     id: string;
     email: string;
     username: string;
+    avatarUrl: string;
     role: UserRole;
     status: UserStatus;
+    lastLogin: Date | null;
 }

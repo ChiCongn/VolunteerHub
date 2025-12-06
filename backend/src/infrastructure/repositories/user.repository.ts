@@ -33,7 +33,7 @@ export class UserRepository implements IUserRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
     // Core CRUD
-    async create(user: CreateVolunteerDto): Promise<User> {
+    async create(user: CreateVolunteerDto): Promise<AuthUser> {
         logger.debug(
             {
                 email: user.email,
@@ -42,12 +42,13 @@ export class UserRepository implements IUserRepository {
             "[UserRepository] Creating new volunteer user"
         );
 
-        const userId = await this.insert(user);
+        const newUserId = await this.insert(user);
 
-        // fetch the full domain entity
-        const createdUser = await this.findById(userId);
+        const createdUser = await this.prisma.users.findUniqueOrThrow({
+            where: { id: newUserId },
+        });
 
-        return createdUser;
+        return this.toAuthUser(createdUser);
     }
 
     async findById(id: string): Promise<User> {
@@ -188,8 +189,10 @@ export class UserRepository implements IUserRepository {
             id: user.id.toString(),
             email: user.email,
             username: user.username,
+            avatarUrl: user.avatar_url,
             role: user.role,
             status: user.status,
+            lastLogin: user.last_login ?? null,
         };
     }
 
@@ -672,5 +675,17 @@ export class UserRepository implements IUserRepository {
             notificationIds: prismaUser.notificationIds ?? [],
             postIds: prismaUser.postIds ?? [],
         });
+    }
+
+    private toAuthUser(user: any): AuthUser {
+        return {
+            id: user.id.toString(),
+            email: user.email,
+            username: user.username,
+            avatarUrl: user.avatar_url ?? "",
+            role: user.role,
+            status: user.status,
+            lastLogin: user.last_login ?? null,
+        };
     }
 }
