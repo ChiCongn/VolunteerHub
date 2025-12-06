@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -20,6 +20,7 @@ import {
     registerSchema,
     type RegisterSchema,
 } from "../schemas/auth/register.schema";
+import { useUserStore } from "../stores/user.store";
 
 export function LoginRegister() {
     const navigate = useNavigate();
@@ -76,7 +77,11 @@ export function LoginRegister() {
     const onLogin = async (data: LoginSchema) => {
         setIsLoading(true);
         try {
-            await authService.login(data.email, data.password);
+            const res = await authService.login(data.email, data.password);
+            const store = useUserStore.getState();
+
+            store.setTokens(res.accessToken, res.refreshToken);
+            store.updateUser(res.user);
             toast.success("Welcome back to VolunteerHub!");
             navigate("/dashboard");
         } catch (error: any) {
@@ -92,7 +97,15 @@ export function LoginRegister() {
     const onRegister = async (data: RegisterSchema) => {
         setIsLoading(true);
         try {
-            await authService.register(data.name, data.email, data.password);
+            const res = await authService.register(
+                data.name,
+                data.email,
+                data.password
+            );
+            const store = useUserStore.getState();
+
+            store.setTokens(res.accessToken, res.refreshToken);
+            store.updateUser(res.user);
             toast.success("Account created successfully! Welcome!");
             navigate("/dashboard");
         } catch (error: any) {
