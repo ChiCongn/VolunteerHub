@@ -1,14 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../components/ui/select";
 import {
     Tabs,
     TabsContent,
@@ -17,41 +10,99 @@ import {
 } from "../components/ui/tabs";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Eye, EyeOff } from "lucide-react";
+import { authService } from "../services/authService";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, type LoginSchema } from "../schemas/auth/login.schema";
+import {
+    registerSchema,
+    type RegisterSchema,
+} from "../schemas/auth/register.schema";
 
 export function LoginRegister() {
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [loginEmail, setLoginEmail] = useState("");
-    const [loginPassword, setLoginPassword] = useState("");
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const [registerName, setRegisterName] = useState("");
-    const [registerEmail, setRegisterEmail] = useState("");
-    const [registerPassword, setRegisterPassword] = useState("");
-    const [registerRole, setRegisterRole] = useState("volunteer");
+    // showPassword per-field
+    const [showPassword, setShowPassword] = useState({
+        login: false,
+        register: false,
+        confirm: false,
+    });
 
-    // add library to check name + email + password.
-    // check name length > 2
-    // validate email
-    // check match password - confirm password
+    // === Login Form ===
+    const loginForm = useForm<LoginSchema>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: { email: "", password: "" },
+    });
+
+    // === Register Form ===
+    const registerForm = useForm<RegisterSchema>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            name: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+        },
+    });
+
+    // === Password Strength ===
+    const watchedPassword = registerForm.watch("password") ?? "";
+
     const getPasswordStrength = (password: string) => {
-        if (password.length === 0) return { strength: 0, label: "" };
-        if (password.length < 6)
-            return { strength: 33, label: "Weak", color: "bg-[#F44336]" };
-        if (password.length < 10)
-            return { strength: 66, label: "Medium", color: "bg-[#FFC107]" };
+        if (!password) return { strength: 0, label: "", color: "bg-gray-300" };
+
+        let strength = 0;
+        if (password.length >= 8) strength += 25;
+        if (/[a-z]/.test(password)) strength += 25;
+        if (/[A-Z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 25;
+
+        if (strength < 50)
+            return { strength, label: "Weak", color: "bg-[#F44336]" };
+        if (strength < 75)
+            return { strength, label: "Fair", color: "bg-[#FFC107]" };
+        if (strength < 100)
+            return { strength, label: "Good", color: "bg-[#43A047]" };
         return { strength: 100, label: "Strong", color: "bg-[#43A047]" };
     };
 
-    const passwordStrength = getPasswordStrength(registerPassword);
+    const passwordStrength = getPasswordStrength(watchedPassword || "");
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        // will call login
+    // === Handlers ===
+    const onLogin = async (data: LoginSchema) => {
+        setIsLoading(true);
+        try {
+            await authService.login(data.email, data.password);
+            toast.success("Welcome back to VolunteerHub!");
+            navigate("/dashboard");
+        } catch (error: any) {
+            toast.error(
+                error?.response?.data?.message ||
+                    "Login failed. Please check your credentials."
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleRegister = (e: React.FormEvent) => {
-        e.preventDefault();
-        // register
+    const onRegister = async (data: RegisterSchema) => {
+        setIsLoading(true);
+        try {
+            await authService.register(data.name, data.email, data.password);
+            toast.success("Account created successfully! Welcome!");
+            navigate("/dashboard");
+        } catch (error: any) {
+            toast.error(
+                error?.response?.data?.message ||
+                    "Registration failed. Please try again."
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -125,19 +176,29 @@ export function LoginRegister() {
                         </TabsList>
 
                         <TabsContent value="login" className="space-y-4">
-                            <form onSubmit={handleLogin} className="space-y-4">
+                            <form
+                                onSubmit={loginForm.handleSubmit(onLogin)}
+                                className="space-y-4"
+                            >
                                 <div className="space-y-2">
                                     <Label htmlFor="login-email">Email</Label>
                                     <Input
                                         id="login-email"
                                         type="email"
                                         placeholder="you@example.com"
-                                        value={loginEmail}
-                                        onChange={(e) =>
-                                            setLoginEmail(e.target.value)
+                                        {...loginForm.register("email")}
+                                        aria-invalid={
+                                            !!loginForm.formState.errors.email
                                         }
-                                        required
                                     />
+                                    {loginForm.formState.errors.email && (
+                                        <p className="text-sm text-red-600">
+                                            {
+                                                loginForm.formState.errors.email
+                                                    .message
+                                            }
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -148,27 +209,35 @@ export function LoginRegister() {
                                         <Input
                                             id="login-password"
                                             type={
-                                                showPassword
+                                                showPassword.login
                                                     ? "text"
                                                     : "password"
                                             }
                                             placeholder="••••••••"
-                                            value={loginPassword}
-                                            onChange={(e) =>
-                                                setLoginPassword(e.target.value)
+                                            {...loginForm.register("password")}
+                                            aria-invalid={
+                                                !!loginForm.formState.errors
+                                                    .password
                                             }
-                                            required
                                         />
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
                                             className="absolute right-0 top-0 h-full"
+                                            aria-label={
+                                                showPassword.login
+                                                    ? "Hide password"
+                                                    : "Show password"
+                                            }
                                             onClick={() =>
-                                                setShowPassword(!showPassword)
+                                                setShowPassword((s) => ({
+                                                    ...s,
+                                                    login: !s.login,
+                                                }))
                                             }
                                         >
-                                            {showPassword ? (
+                                            {showPassword.login ? (
                                                 <EyeOff className="w-4 h-4" />
                                             ) : (
                                                 <Eye className="w-4 h-4" />
@@ -180,8 +249,9 @@ export function LoginRegister() {
                                 <Button
                                     type="submit"
                                     className="w-full bg-[#43A047] hover:bg-[#388E3C]"
+                                    disabled={isLoading}
                                 >
-                                    Login
+                                    {isLoading ? "Signing in..." : "Login"}
                                 </Button>
 
                                 <Button
@@ -196,23 +266,30 @@ export function LoginRegister() {
 
                         <TabsContent value="register" className="space-y-4">
                             <form
-                                onSubmit={handleRegister}
+                                onSubmit={registerForm.handleSubmit(onRegister)}
                                 className="space-y-4"
                             >
                                 <div className="space-y-2">
                                     <Label htmlFor="register-name">
-                                        Full Name
+                                        Username
                                     </Label>
                                     <Input
                                         id="register-name"
                                         type="text"
                                         placeholder="John Doe"
-                                        value={registerName}
-                                        onChange={(e) =>
-                                            setRegisterName(e.target.value)
+                                        {...registerForm.register("name")}
+                                        aria-invalid={
+                                            !!registerForm.formState.errors.name
                                         }
-                                        required
                                     />
+                                    {registerForm.formState.errors.name && (
+                                        <p className="text-sm text-red-600">
+                                            {
+                                                registerForm.formState.errors
+                                                    .name.message
+                                            }
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -223,12 +300,20 @@ export function LoginRegister() {
                                         id="register-email"
                                         type="email"
                                         placeholder="you@example.com"
-                                        value={registerEmail}
-                                        onChange={(e) =>
-                                            setRegisterEmail(e.target.value)
+                                        {...registerForm.register("email")}
+                                        aria-invalid={
+                                            !!registerForm.formState.errors
+                                                .email
                                         }
-                                        required
                                     />
+                                    {registerForm.formState.errors.email && (
+                                        <p className="text-sm text-red-600">
+                                            {
+                                                registerForm.formState.errors
+                                                    .email.message
+                                            }
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -239,37 +324,46 @@ export function LoginRegister() {
                                         <Input
                                             id="register-password"
                                             type={
-                                                showPassword
+                                                showPassword.register
                                                     ? "text"
                                                     : "password"
                                             }
-                                            placeholder="••••••••"
-                                            value={registerPassword}
-                                            onChange={(e) =>
-                                                setRegisterPassword(
-                                                    e.target.value
-                                                )
+                                            placeholder="Create a strong password"
+                                            {...registerForm.register(
+                                                "password"
+                                            )}
+                                            aria-invalid={
+                                                !!registerForm.formState.errors
+                                                    .password
                                             }
-                                            required
                                         />
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
                                             className="absolute right-0 top-0 h-full"
+                                            aria-label={
+                                                showPassword.register
+                                                    ? "Hide password"
+                                                    : "Show password"
+                                            }
                                             onClick={() =>
-                                                setShowPassword(!showPassword)
+                                                setShowPassword((s) => ({
+                                                    ...s,
+                                                    register: !s.register,
+                                                }))
                                             }
                                         >
-                                            {showPassword ? (
-                                                <EyeOff className="w-4 h-4" />
+                                            {showPassword.register ? (
+                                                <EyeOff className="h-4 w-4" />
                                             ) : (
-                                                <Eye className="w-4 h-4" />
+                                                <Eye className="h-4 w-4" />
                                             )}
                                         </Button>
                                     </div>
-                                    {registerPassword && (
-                                        <div className="space-y-1">
+
+                                    {watchedPassword && (
+                                        <div className="space-y-2 pt-2">
                                             <div className="h-2 bg-muted rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full transition-all ${passwordStrength.color}`}
@@ -279,50 +373,87 @@ export function LoginRegister() {
                                                 />
                                             </div>
                                             <p className="text-xs text-muted-foreground">
-                                                Password strength:{" "}
-                                                {passwordStrength.label}
+                                                Strength:{" "}
+                                                <span className="font-medium">
+                                                    {passwordStrength.label}
+                                                </span>
                                             </p>
                                         </div>
                                     )}
-                                    <Label htmlFor="register-password">
+
+                                    {registerForm.formState.errors.password && (
+                                        <p className="text-sm text-red-600">
+                                            {
+                                                registerForm.formState.errors
+                                                    .password.message
+                                            }
+                                        </p>
+                                    )}
+
+                                    <Label htmlFor="register-confirm-password">
                                         Confirm Password
                                     </Label>
                                     <div className="relative">
                                         <Input
-                                            id="register-password"
+                                            id="register-confirm-password"
                                             type={
-                                                showConfirmPassword
+                                                showPassword.confirm
                                                     ? "text"
                                                     : "password"
                                             }
-                                            placeholder="••••••••"
-                                            required
+                                            placeholder="Confirm your password"
+                                            {...registerForm.register(
+                                                "confirmPassword"
+                                            )}
+                                            aria-invalid={
+                                                !!registerForm.formState.errors
+                                                    .confirmPassword
+                                            }
                                         />
                                         <Button
                                             type="button"
                                             variant="ghost"
                                             size="icon"
                                             className="absolute right-0 top-0 h-full"
+                                            aria-label={
+                                                showPassword.confirm
+                                                    ? "Hide confirm password"
+                                                    : "Show confirm password"
+                                            }
                                             onClick={() =>
-                                                setShowConfirmPassword(
-                                                    !showConfirmPassword
-                                                )
+                                                setShowPassword((s) => ({
+                                                    ...s,
+                                                    confirm: !s.confirm,
+                                                }))
                                             }
                                         >
-                                            {showConfirmPassword ? (
-                                                <EyeOff className="w-4 h-4" />
+                                            {showPassword.confirm ? (
+                                                <EyeOff className="h-4 w-4" />
                                             ) : (
-                                                <Eye className="w-4 h-4" />
+                                                <Eye className="h-4 w-4" />
                                             )}
                                         </Button>
+                                        {registerForm.formState.errors
+                                            .confirmPassword && (
+                                            <p className="text-sm text-red-600">
+                                                {
+                                                    registerForm.formState
+                                                        .errors.confirmPassword
+                                                        .message
+                                                }
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
                                 <Button
                                     type="submit"
                                     className="w-full bg-[#43A047] hover:bg-[#388E3C]"
+                                    disabled={isLoading}
                                 >
-                                    Sign Up
+                                    {isLoading
+                                        ? "Creating account..."
+                                        : "Create Account"}
                                 </Button>
                             </form>
                         </TabsContent>
