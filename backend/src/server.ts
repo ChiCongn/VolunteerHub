@@ -3,11 +3,20 @@ import { authRouter } from "./presentation/routes/auth.routes";
 import { userRouter } from "./presentation/routes/user.route";
 import { eventRouter } from "./presentation/routes/event.route";
 import { postRouter } from "./presentation/routes/posts.routes";
+import cors from "cors";
 
 const app = express();
 const PORT = 8000;
 
 app.use(express.json());
+
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    })
+);
 
 // Test
 app.get("/", (req, res) => {
