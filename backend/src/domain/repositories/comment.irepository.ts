@@ -23,4 +23,8 @@ export interface ICommentRepository {
     ): Promise<ListResult<CommentView>>;
 
     countByPostId(postId: string): Promise<number>;
+
+    // utils
+    findAuthorId(commentId: string): Promise<string>;
+    findPostIdByCommentId(commentId: string): Promise<string>;
 }

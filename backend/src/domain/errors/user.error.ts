@@ -42,30 +42,30 @@ export class CannotDeleteAlreadyDeletedUserError extends DomainError {
 
 export class UserLockedError extends DomainError {
     constructor(userId: string) {
-        super(
-            'USER_LOCKED',
-            `User account "${userId}" is locked and cannot be accessed`,
-            [userId]
-        );
+        super("USER_LOCKED", `User account "${userId}" is locked and cannot be accessed`, [userId]);
     }
 }
 
 export class UserDeletedError extends DomainError {
     constructor(userId: string) {
-        super(
-            'USER_DELETED',
-            `User account "${userId}" has been deleted`,
-            [userId]
-        );
+        super("USER_DELETED", `User account "${userId}" has been deleted`, [userId]);
     }
 }
 
 export class UserPendingApprovalError extends DomainError {
     constructor(userId: string) {
+        super("USER_PENDING_APPROVAL", `User "${userId}" is pending admin approval`, [userId]);
+    }
+}
+
+export class ForbiddenError extends DomainError {
+    constructor(resource?: string) {
         super(
-            'USER_PENDING_APPROVAL',
-            `User "${userId}" is pending admin approval`,
-            [userId]
+            "FORBIDDEN",
+            resource
+                ? `You are not allowed to access ${resource}`
+                : "You are not allowed to perform this action",
+            resource ? [resource] : []
         );
     }
 }

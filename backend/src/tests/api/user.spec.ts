@@ -1,6 +1,6 @@
 import request from "supertest";
 import { app } from "../../server";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { UserRole, UserStatus } from "../../domain/entities/enums";
 import prisma from "../../infrastructure/prisma/client";
 
@@ -16,18 +16,25 @@ const mockRootAdminId = "76358a06-dd79-49e4-bd67-7403cdcbc25e";
 const rootAdminToken =
     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzBhZjE3Mi1mZDY4LTQ4MGItODk1YS03MmI4MDFjY2IyYjMiLCJlbWFpbCI6InRoZXJlc2lhQHZvbHVudGVlcmh1Yi5jb20iLCJyb2xlIjoiZXZlbnRfbWFuYWdlciIsImlhdCI6MTc2NDY0NDk1NiwiZXhwIjoxNzY0NjQ1ODU2LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiYmE0M2Q2MzMtMDZlNC00M2VjLWIyZDgtZmM2ZTRjZWEzNzYxIn0.2GnYw9OSXolbJVMWkYQTj7Btt9K_Ysy7tpFDW5d_Wo8";
 const adminToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzBhZjE3Mi1mZDY4LTQ4MGItODk1YS03MmI4MDFjY2IyYjMiLCJlbWFpbCI6InRoZXJlc2lhQHZvbHVudGVlcmh1Yi5jb20iLCJyb2xlIjoiZXZlbnRfbWFuYWdlciIsImlhdCI6MTc2NDY0NDk1NiwiZXhwIjoxNzY0NjQ1ODU2LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiYmE0M2Q2MzMtMDZlNC00M2VjLWIyZDgtZmM2ZTRjZWEzNzYxIn0.2GnYw9OSXolbJVMWkYQTj7Btt9K_Ysy7tpFDW5d_Wo8";
-const userToken =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDY2OTU4OCwiZXhwIjoxNzY0NjcwNDg4LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiM2NmZTg1NTktNWU0OC00YmYyLTljZjktYTU2YWYwZDEyM2E3In0.Fd-AA_AyqVUEKenzdL44cSOIO3CMTeabFeVpiJAg4wg";
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NWI0MzNlZS1iM2M2LTQ3MTUtYjQwOC1hOGExYjFmZTBlYjAiLCJlbWFpbCI6InRoZXJlc2lhQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NTEyMDQ3OSwiZXhwIjoxNzY1MTIxMzc5LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiMDAzMjcyMGItZDdlOC00OTdiLWI5MWItZDhjNzYwYTEzMjYxIn0.53w-xA7X4sQboL448lXLTXvqAQgnO9u8IIdv4sAyxys";
 
 const anotherUserToken =
     "Bearer eyJhbGciEiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNjkxMmI3My0yNDM3LTQwMTEtYjMzYi0zMWFjMmI4YWU5ZTciLCJlbWFpbCI6InVzZXIwMDFAZ21haWwuY29tIiwicm9sZSI6InZvbHVudGVlciIsImlhdCI6MTc2NDYwMDEzOSwiZXhwIjoxNzY0NjAxMDM5LCJhdWQiOiJodHRwczovL2FwaS52b2x1bnRlZXJodWIuY29tIiwiaXNzIjoiaHR0cHM6Ly92b2x1bnRlZXJodWIuY29tIiwianRpIjoiNmY5Mjg4MjktNDA4OS00NjkyLWFhOGQtMmQ1MzliOGU2ZTdkIn0.aNMvwlFASWkRm83LCimWUoRu1f9SYnB-HVz0kArMZJQ";
+
+const registeredUser = await request(app).post("/api/v1/auth/register").send({
+    username: "should be deleted",
+    email: "user0001@gmail.com",
+    password: "Password@123",
+});
+
+const userToken = `Bearer ${registeredUser.body.accessToken}`;
 
 describe("User API", () => {
     describe("list/filter users", async () => {
         it("should return list user", async () => {
             const res = await request(app)
                 .get(listUserEndpoint)
+                .set("Authorization", adminToken)
                 .query({ search: "user", limit: 2 });
 
             expect(res.status).toBe(200);
@@ -39,6 +46,7 @@ describe("User API", () => {
         it("should return list user", async () => {
             const res = await request(app)
                 .get(listUserEndpoint)
+                .set("Authorization", adminToken)
                 .query({ role: UserRole.Volunteer, limit: 10 });
 
             expect(res.status).toBe(200);
@@ -50,6 +58,7 @@ describe("User API", () => {
         it("should return list user", async () => {
             const res = await request(app)
                 .get(listUserEndpoint)
+                .set("Authorization", adminToken)
                 .query({ status: UserStatus.Active, limit: 10 });
 
             expect(res.status).toBe(200);
@@ -61,10 +70,20 @@ describe("User API", () => {
         it("should return 400 and Bad Request if invalid input", async () => {
             const res = await request(app)
                 .get(listUserEndpoint)
+                .set("Authorization", adminToken)
                 .query({ status: "root", limit: 2 });
 
             expect(res.status).toBe(400);
             expect(res.body.message).toBe("Bad Request");
+        });
+
+        it("should return forbidden when volunteer try to list users", async () => {
+            const res = await request(app).get(listUserEndpoint).set("Authorization", userToken);
+            expect(res.status).toBe(403);
+        });
+
+        it("should return forbidden when event manager try to list users", async () => {
+            // TODO:
         });
     });
 
@@ -198,7 +217,11 @@ describe("User API", () => {
         });
 
         it("should return 403 Forbidden if non-admin user tries to lock a user", async () => {
-            // TODO: implement locked user access restriction later
+            const res = await request(app)
+                .patch(`/api/v1/users/${existedUserId}/lock`)
+                .send({ locked: true })
+                .set("Authorization", userToken);
+            expect(res.status).toBe(403);
         });
     });
 

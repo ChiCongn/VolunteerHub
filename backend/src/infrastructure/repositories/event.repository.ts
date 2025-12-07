@@ -17,10 +17,12 @@ import {
     EventCapacityInvalidError,
     EventTimeInvalidError,
 } from "../../domain/errors/event.error";
-import { EventStatus, EventCategory } from "../../domain/entities/enums";
+import { EventStatus, EventCategory, RegistrationStatus } from "../../domain/entities/enums";
 import { Event } from "../../domain/entities/event.entity";
 import { UserRepository } from "./user.repository";
 import logger from "../../logger";
+import { fa } from "zod/locales";
+import { RegistrationNotFoundError } from "../../domain/errors/registration.error";
 
 export class EventRepository implements IEventRepository {
     constructor(
@@ -677,6 +679,63 @@ export class EventRepository implements IEventRepository {
         );
         const total = Number(result.count);
         return total;
+    }
+
+    async findOwner(eventId: string): Promise<string> {
+        logger.debug(
+            { eventId, action: "findOwner" },
+            "[EventRepository] Fetching owner id of this event"
+        );
+        const result = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: { owner_id: true },
+        });
+
+        if (!result) {
+            logger.warn({ eventId, action: "findOwner" }, "[EventRepository] Event not found");
+            throw new EventNotFoundError(eventId);
+        }
+
+        return result.owner_id;
+    }
+
+    async findManagers(eventId: string): Promise<string[]> {
+        logger.debug(
+            { eventId, action: "findManagers" },
+            "[EventRepository] Fetching manager ids of this event"
+        );
+        const result = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: { event_manager_ids: true },
+        });
+
+        if (!result) {
+            logger.warn({ eventId, action: "findManagers" }, "[EventRepository] Event not found");
+            throw new EventNotFoundError(eventId);
+        }
+
+        return result.event_manager_ids;
+    }
+
+    async getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus> {
+        logger.debug(
+            { eventId, action: "getRegistrationStatus" },
+            "[EventRepository] Fetching registration status"
+        );
+        const register = await this.prisma.registrations.findFirst({
+            where: { user_id: userId, event_id: eventId },
+            select: { status: true },
+        });
+
+        if (!register) {
+            logger.warn(
+                { eventId, action: "getRegistrationStatus" },
+                "[EventRepository] Registration not found"
+            );
+            throw new RegistrationNotFoundError("none");
+        }
+
+        return register.status;
     }
 
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {

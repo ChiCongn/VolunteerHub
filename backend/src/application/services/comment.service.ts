@@ -1,4 +1,3 @@
-import { ICommentRepository } from '../../domain/repositories/comment.irepository';
 import { Comment } from '../../domain/entities/comment.entity';
 import { 
     CreateCommentDto, 
@@ -8,7 +7,9 @@ import {
 import { Pagination } from '../dtos/pagination.dto';
 import { SortOption } from '../dtos/sort-option.dto';
 import { ListResult } from '../dtos/list-result.dto';
-import { commentRepo } from '../../infrastructure/repositories'; 
+import { ICommentRepository } from "../../domain/repositories/comment.irepository";
+import { commentRepo } from "../../infrastructure/repositories";
+import logger from "../../logger";
 
 export class CommentService {
     constructor(private readonly commentRepo: ICommentRepository) {}
@@ -49,6 +50,23 @@ export class CommentService {
     // ================= Stats (Optional) =================
     async countCommentsInPost(postId: string): Promise<number> {
         return this.commentRepo.countByPostId(postId);
+    }
+
+    // ================= Utils =================
+    async findAuthorId(commentId: string) {
+        logger.debug(
+            { commentId, action: "findAuthorId" },
+            "[CommentService] Fetching author id of this comment"
+        );
+        return this.commentRepo.findAuthorId(commentId);
+    }
+
+    async findPostIdByCommentId(commentId: string) {
+        logger.debug(
+            { commentId, action: "findPostIdByCommentId" },
+            "[CommentService] Fetching post id that this comment belong to"
+        );
+        return this.commentRepo.findPostIdByCommentId(commentId);
     }
 }
 

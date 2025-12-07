@@ -199,6 +199,28 @@ export class NotificationRepository implements INotificationRepository {
         });
     }
 
+    async findOwnerId(notificationId: string): Promise<string> {
+        logger.debug(
+            { action: "findOwnerId" },
+            `[NotificationRepository] Fetching owner id of this notification ${notificationId}`
+        );
+
+        const notification = await this.prisma.notifications.findUnique({
+            where: { id: notificationId },
+            select: { user_id: true },
+        });
+
+        if (!notification) {
+            logger.warn(
+                { notificationId, action: "findOwnerId" },
+                "[NotificationRepository] Notification not found"
+            );
+            throw new NotificationNotFoundError(notificationId);
+        }
+
+        return notification.user_id;
+    }
+
     private async insert(data: CreateNotificationDto): Promise<string> {
         logger.trace(
             { userId: data.userId, type: data.type, action: "insert notification" },

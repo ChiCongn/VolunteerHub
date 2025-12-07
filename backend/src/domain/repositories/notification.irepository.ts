@@ -19,4 +19,6 @@ export interface INotificationRepository {
 
     markAsRead?(id: string): Promise<void>;
     markAllAsRead?(userId: string): Promise<void>;
+
+    findOwnerId(notificationId: string): Promise<string>;
 }

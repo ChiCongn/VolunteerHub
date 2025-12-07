@@ -138,6 +138,50 @@ export class CommentRepository implements ICommentRepository {
         }
     }
 
+    // utils
+    async findAuthorId(commentId: string): Promise<string> {
+        logger.debug(
+            { commentId, action: "findAuthorId" },
+            "[CommentService] Fetching author id of this comment"
+        );
+        const comment = await this.prisma.comments.findUnique({
+            where: { id: commentId },
+            select: { author_id: true },
+        });
+
+        if (!comment) {
+            logger.warn(
+                { commentId, action: "findAuthorId" },
+                "[CommentRepository] Comment not found"
+            );
+            throw new CommentNotFoundError(commentId);
+        }
+
+        return comment.author_id;
+    }
+
+    async findPostIdByCommentId(commentId: string): Promise<string> {
+        logger.debug(
+            { commentId, action: "findPostIdByCommentId" },
+            "[CommentService] Fetching post id that this comment belong to"
+        );
+
+        const comment = await this.prisma.comments.findUnique({
+            where: { id: commentId },
+            select: { post_id: true },
+        });
+
+        if (!comment) {
+            logger.warn(
+                { commentId, action: "findPostIdByCommentId" },
+                "[CommentRepository] Comment not found"
+            );
+            throw new CommentNotFoundError(commentId);
+        }
+
+        return comment.post_id;
+    }
+
     private async insert(comment: CreateCommentDto): Promise<string> {
         logger.trace(
             { postId: comment.postId, authorId: comment.authorId, action: "insert comment" },

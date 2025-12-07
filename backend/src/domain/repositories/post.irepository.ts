@@ -41,4 +41,8 @@ export interface IPostRepository {
     // Stats
     countByEventId(eventId: string): Promise<number>;
     countByUserId(userId: string): Promise<number>;
+
+    // utils
+    findEventIdByPostId(postId: string): Promise<string>;
+    findAuthorId(postId: string): Promise<string>;
 }

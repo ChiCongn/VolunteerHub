@@ -87,7 +87,7 @@ CREATE TABLE posts (
     image_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
-    deleted_at TIMESTAMPTZ;
+    deleted_at TIMESTAMPTZ
 );
 
 -- -----------------------
