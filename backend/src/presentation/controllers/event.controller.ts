@@ -13,6 +13,7 @@ import { DomainError } from "../../domain/errors/domain.error";
 import { eventRepo } from "../../infrastructure/repositories/index";
 
 import { Request, Response } from "express";
+import { EventFilterSchema } from "../validators/event/filetr-event.schema";
 
 export class EventController {
     constructor(private readonly eventRepository: IEventRepository) {
@@ -91,7 +92,16 @@ export class EventController {
 
     async searchEvents(req: Request, res: Response): Promise<void> {
         try {
-            const filters: EventFilterDto = req.query;
+            const validated = EventFilterSchema.safeParse(req.query);
+            if (!validated.success) {
+                res.status(400).json({
+                    error: "Invalid filter parameters",
+                    details: validated.error.issues,
+                });
+                return;
+            }
+
+            const filters: EventFilterDto = validated.data;
             const pagination: Pagination = {
                 page: parseInt(req.query.page as string) || 1,
                 limit: parseInt(req.query.limit as string) || 10,
