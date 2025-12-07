@@ -5,20 +5,25 @@ import { eventController } from "../controllers/event.controller";
 import { CreateEventSchema } from "../validators/event/create-event.schema";
 import { UpdateEventSchema } from "../validators/event/update-event.schema";
 import { GetEventSchema } from "../validators/event/get-event.schema";
-import { EventFilterSchema } from "../validators/event/filetr-event.schema";
 import { CancelEventSchema } from "../validators/event/cancel-event.schema";
 
 export const eventRouter = Router();
 
-eventRouter.get("/", validate(EventFilterSchema), eventController.searchEvents);
+// Search events - validation happens in controller
+eventRouter.get("/", eventController.searchEvents);
 
 eventRouter.get("/:eventId", validate(GetEventSchema), eventController.fetchPublicEventView);
 
-eventRouter.post("/", authenticate, validate(CreateEventSchema), eventController.createEvent); 
+eventRouter.post("/", authenticate, validate(CreateEventSchema), eventController.createEvent);
 
-eventRouter.patch("/:eventId", authenticate, validate(UpdateEventSchema), eventController.updateEvent);
+eventRouter.patch(
+    "/:eventId",
+    authenticate,
+    validate(UpdateEventSchema),
+    eventController.updateEvent
+);
 
-eventRouter.get("/:eventId", authenticate,  validate(GetEventSchema), eventController.getEventById);
+eventRouter.get("/:eventId", authenticate, validate(GetEventSchema), eventController.getEventById);
 
 eventRouter.post("/:eventId", authenticate, validate(GetEventSchema), eventController.deleteEvent);
 
@@ -57,4 +62,3 @@ eventRouter.patch("/:eventId/approve", authenticate, eventController.approveEven
 eventRouter.patch("/:eventId/reject", authenticate, eventController.rejectEvent);
 
 eventRouter.patch("/:eventId/complete", authenticate, eventController.completeEvent);
-
