@@ -2,6 +2,7 @@ import { IStatsRepository } from "../../domain/repositories/stats.irepository";
 import {
     OverviewStatsDto,
     EventsStatsDto,
+    EventsStatsFilterDto,
     EventStatsDto,
     TrendingEventDto,
     VolunteerStatsDto,
@@ -36,6 +37,7 @@ export class StatsRepository implements IStatsRepository {
 
                 total_events: bigint;
                 active_events: bigint;
+                ongoing_events: bigint;
                 upcoming_events: bigint;
 
                 total_regs: bigint;
@@ -50,6 +52,7 @@ export class StatsRepository implements IStatsRepository {
 
             (SELECT COUNT(*) FROM events) AS total_events,
             (SELECT COUNT(*) FROM events WHERE status IN ('approved', 'pending')) AS active_events,
+            (SELECT COUNT(*) FROM events WHERE status = 'ongoing') AS ongoing_events,
             (SELECT COUNT(*) FROM events WHERE start_time > NOW()) AS upcoming_events,
 
             (SELECT COUNT(*) FROM registrations) AS total_regs,
@@ -81,6 +84,7 @@ export class StatsRepository implements IStatsRepository {
             events: {
                 total: Number(row.total_events),
                 active: Number(row.active_events),
+                ongoing: Number(row.ongoing_events),
                 upcoming: Number(row.upcoming_events),
             },
             registrations: {
@@ -91,58 +95,117 @@ export class StatsRepository implements IStatsRepository {
         };
     }
 
-    async getEventsStats(): Promise<EventsStatsDto> {
+    async getEventsStats(filters: EventsStatsFilterDto): Promise<EventsStatsDto> {
         logger.debug(
             {
                 action: "getEventsStats",
+                filters,
             },
             "[StatsRepository] get overview of all events"
         );
-        const [row] = await this.prisma.$queryRaw<
+
+        const { range, status, categories, organizerIds, location, excludeEmpty } = filters;
+
+        const whereClauses: string[] = [];
+        const params: any[] = [];
+
+        // 1. Date range  (event created/updated)
+        if (range?.from) {
+            params.push(range.from);
+            whereClauses.push(`e.created_at >= $${params.length}`);
+        }
+        if (range?.to) {
+            params.push(range.to);
+            whereClauses.push(`e.created_at <= $${params.length}`);
+        }
+
+        // 2. Status filter
+        if (status && status.length > 0) {
+            params.push(status);
+            whereClauses.push(`e.status = ANY($${params.length})`);
+        }
+
+        // 3. Category filter
+        if (categories && categories.length > 0) {
+            params.push(categories);
+            whereClauses.push(`e.categories && ARRAY[$${params.length}]::event_category[]`);
+        }
+
+        // 4. Organizer (owner) filter
+        if (organizerIds && organizerIds.length > 0) {
+            params.push(organizerIds);
+            whereClauses.push(`e.owner_id = ANY($${params.length})`);
+        }
+
+        // 5. Location filter (simple LIKE match)
+        if (location) {
+            params.push(`%${location}%`);
+            whereClauses.push(`e.location ILIKE $${params.length}`);
+        }
+
+        // Combine WHERE
+        const whereSQL = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+        // If excludeEmpty = true → ignore events with no posts & no participants
+        const excludeEmptySQL = excludeEmpty ? `HAVING COUNT(r.id) > 0 OR COUNT(p.id) > 0` : "";
+
+        // Query
+        const sql = `
+            WITH event_base AS (
+                SELECT
+                    e.id AS event_id,
+                    e.status,
+                    COUNT(DISTINCT r.id) AS participant_count,
+                    COUNT(DISTINCT p.id) AS post_count
+                FROM events e
+                LEFT JOIN registrations r ON r.event_id = e.id
+                LEFT JOIN posts p ON p.event_id = e.id
+                ${whereSQL}
+                GROUP BY e.id
+                ${excludeEmptySQL}
+            )
+            SELECT
+                COUNT(*) AS total_events,
+
+                COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS active_events,
+                COUNT(*) FILTER (WHERE status = 'completed') AS completed_events,
+
+                SUM(participant_count) AS total_participants,
+                AVG(participant_count) AS avg_participants,
+                percentile_cont(0.5) WITHIN GROUP (ORDER BY participant_count) AS median_participants,
+
+                SUM(post_count) AS total_posts,
+                AVG(post_count) AS avg_posts
+            FROM event_base;
+        `;
+        const [row] = await this.prisma.$queryRawUnsafe<
             Array<{
                 total_events: bigint;
                 active_events: bigint;
                 completed_events: bigint;
 
-                total_participants: bigint;
+                total_participants: bigint | null;
                 avg_participants: number | null;
+                median_participants: number | null;
 
-                total_posts: bigint;
+                total_posts: bigint | null;
                 avg_posts: number | null;
             }>
-        >`
-            SELECT
-                (SELECT COUNT(*) FROM events) AS total_events,
-                (SELECT COUNT(*) FROM events WHERE status IN ('approved', 'pending')) AS active_events,
-                (SELECT COUNT(*) FROM events WHERE status = 'completed') AS completed_events,
-
-                (SELECT COUNT(*) FROM registrations) AS total_participants,
-                (SELECT AVG(reg_count) 
-                FROM (
-                    SELECT COUNT(*) AS reg_count
-                    FROM registrations 
-                    GROUP BY event_id
-                ) sub) AS avg_participants,
-
-                (SELECT COUNT(*) FROM posts) AS total_posts,
-                (SELECT AVG(post_count)
-                FROM (
-                    SELECT COUNT(*) AS post_count
-                    FROM posts
-                    GROUP BY event_id
-                ) sub) AS avg_posts
-        `;
+        >(sql, ...params);
 
         return {
             totalEvents: Number(row.total_events),
             activeEvents: Number(row.active_events),
             completedEvents: Number(row.completed_events),
 
-            totalParticipants: Number(row.total_participants),
-            avgParticipantsPerEvent: row.avg_participants ? Number(row.avg_participants) : 0,
+            participants: {
+                total: Number(row.total_participants ?? 0),
+                average: Number(row.avg_participants ?? 0),
+                median: Number(row.median_participants ?? 0),
+            },
 
-            totalPosts: Number(row.total_posts),
-            avgPostsPerEvent: row.avg_posts ? Number(row.avg_posts) : 0,
+            totalPosts: Number(row.total_posts ?? 0),
+            avgPostsPerEvent: Number(row.avg_posts ?? 0),
         };
     }
 

@@ -7,6 +7,7 @@ export interface OverviewStatsDto {
     events: {
         total: number;
         active: number;
+        ongoing: number;
         upcoming: number;
     };
     registrations: {

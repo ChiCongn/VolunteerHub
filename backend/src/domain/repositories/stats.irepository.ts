@@ -1,6 +1,7 @@
 import {
     OverviewStatsDto,
     EventsStatsDto,
+    EventsStatsFilterDto,
     EventStatsDto,
     TrendingEventDto,
     VolunteerStatsDto,
@@ -12,7 +13,7 @@ export interface IStatsRepository {
     getOverviewStats(): Promise<OverviewStatsDto>;
 
     /** Aggregated numbers for all events */
-    getEventsStats(): Promise<EventsStatsDto>;
+    getEventsStats(filters: EventsStatsFilterDto): Promise<EventsStatsDto>;
 
     /** Detailed stats for a single event (current + previous period) */
     getEventStats(eventId: string, daysCurrent: number, daysPrevious: number): Promise<EventStatsDto>;
