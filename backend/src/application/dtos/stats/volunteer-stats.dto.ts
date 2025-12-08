@@ -9,3 +9,10 @@ export interface VolunteerStatsDto {
         thisWeek: number;
     };
 }
+
+export interface EventManagerStatsDto {
+    totalEventManagers: number;
+    activeCount: number;
+    inactiveCount: number;
+    lockedCount: number;
+}

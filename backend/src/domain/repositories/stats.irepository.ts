@@ -6,6 +6,7 @@ import {
     TrendingEventDto,
     VolunteerStatsDto,
     TimeSeriesDto,
+    EventManagerStatsDto,
 } from "../../application/dtos/stats";
 
 export interface IStatsRepository {
@@ -26,6 +27,8 @@ export interface IStatsRepository {
 
     /** Volunteer / user aggregates */
     getVolunteerStats(): Promise<VolunteerStatsDto>;
+
+    getEventManagersStats(): Promise<EventManagerStatsDto>;
 
     /** Time-series for a metric (users, registrations, posts…) */
     getTimeSeries(

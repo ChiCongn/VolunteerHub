@@ -8,6 +8,7 @@ import {
     VolunteerStatsDto,
     TimeSeriesPoint,
     TimeSeriesDto,
+    EventManagerStatsDto,
 } from "../../application/dtos/stats";
 import { EventNotFoundError } from "../../domain/errors/event.error";
 import { PrismaClient } from "../prisma/generated/client";
@@ -399,7 +400,7 @@ export class StatsRepository implements IStatsRepository {
             WITH volunteer_users AS (
                 SELECT *
                 FROM users
-                WHERE role IN ('volunteer', 'event_manager')
+                WHERE role = 'volunteer'
             )
             SELECT
                 COUNT(*) AS total,
@@ -425,6 +426,52 @@ export class StatsRepository implements IStatsRepository {
                 today: Number(row.new_today),
                 thisWeek: Number(row.new_week),
             },
+        };
+    }
+
+    async getEventManagersStats(): Promise<EventManagerStatsDto> {
+        logger.debug(
+            {
+                action: "getVolunteerStats",
+            },
+            "[StatsRepository] Getting volunteer stats"
+        );
+
+        const today = dateRange(1);
+        const week = dateRange(7);
+
+        const result = await this.prisma.$queryRaw<
+            {
+                total: bigint;
+                active: bigint;
+                locked: bigint;
+                new_today: bigint;
+                new_week: bigint;
+            }[]
+        >`
+            WITH volunteer_users AS (
+                SELECT *
+                FROM users
+                WHERE role = 'event_manager'
+            )
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE status = 'active') AS active,
+                COUNT(*) FILTER (WHERE status = 'locked') AS locked,
+            FROM volunteer_users;
+        `;
+
+        const row = result[0];
+
+        const total = Number(row.total);
+        const active = Number(row.active);
+        const locked = Number(row.locked);
+
+        return {
+            totalEventManagers: total,
+            activeCount: active,
+            inactiveCount: total - active - locked,
+            lockedCount: locked,
         };
     }
 
