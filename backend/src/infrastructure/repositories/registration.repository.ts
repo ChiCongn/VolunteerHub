@@ -1,14 +1,15 @@
 import { PrismaClient, registrations } from "../prisma/generated/client";
 import logger from "../../logger";
-import {
-    AlreadyRegisteredError,
-    RegistrationNotFoundError,
-} from "../../domain/errors/registration.error";
+import { IRegistrationRepository } from "../../domain/repositories/registration.irepository";
+import { Pagination } from "../../application/dtos/pagination.dto";
+import { RegistrationFilterDto } from "../../application/dtos/registration.dto";
+import { Registration } from "../../application/dtos/registration/registration.dto";
+import { SortOption } from "../../application/dtos/sort-option.dto";
 
-export class RegistrationRepository {
+export class RegistrationRepository implements IRegistrationRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
-    async register(userId: string, eventId: string): Promise<registrations> {
+    async register(userId: string, eventId: string): Promise<string> {
         logger.debug(
             {
                 userId: userId,
@@ -18,64 +19,38 @@ export class RegistrationRepository {
             "[RegistrationRepository] Registering to enroll an event"
         );
 
-        if (await this.checkExistsByUserAndEvent(userId, eventId)) {
-            logger.warn(
-                {
-                    userId: userId,
-                    eventId: eventId,
-                },
-                "[RegistrationRepository] The user is already register this event"
-            );
-
-            throw new AlreadyRegisteredError(eventId, userId);
-        }
-        return this.prisma.registrations.create({
-            data: { user_id: userId, event_id: eventId },
-        });
-    }
-
-    async unregister(userId: string, eventId: string): Promise<void> {
-        logger.debug(
-            {
-                userId: userId,
-                eventId: eventId,
-                action: "unregister event",
+        const registration = await this.prisma.registrations.create({
+            data: {
+                user_id: userId,
+                event_id: eventId,
             },
-            "[RegistrationRepository] Unregister from event"
-        );
-
-        if (await !this.checkExistsByUserAndEvent(userId, eventId)) {
-            logger.debug(
-                {
-                    userId: userId,
-                    eventId: eventId,
-                },
-                "[RegistrationRepository] The user is not registered this event"
-            );
-
-            throw new RegistrationNotFoundError("");
-        }
-        await this.prisma.registrations.delete({
-            where: {
-                event_id_user_id: {
-                    event_id: eventId,
-                    user_id: userId,
-                },
+            select: {
+                id: true,
             },
         });
+
+        return registration.id;
     }
 
-    async unregisterById(id: string): Promise<void> {
+    async withdrawRegistration(id: string): Promise<void> {
         logger.debug({
             registrationId: id,
             action: "unregister",
         });
-
-        if (await !this.checkExistsById(id)) {
-            logger.debug("[RegistrationRepository] The registration id is not found");
-            throw new RegistrationNotFoundError(id);
-        }
         await this.prisma.registrations.delete({ where: { id } });
+    }
+
+    async listRegistration(
+        filters: RegistrationFilterDto,
+        pagination: Pagination,
+        sortOption: SortOption
+    ): Promise<Registration[]> {
+        logger.info(
+            { filters, pagination, sortOption },
+            "[RegistrationRepository] listRegistrations – implementation pending"
+        );
+        // TODO: will implement later
+        return [];
     }
 
     async checkExistsByUserAndEvent(userId: string, eventId: string): Promise<boolean> {
@@ -100,7 +75,7 @@ export class RegistrationRepository {
         return !!exists;
     }
 
-    async checkExistsById(id: string): Promise<boolean> {
+    async checkExists(id: string): Promise<boolean> {
         const exists = await this.prisma.registrations.findUnique({
             where: { id },
             select: { id: true },
