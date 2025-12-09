@@ -258,14 +258,14 @@ export class StatsRepository implements IStatsRepository {
                 -- Registrations
                 (SELECT COUNT(*) 
                 FROM registrations 
-                WHERE event_id = ${eventId}
+                WHERE event_id = ${eventId}::uuid
                 AND created_at >= ${currentStart}
                 AND created_at < ${currentEnd}
                 ) AS cur_regs,
 
                 (SELECT COUNT(*)
                 FROM registrations 
-                WHERE event_id = ${eventId}
+                WHERE event_id = ${eventId}::uuid
                 AND created_at >= ${previousStart}
                 AND created_at < ${previousEnd}
                 ) AS prev_regs,
@@ -273,14 +273,14 @@ export class StatsRepository implements IStatsRepository {
                 -- Posts
                 (SELECT COUNT(*) 
                 FROM posts
-                WHERE event_id = ${eventId}
+                WHERE event_id = ${eventId}::uuid
                 AND created_at >= ${currentStart}
                 AND created_at < ${currentEnd}
                 ) AS cur_posts,
 
                 (SELECT COUNT(*)
                 FROM posts
-                WHERE event_id = ${eventId}
+                WHERE event_id = ${eventId}::uuid
                 AND created_at >= ${previousEnd}
                 AND created_at < ${previousEnd}
                 ) AS prev_posts
