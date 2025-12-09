@@ -1,12 +1,12 @@
 import { Request } from "express";
 import { UserRole, UserStatus } from "../../domain/entities/enums";
-import { userService } from "../service/user.service";
+import { userService } from "../services/user.service";
 import { ForbiddenError } from "../../domain/errors/user.error";
 import logger from "../../logger";
-import { eventService } from "../service/event.service";
-import { postService } from "../service/post.service";
-import { commentService } from "../service/comment.service";
-import { notificationService } from "../service/notification.service";
+import { eventService } from "../services/event.service";
+import { postService } from "../services/post.service";
+import { commentService } from "../services/comment.service";
+import { notificationService } from "../services/notification.service";
 
 export interface AuthContext {
     id: string;
