@@ -16,8 +16,8 @@ export interface IStatsRepository {
     /** Aggregated numbers for all events */
     getEventsStats(filters: EventsStatsFilterDto): Promise<EventsStatsDto>;
 
-    /** Detailed stats for a single event (current + previous period) */
-    getEventStats(eventId: string, daysCurrent: number, daysPrevious: number): Promise<EventStatsDto>;
+    /** Detailed stats for a single event */
+    getEventStats(eventId: string, currentPeriodDays: number, previousPeriodDays: number): Promise<EventStatsDto>;
 
     /** Top-N trending events by participant growth */
     getTrendingEvents(
