@@ -19,6 +19,7 @@ export class NotificationController {
         this.getNotificationsByUserId = this.getNotificationsByUserId.bind(this);
         this.maskAsRead = this.maskAsRead.bind(this);
         this.markAllAsRead = this.markAllAsRead.bind(this);
+        this.countNotificationsByUserId = this.countNotificationsByUserId.bind(this);
     }
     //core
     async createNotification(req: Request, res: Response): Promise<void> {

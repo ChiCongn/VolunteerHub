@@ -4,6 +4,7 @@ import { userRouter } from "./presentation/routes/user.route";
 import { eventRouter } from "./presentation/routes/event.route";
 import { postRouter } from "./presentation/routes/posts.routes";
 import { commentRouter } from "./presentation/routes/comment.routes"
+import { notificationRouter } from "./presentation/routes/notification.routes";
 import cors from "cors";
 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/comments", commentRouter);
+app.use("/api/notifications", notificationRouter);
 
 // Global error handler (must be last)
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

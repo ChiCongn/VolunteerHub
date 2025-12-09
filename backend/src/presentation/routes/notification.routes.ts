@@ -5,7 +5,6 @@ import { notificationController } from "../controllers/notification.controller";
 import { CreateNotificationSchema } from "../validators/notification/create-notification.schema";
 import { NotificationFilterSchema } from "../validators/notification/filter-notification.schema";
 import { ReadNotificationSchema } from "../validators/notification/read-notification.schema";
-import { notificationRepo } from "../../infrastructure/repositories";
 
 export const notificationRouter = Router();
 
