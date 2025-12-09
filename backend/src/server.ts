@@ -5,6 +5,7 @@ import { eventRouter } from "./presentation/routes/event.route";
 import { postRouter } from "./presentation/routes/posts.routes";
 import { commentRouter } from "./presentation/routes/comment.routes"
 import cors from "cors";
+import { statsRouter } from "./presentation/routes/stats.routes";
 
 const app = express();
 const PORT = 8000;
@@ -31,6 +32,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/stats", statsRouter)
 
 // Global error handler (must be last)
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
