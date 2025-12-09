@@ -5,4 +5,9 @@ export const GetEventStatsSchema = {
     params: z.object({
         eventId: EventIdSchema,
     }),
+
+    query: z.object({
+        currentPeriodDays: z.number().optional(),
+        previousPeriodDays: z.number().optional(),
+    }),
 };
