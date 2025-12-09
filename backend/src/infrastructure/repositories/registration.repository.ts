@@ -75,7 +75,7 @@ export class RegistrationRepository implements IRegistrationRepository {
         return !!exists;
     }
 
-    async checkExists(id: string): Promise<boolean> {
+    async exists(id: string): Promise<boolean> {
         const exists = await this.prisma.registrations.findUnique({
             where: { id },
             select: { id: true },
