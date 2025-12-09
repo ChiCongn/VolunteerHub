@@ -508,6 +508,14 @@ export class UserRepository implements IUserRepository {
         return Number(result[0]?.count ?? 0);
     }
 
+    async exists(id: string): Promise<boolean> {
+        const count = await this.prisma.users.count({
+            where: { id },
+            take: 1,
+        });
+        return count > 0;
+    }
+
     async getAuthContext(id: string): Promise<AuthContext> {
         logger.debug(
             { userId: id, action: "getAuthContext" },

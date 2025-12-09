@@ -680,6 +680,14 @@ export class EventRepository implements IEventRepository {
         return total;
     }
 
+    async exists(id: string): Promise<boolean> {
+        const count = await this.prisma.events.count({
+            where: { id },
+            take: 1,
+        });
+        return count > 0;
+    }
+
     async findOwner(eventId: string): Promise<string> {
         logger.debug(
             { eventId, action: "findOwner" },

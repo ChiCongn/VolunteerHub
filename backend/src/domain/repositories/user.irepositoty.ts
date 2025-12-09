@@ -38,5 +38,6 @@ export interface IUserRepository {
     ): Promise<ListResult<AdminUserView>>;
     count(filter?: ListUserFilterDto): Promise<number>;
     setUserLock(id: string, locked: boolean): Promise<void>;
+    exists(userId: string): Promise<boolean>;
     getAuthContext(id: string): Promise<AuthContext>;
 }
