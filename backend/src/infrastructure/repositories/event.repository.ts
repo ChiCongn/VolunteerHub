@@ -21,7 +21,6 @@ import { EventStatus, EventCategory, RegistrationStatus } from "../../domain/ent
 import { Event } from "../../domain/entities/event.entity";
 import { UserRepository } from "./user.repository";
 import logger from "../../logger";
-import { fa } from "zod/locales";
 import { RegistrationNotFoundError } from "../../domain/errors/registration.error";
 
 export class EventRepository implements IEventRepository {
@@ -704,17 +703,26 @@ export class EventRepository implements IEventRepository {
             { eventId, action: "findManagers" },
             "[EventRepository] Fetching manager ids of this event"
         );
-        const result = await this.prisma.events.findUnique({
+        const event = await this.prisma.events.findUnique({
             where: { id: eventId },
-            select: { event_manager_ids: true },
+            select: {
+                owner_id: true,
+                event_manager_ids: true,
+            },
         });
 
-        if (!result) {
+        if (!event) {
             logger.warn({ eventId, action: "findManagers" }, "[EventRepository] Event not found");
             throw new EventNotFoundError(eventId);
         }
 
-        return result.event_manager_ids;
+        const explicitManagers = event.event_manager_ids ?? [];
+
+        if (event.owner_id && !explicitManagers.includes(event.owner_id)) {
+            return [...explicitManagers, event.owner_id];
+        }
+
+        return event.event_manager_ids;
     }
 
     async getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus> {
