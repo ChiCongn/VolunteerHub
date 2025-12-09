@@ -444,9 +444,6 @@ export class StatsRepository implements IStatsRepository {
             "[StatsRepository] Getting volunteer stats"
         );
 
-        const today = dateRange(1);
-        const week = dateRange(7);
-
         const result = await this.prisma.$queryRaw<
             {
                 total: bigint;
@@ -456,7 +453,7 @@ export class StatsRepository implements IStatsRepository {
                 new_week: bigint;
             }[]
         >`
-            WITH volunteer_users AS (
+            WITH event_manager_users AS (
                 SELECT *
                 FROM users
                 WHERE role = 'event_manager'
@@ -464,8 +461,8 @@ export class StatsRepository implements IStatsRepository {
             SELECT
                 COUNT(*) AS total,
                 COUNT(*) FILTER (WHERE status = 'active') AS active,
-                COUNT(*) FILTER (WHERE status = 'locked') AS locked,
-            FROM volunteer_users;
+                COUNT(*) FILTER (WHERE status = 'locked') AS locked
+            FROM event_manager_users;
         `;
 
         const row = result[0];
