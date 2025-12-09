@@ -5,15 +5,9 @@ import { notificationController } from "../controllers/notification.controller";
 import { CreateNotificationSchema } from "../validators/notification/create-notification.schema";
 import { NotificationFilterSchema } from "../validators/notification/filter-notification.schema";
 import { ReadNotificationSchema } from "../validators/notification/read-notification.schema";
+import { notificationRepo } from "../../infrastructure/repositories";
 
 export const notificationRouter = Router();
-
-notificationRouter.post(
-    "/",
-    authenticate,
-    validate(CreateNotificationSchema),
-    notificationController.createNotification
-);
 
 notificationRouter.post(
     "/",
@@ -36,6 +30,12 @@ notificationRouter.get(
     notificationController.getNotificationsByUserId
 );
 
+notificationRouter.get(
+    "/users/:userId/count",
+    authenticate,
+    notificationController.countNotificationsByUserId
+)
+
 notificationRouter.patch(
     "/:notificationId/read",
     authenticate,
@@ -48,40 +48,3 @@ notificationRouter.patch(
     authenticate,
     notificationController.markAllAsRead
 );
-
-
-
-// notificationRouter.post(
-//     "/",
-//     validate(CreateNotificationSchema),
-//     notificationController.createNotification
-// );
-
-// notificationRouter.post(
-//     "/",
-//     validate(CreateNotificationSchema),
-//     notificationController.createNotification
-// );
-
-// notificationRouter.get(
-//     "/:notificationId",
-//     validate(ReadNotificationSchema),
-//     notificationController.getNotificationById
-// );
-
-// notificationRouter.get(
-//     "/users/:userId",
-//     validate(NotificationFilterSchema),
-//     notificationController.getNotificationsByUserId
-// );
-
-// notificationRouter.patch(
-//     "/:notificationId/read",
-//     validate(ReadNotificationSchema),
-//     notificationController.maskAsRead
-// );
-
-// notificationRouter.patch(
-//     "/users/:userId/read-all",
-//     notificationController.markAllAsRead
-// );

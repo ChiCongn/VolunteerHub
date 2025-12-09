@@ -63,6 +63,20 @@ export class NotificationController {
         }
     }
 
+    async countNotificationsByUserId(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.params.userId;
+            if (!this.notificationRepository.countByUserId) {
+                res.status(500).json({ message: "countByUserId method not available" });
+                return;
+            }
+            const count = await this.notificationRepository.countByUserId(userId);
+            res.status(200).json({ count });
+        } catch (error) {
+            this.handleError(res, error);
+        }   
+    }
+
     async maskAsRead(req: Request, res: Response): Promise<void> {
         try {
             const notificationId = req.params.notificationId;

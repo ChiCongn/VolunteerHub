@@ -8,80 +8,67 @@ import { ReadNotificationSchema } from "../validators/notification/read-notifica
 
 export const notificationRouter = Router();
 
-notificationRouter.post(
-    "/",
-    authenticate,
-    validate(CreateNotificationSchema),
-    notificationController.createNotification
-);
-
-notificationRouter.post(
-    "/",
-    authenticate,
-    validate(CreateNotificationSchema),
-    notificationController.createNotification
-);
-
-notificationRouter.get(
-    "/:notificationId",
-    authenticate,
-    validate(ReadNotificationSchema),
-    notificationController.getNotificationById
-);
-
-notificationRouter.get(
-    "/users/:userId",
-    authenticate,
-    validate(NotificationFilterSchema),
-    notificationController.getNotificationsByUserId
-);
-
-notificationRouter.patch(
-    "/:notificationId/read",
-    authenticate,
-    validate(ReadNotificationSchema),
-    notificationController.maskAsRead
-);
-
-notificationRouter.patch(
-    "/users/:userId/read-all",
-    authenticate,
-    notificationController.markAllAsRead
-);
-
-
-
 // notificationRouter.post(
 //     "/",
-//     validate(CreateNotificationSchema),
-//     notificationController.createNotification
-// );
-
-// notificationRouter.post(
-//     "/",
+//     authenticate,
 //     validate(CreateNotificationSchema),
 //     notificationController.createNotification
 // );
 
 // notificationRouter.get(
 //     "/:notificationId",
+//     authenticate,
 //     validate(ReadNotificationSchema),
 //     notificationController.getNotificationById
 // );
 
 // notificationRouter.get(
 //     "/users/:userId",
+//     authenticate,
 //     validate(NotificationFilterSchema),
 //     notificationController.getNotificationsByUserId
 // );
 
 // notificationRouter.patch(
 //     "/:notificationId/read",
+//     authenticate,
 //     validate(ReadNotificationSchema),
 //     notificationController.maskAsRead
 // );
 
 // notificationRouter.patch(
 //     "/users/:userId/read-all",
+//     authenticate,
 //     notificationController.markAllAsRead
 // );
+
+
+
+notificationRouter.post(
+    "/",
+    validate(CreateNotificationSchema),
+    notificationController.createNotification
+);
+
+notificationRouter.get(
+    "/:notificationId",
+    validate(ReadNotificationSchema),
+    notificationController.getNotificationById
+);
+
+notificationRouter.get(
+    "/users/:userId",
+    validate(NotificationFilterSchema),
+    notificationController.getNotificationsByUserId
+);
+
+notificationRouter.patch(
+    "/:notificationId/read",
+    validate(ReadNotificationSchema),
+    notificationController.maskAsRead
+);
+
+notificationRouter.patch(
+    "/users/:userId/read-all",
+    notificationController.markAllAsRead
+);
