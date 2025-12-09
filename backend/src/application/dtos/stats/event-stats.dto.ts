@@ -5,7 +5,7 @@ export interface EventStatsDto {
     participants: {
         count: number;
         previousCount: number;
-        growthRate: number;  // (count-previous)/previous
+        growthRate: number; // (count-previous)/previous
     };
 
     posts: {
@@ -16,6 +16,11 @@ export interface EventStatsDto {
 
     period: {
         from: string; // ISO
-        to: string;   // ISO
+        to: string; // ISO
+    };
+
+    comparisonPeriod: {
+        from: string;
+        to: string;
     };
 }
