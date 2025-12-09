@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
-import { RightPanel } from '../components/RightPanel';
+import { RightPanel } from "../components/RightPanel";
 import { EventCard } from "../components/EventCard";
 import { PostCard } from "../components/PostCard";
 import { FilterBar } from "../components/FilterBar";
@@ -120,10 +120,10 @@ export function Dashboard() {
 
     return (
         <div>
-            <Header/>
+            <Header />
             <div className="flex">
                 {/* bên trái cùng*/}
-                <Sidebar/>
+                <Sidebar />
 
                 <main className="flex-1 min-w-0">
                     <div className="container max-w-[1440px] mx-auto px-4 py-6 mb-16 md:mb-0">
@@ -151,14 +151,14 @@ export function Dashboard() {
                                     {feedItems.map((item) =>
                                         item.type === "post" ? (
                                             <PostCard
-                                                key={item.id}
+                                                key={`${item.type}-${item.id}`}
                                                 post={item.data as Post}
                                                 onLike={handleLikePost}
-                                                onComment={handleCommentPost}
+                                                //onComment={handleCommentPost}
                                             />
                                         ) : (
                                             <EventCard
-                                                key={item.id}
+                                                key={`${item.type}-${item.id}`}
                                                 event={item.data as Event}
                                                 onRegister={handleRegister}
                                                 //onViewDetails={onEventClick}
@@ -253,9 +253,8 @@ export function Dashboard() {
                                 </Dialog>
                             </div>
 
-                            
                             {/* bên phải cùng*/}
-                            <RightPanel/>
+                            <RightPanel />
                         </div>
                     </div>
                 </main>
