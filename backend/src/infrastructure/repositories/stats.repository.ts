@@ -212,14 +212,14 @@ export class StatsRepository implements IStatsRepository {
 
     async getEventStats(
         eventId: string,
-        daysCurrent: number,
-        daysPrevious: number
+        currentPeriodDays: number,
+        previousPeriodDays: number
     ): Promise<EventStatsDto> {
         logger.debug(
             {
                 eventId: eventId,
-                currentDay: daysCurrent,
-                previousDay: daysPrevious,
+                currentDay: currentPeriodDays,
+                previousDay: previousPeriodDays,
                 action: "getEventStats",
             },
             "[StatsRepository] Geting stats for event"
@@ -240,8 +240,11 @@ export class StatsRepository implements IStatsRepository {
             throw new EventNotFoundError(eventId);
         }
 
-        const { start: curStart, end: curEnd } = dateRange(daysCurrent);
-        const { start: prevStart } = dateRange(daysCurrent + daysPrevious);
+        const { start: currentStart, end: currentEnd } = dateRange(currentPeriodDays);
+
+        const previousEnd = new Date(currentStart); // previousEnd = currentStart
+        const previousStart = new Date(previousEnd);
+        previousStart.setUTCDate(previousStart.getUTCDate() - previousPeriodDays);
 
         const [row] = await this.prisma.$queryRaw<
             Array<{
@@ -256,30 +259,30 @@ export class StatsRepository implements IStatsRepository {
                 (SELECT COUNT(*) 
                 FROM registrations 
                 WHERE event_id = ${eventId}
-                AND created_at >= ${curStart}
-                AND created_at < ${curEnd}
+                AND created_at >= ${currentStart}
+                AND created_at < ${currentEnd}
                 ) AS cur_regs,
 
                 (SELECT COUNT(*)
                 FROM registrations 
                 WHERE event_id = ${eventId}
-                AND created_at >= ${prevStart}
-                AND created_at < ${curStart}
+                AND created_at >= ${previousStart}
+                AND created_at < ${previousEnd}
                 ) AS prev_regs,
 
                 -- Posts
                 (SELECT COUNT(*) 
                 FROM posts
                 WHERE event_id = ${eventId}
-                AND created_at >= ${curStart}
-                AND created_at < ${curEnd}
+                AND created_at >= ${currentStart}
+                AND created_at < ${currentEnd}
                 ) AS cur_posts,
 
                 (SELECT COUNT(*)
                 FROM posts
                 WHERE event_id = ${eventId}
-                AND created_at >= ${prevStart}
-                AND created_at < ${curStart}
+                AND created_at >= ${previousEnd}
+                AND created_at < ${previousEnd}
                 ) AS prev_posts
         `;
 
@@ -305,8 +308,12 @@ export class StatsRepository implements IStatsRepository {
                 growthRate: Number(growth(curPosts, prevPosts).toFixed(2)),
             },
             period: {
-                from: curStart.toISOString(),
-                to: curEnd.toISOString(),
+                from: currentStart.toISOString(),
+                to: currentEnd.toISOString(),
+            },
+            comparisonPeriod: {
+                from: previousStart.toISOString(),
+                to: previousEnd.toISOString(),
             },
         };
     }
