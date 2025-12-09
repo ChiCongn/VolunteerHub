@@ -123,7 +123,7 @@ export class StatsRepository implements IStatsRepository {
         // 2. Status filter
         if (status && status.length > 0) {
             params.push(status);
-            whereClauses.push(`e.status = ANY($${params.length})`);
+            whereClauses.push(`e.status = ANY($${params.length}::event_status[])`);
         }
 
         // 3. Category filter
