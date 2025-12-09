@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Roboto:wght@400&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  
+  /* VolunteerHub Color System */
+  --vh-primary: #43A047;
+  --vh-primary-dark: #388E3C;
+  --vh-secondary: #2196F3;
+  --vh-accent: #FFC107;
+  --vh-success: #43A047;
+  --vh-warning: #FFCA28;
+  --vh-error: #F44336;
+  --vh-neutral-bg: #F5F5F5;
+  --vh-neutral-border: #E0E0E0;
+  --vh-text: #212121;
+  --vh-text-secondary: #757575;
+  
+  --background: #ffffff;
+  --foreground: #212121;
+  --card: #ffffff;
+  --card-foreground: #212121;
+  --popover: #ffffff;
+  --popover-foreground: #212121;
+  --primary: #43A047;
+  --primary-foreground: #ffffff;
+  --secondary: #2196F3;
+  --secondary-foreground: #ffffff;
+  --muted: #F5F5F5;
+  --muted-foreground: #757575;
+  --accent: #FFC107;
+  --accent-foreground: #212121;
+  --destructive: #F44336;
+  --destructive-foreground: #ffffff;
+  --border: #E0E0E0;
+  --input: transparent;
+  --input-background: #F5F5F5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --ring: #43A047;
+  --chart-1: #43A047;
+  --chart-2: #2196F3;
+  --chart-3: #FFC107;
+  --chart-4: #FFCA28;
+  --chart-5: #388E3C;
+  --radius: 0.5rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #212121;
+  --sidebar-primary: #43A047;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #F5F5F5;
+  --sidebar-accent-foreground: #212121;
+  --sidebar-border: #E0E0E0;
+  --sidebar-ring: #43A047;
+}
+
+.dark {
+  --background: #212121;
+  --foreground: #FFFFFF;
+  --card: #2C2C2C;
+  --card-foreground: #FFFFFF;
+  --popover: #2C2C2C;
+  --popover-foreground: #FFFFFF;
+  --primary: #43A047;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2196F3;
+  --secondary-foreground: #FFFFFF;
+  --muted: #424242;
+  --muted-foreground: #BDBDBD;
+  --accent: #FFC107;
+  --accent-foreground: #212121;
+  --destructive: #F44336;
+  --destructive-foreground: #FFFFFF;
+  --border: #424242;
+  --input: #424242;
+  --ring: #43A047;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --chart-1: #43A047;
+  --chart-2: #2196F3;
+  --chart-3: #FFC107;
+  --chart-4: #FFCA28;
+  --chart-5: #388E3C;
+  --sidebar: #1A1A1A;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #43A047;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #424242;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #424242;
+  --sidebar-ring: #43A047;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* VolunteerHub Custom Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-slide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-toast-slide {
+  animation: toast-slide 0.5s ease-out;
+}
+
+.hover-lighten:hover {
+  filter: brightness(1.1);
+  transition: filter 0.3s ease;
+}

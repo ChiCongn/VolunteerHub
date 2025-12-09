@@ -1,0 +1,35 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Logout User
+  version: 1.0.0
+  description: Logs out the user by invalidating the session (internal use).
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      operationId: logoutUser
+      description: Invalidates the current session or token.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+```

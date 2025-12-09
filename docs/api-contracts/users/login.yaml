@@ -1,0 +1,40 @@
+```yaml
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Login User
+  version: 1.0.0
+  description: Authenticates a user and returns an access token.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      operationId: loginUser
+      description: Authenticates the user with email and password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+```

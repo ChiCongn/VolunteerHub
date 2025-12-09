@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Approve Event
+  version: 1.0.0
+  description: Admin endpoint to approve a pending event.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /admin/events/{id}/approve:
+    patch:
+      tags:
+        - Admin
+      summary: Approve a pending event (Admin)
+      operationId: adminApproveEvent
+      description: Sets a 'pending' event's status to 'approved'.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Event approved successfully. Returns the updated event.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Event'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'

@@ -1,0 +1,95 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VolunteerHub API - Add Emoji Reaction",
+    "version": "1.0.0",
+    "description": "Add or update an emoji reaction to a specific post."
+  },
+  "servers": [
+    {
+      "url": "https://volunteerhub.com/api/v1",
+      "description": "Production"
+    }
+  ],
+  "components": {
+    "$ref": "./components.json"
+  },
+  "paths": {
+    "/posts/{postId}/emojis": {
+      "post": {
+        "tags": [
+          "Emojis"
+        ],
+        "summary": "Add/Update post reaction",
+        "operationId": "setPostReaction",
+        "description": "Adds or updates the authenticated user's emoji reaction on a post. Requires authentication.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PostId"
+          }
+        ],
+        "requestBody": {
+          "description": "The type of emoji reaction.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEmojiRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reaction added/updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Emoji"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  }
+}

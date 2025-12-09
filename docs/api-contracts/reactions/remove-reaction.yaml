@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Remove Reaction
+  version: 1.0.0
+  description: Removes an emoji reaction. Requires authentication.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /emojis/{reactionId}:
+    delete:
+      tags:
+        - Emojis
+      summary: Remove reaction
+      operationId: removeReaction
+      description: >-
+        Permanently removes an emoji reaction. Only the user who added it or an
+        admin/manager can remove it.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reactionId
+          in: path
+          required: true
+          description: The unique identifier of the emoji reaction.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reaction removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Reaction removed successfully.
+                data: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'

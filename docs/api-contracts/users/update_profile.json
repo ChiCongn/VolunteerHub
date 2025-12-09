@@ -1,0 +1,89 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "VolunteerHub API - Update User Profile",
+        "version": "1.0.0",
+        "description": "Partially updates a user's profile information."
+    },
+    "servers": [
+        {
+            "url": "https://volunteerhub.com/api/v1",
+            "description": "Production"
+        }
+    ],
+    "components": {
+        "$ref": "./components.json"
+    },
+    "paths": {
+        "/users/{id}/profile": {
+            "patch": {
+                "tags": ["Users"],
+                "summary": "Update user profile",
+                "operationId": "updateUserProfile",
+                "description": "Allows users to update their own profile details.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/UserId"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "avatarUrl": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    }
+}

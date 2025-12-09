@@ -1,0 +1,100 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "VolunteerHub API - Edit Post",
+        "version": "1.0.0",
+        "description": "Edit a post. Only author or manager."
+    },
+    "servers": [
+        {
+            "url": "https://volunteerhub.com/api/v1",
+            "description": "Production"
+        }
+    ],
+    "components": {
+        "$ref": "./components.json"
+    },
+    "paths": {
+        "/posts/{postId}": {
+            "patch": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Edit post",
+                "operationId": "updatePost",
+                "description": "Updates content or images. Author or manager only.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-rolesAllowed": [
+                    "volunteer",
+                    "manager"
+                ],
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "imageUrls": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "nullable": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Post updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Post"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    }
+}

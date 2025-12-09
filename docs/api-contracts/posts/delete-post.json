@@ -1,0 +1,68 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "VolunteerHub API - Delete Post",
+        "version": "1.0.0",
+        "description": "Delete a post. Author, manager, or moderator."
+    },
+    "servers": [
+        {
+            "url": "https://volunteerhub.com/api/v1",
+            "description": "Production"
+        }
+    ],
+    "components": {
+        "$ref": "./components.json"
+    },
+    "paths": {
+        "/posts/{postId}": {
+            "delete": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Delete post",
+                "operationId": "deletePost",
+                "description": "Permanently removes a post.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-rolesAllowed": [
+                    "volunteer",
+                    "manager"
+                ],
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post deleted"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    }
+}

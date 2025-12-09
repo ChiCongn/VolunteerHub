@@ -1,0 +1,115 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "VolunteerHub API – List Pending Events",
+        "version": "1.0.0",
+        "description": "Returns paginated list of pending events. Admin only."
+    },
+    "servers": [
+        {
+            "url": "https://volunteerhub.com/api/v1",
+            "description": "Production server"
+        }
+    ],
+    "components": {
+        "$ref": "./components.json"
+    },
+    "paths": {
+        "/events/pending": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "List pending events",
+                "operationId": "listPendingEvents",
+                "description": "Returns events with status 'pending' for admin approval.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "x-rolesAllowed": [
+                    "admin"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "Page number"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        },
+                        "description": "Items per page"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pending events retrieved",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Event"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "total"
+                                    ]
+                                }
+                            }
+                        },
+                        "headers": {
+                            "X-RateLimit-Limit": {
+                                "schema": {
+                                    "type": "integer"
+                                }
+                            },
+                            "X-RateLimit-Remaining": {
+                                "schema": {
+                                    "type": "integer"
+                                }
+                            },
+                            "X-RateLimit-Reset": {
+                                "schema": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        }
+    }
+}
