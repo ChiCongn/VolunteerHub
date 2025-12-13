@@ -11,5 +11,6 @@ export interface IRegistrationRepository {
         pagination: Pagination,
         sortOption: SortOption
     ): Promise<Registration[]>;
+    checkExistsByUserAndEvent(userId: string, eventId: string): Promise<boolean>;
     exists(registrationId: string): Promise<boolean>;
 }
