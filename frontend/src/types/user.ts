@@ -1,9 +1,22 @@
 import type { UserRole, UserStatus } from "./enum";
 
+export interface UserProfile {
+    id: string;
+    username: string;
+    email?: string;
+    avatarUrl: string;
+
+    role: UserRole;
+    status: UserStatus;
+
+    lastLogin?: Date | null;
+    updatedAt?: Date;
+}
+
 export interface User {
     id: string;
     username: string;
-    email: string;
+    email?: string;
     avatarUrl: string;
 
     role: UserRole;
@@ -14,6 +27,6 @@ export interface User {
     participatedEventIds: string[];
     registeredEventIds: string[];
 
-    lastLogin: Date | null;
-    updatedAt: Date;
+    lastLogin?: Date | null;
+    updatedAt?: Date;
 }
