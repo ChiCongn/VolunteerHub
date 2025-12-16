@@ -3,7 +3,8 @@ import { authRouter } from "./presentation/routes/auth.routes";
 import { userRouter } from "./presentation/routes/user.route";
 import { eventRouter } from "./presentation/routes/event.route";
 import { postRouter } from "./presentation/routes/posts.routes";
-import { commentRouter } from "./presentation/routes/comment.routes"
+import { commentRouter } from "./presentation/routes/comment.routes";
+
 import cors from "cors";
 import { statsRouter } from "./presentation/routes/stats.routes";
 

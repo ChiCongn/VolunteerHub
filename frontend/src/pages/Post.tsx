@@ -165,7 +165,7 @@ export function Post() {
                                             key={item.id}
                                             post={item.data as Post}
                                             onLike={handleLikePost}
-                                            onComment={handleCommentPost}
+                                            //onComment={handleCommentPost}
                                         />
                                     ) : (
                                         <EventCard
