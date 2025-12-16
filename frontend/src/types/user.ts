@@ -1,6 +1,6 @@
 import type { UserRole, UserStatus } from "./enum";
 
-export interface UserProfile {
+export interface User {
     id: string;
     username: string;
     email: string;

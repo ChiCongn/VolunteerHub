@@ -1,17 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { UserProfile } from "../types/user";
+import type { User } from "../types/user";
 import { UserRole, type UserStatus } from "../types/enum";
 
 interface UserStore {
     // important data - required after login
-    user: UserProfile | null;
+    user: User | null;
     accessToken: string | null;
     refreshToken: string | null;
 
     // State mutators
-    setUser: (user: UserProfile) => void;
-    updateUser: (data: Partial<UserProfile>) => void;
+    setUser: (user: User) => void;
+    updateUser: (data: Partial<User>) => void;
     setTokens: (access: string, refresh?: string) => void;
     updateAvatar: (avatarUrl: string) => void;
     updateStatus: (status: UserStatus) => void;
