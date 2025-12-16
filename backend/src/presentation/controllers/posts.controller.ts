@@ -8,6 +8,8 @@ export class PostsController {
         this.postService = postService;
     }
 
+    //req.user.sub
+
     // Create Post
     createPost = async (req: Request, res: Response) => {
         try {
