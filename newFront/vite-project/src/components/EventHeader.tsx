@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Bell, MoreHorizontal, Plus } from "lucide-react";
 import type { Event } from "@/types";
 
+
 interface EventHeaderProps {
     event: Event;
     onCreatePost: () => void;
 }
 
 export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
+
+
     return (
         <div className="bg-white dark:bg-zinc-900 pb-4 shadow-sm">
             {/* Banner */}

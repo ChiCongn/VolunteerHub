@@ -95,37 +95,7 @@ const HamburgerIcon = ({
         />
     </svg>
 );
-// Info Menu Component
-const InfoMenu = ({
-    onItemClick,
-}: {
-    onItemClick?: (item: string) => void;
-}) => (
-    <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-                <HelpCircleIcon className="h-4 w-4" />
-                <span className="sr-only">Help and Information</span>
-            </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Help & Support</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onItemClick?.("help")}>
-                Help Center
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onItemClick?.("documentation")}>
-                Documentation
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onItemClick?.("contact")}>
-                Contact Support
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onItemClick?.("feedback")}>
-                Send Feedback
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-    </DropdownMenu>
-);
+
 // Notification Menu Component
 const NotificationMenu = ({
     notificationCount = 3,
@@ -256,19 +226,13 @@ export interface Navbar05Props extends React.HTMLAttributes<HTMLElement> {
     onUserItemClick?: (item: string) => void;
 }
 // Default navigation links
-const defaultNavigationLinks: Navbar05NavItem[] = [
-    { href: "#", label: "Home" },
-    { href: "#", label: "Features" },
-    { href: "#", label: "Pricing" },
-    { href: "#", label: "About" },
-];
+
 export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
     (
         {
             className,
             logo = <Logo />,
             logoHref = "#",
-            navigationLinks = defaultNavigationLinks,
             userName = "John Doe",
             userEmail = "john@example.com",
             userAvatar,
@@ -340,32 +304,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
                                     className="w-64 p-1"
                                 >
                                     <NavigationMenu className="max-w-none">
-                                        <NavigationMenuList className="flex-col items-start gap-0">
-                                            {navigationLinks.map(
-                                                (link, index) => (
-                                                    <NavigationMenuItem
-                                                        key={index}
-                                                        className="w-full"
-                                                    >
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                if (
-                                                                    onNavItemClick &&
-                                                                    link.href
-                                                                )
-                                                                    onNavItemClick(
-                                                                        link.href
-                                                                    );
-                                                            }}
-                                                            className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer no-underline"
-                                                        >
-                                                            {link.label}
-                                                        </button>
-                                                    </NavigationMenuItem>
-                                                )
-                                            )}
-                                        </NavigationMenuList>
+                                        <NavigationMenuList className="flex-col items-start gap-0"></NavigationMenuList>
                                     </NavigationMenu>
                                 </PopoverContent>
                             </Popover>
@@ -384,28 +323,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
                             {/* Navigation menu */}
                             {!isMobile && (
                                 <NavigationMenu className="flex">
-                                    <NavigationMenuList className="gap-1">
-                                        {navigationLinks.map((link, index) => (
-                                            <NavigationMenuItem key={index}>
-                                                <NavigationMenuLink
-                                                    href={link.href}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        if (
-                                                            onNavItemClick &&
-                                                            link.href
-                                                        )
-                                                            onNavItemClick(
-                                                                link.href
-                                                            );
-                                                    }}
-                                                    className="text-muted-foreground hover:text-primary py-1.5 font-medium transition-colors cursor-pointer group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
-                                                >
-                                                    {link.label}
-                                                </NavigationMenuLink>
-                                            </NavigationMenuItem>
-                                        ))}
-                                    </NavigationMenuList>
+                                    <NavigationMenuList className="gap-1"></NavigationMenuList>
                                 </NavigationMenu>
                             )}
                         </div>
@@ -413,8 +331,6 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
                     {/* Right side */}
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                            {/* Info menu */}
-                            <InfoMenu onItemClick={onInfoItemClick} />
                             {/* Notification */}
                             <NotificationMenu
                                 notificationCount={notificationCount}
@@ -436,4 +352,4 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
 );
 
 Navbar05.displayName = "Navbar05";
-export { Logo, HamburgerIcon, InfoMenu, NotificationMenu, UserMenu };
+export { Logo, HamburgerIcon, NotificationMenu, UserMenu };

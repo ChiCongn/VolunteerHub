@@ -14,7 +14,7 @@ import {
     MessageCircle,
 } from "lucide-react";
 import { Navbar05 } from "./navbar";
-import LeftPanel from "../components/leftPanel";
+import LeftPanel from "../components/LeftPanel";
 
 export default function Page() {
     return (
