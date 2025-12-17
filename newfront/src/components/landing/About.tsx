@@ -20,10 +20,19 @@ export const About = () => {
                 <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
                   About{" "}
                 </span>
-                Signlish
+                Volunteer Hub
               </h2>
               <p className="text-xl text-muted-foreground mt-4">
-                Signlish is a modern platform designed to make learning sign language easier, faster, and more accessible for everyone. With interactive lessons, clear visual demonstrations, and powerful technologies, Signlish helps learners build strong signing skills step by step. Whether you're a beginner or looking to improve your communication abilities, Signlish provides a simple and effective way to explore the world of sign language anytime, anywhere.
+                Volunteer Hub is a web-based platform that supports the
+                organization and management of volunteer activities such as
+                environmental campaigns, charity events, and community programs.
+                The system connects volunteers, event managers, and administrators
+                through a unified workspace, enabling event creation, volunteer
+                registration, participation tracking, and real-time interaction
+                via event-specific discussion channels. By centralizing volunteer
+                coordination and communication, Volunteer Hub helps ensure that
+                volunteer activities are managed efficiently, transparently, and
+                at scale.
               </p>
             </div>
 

@@ -11,27 +11,27 @@ interface FeatureProps {
 const features: FeatureProps[] = [
   {
     icon: <MedalIcon />,
-    title: "Choose Your Lesson",
+    title: "Explore Volunteer Activities",
     description:
-      "Start by selecting the topic you want to learn from basic signs to practical everyday communication.Every lesson is clear, visual, and designed for both beginners and experienced learners.",  
-},
+      "Browse a wide range of volunteer activities such as environmental campaigns, charity events, and community programs. Each event provides clear information including time, location, and participation requirements.",
+  },
   {
     icon: <MapIcon />,
-    title: "Practice & Receive Feedback",
+    title: "Register & Get Confirmed",
     description:
-      "As you practice, the system analyzes your hand shape, movement, speed, and accuracy: Highlights incorrect gestures Provides instant suggestions Helps you refine your signing skills with each attempt.",
+      "Volunteers can easily register for events and receive confirmation after approval. Event managers can review applications, manage participation, and ensure the right volunteers join each activity.",
   },
   {
     icon: <PlaneIcon />,
-    title: "Track Your Learning Progress",
+    title: "Participate & Track Your Impact",
     description:
-      "Signlish automatically saves your entire learning journey: Completed lessons Performance stats Improvement over time You can easily review past lessons and see how far you’ve come.",
+      "After joining an event, volunteers can track their participation history and completion status. Event managers can mark attendance and monitor volunteer involvement throughout the event lifecycle.",
   },
   {
     icon: <GiftIcon />,
-    title: "Learn Anytime, Anywhere",
+    title: "Connect Through Event Communities",
     description:
-      "Signlish works on any device — phone, laptop, or tablet. Study anytime you want with unlimited lessons and unlimited learning opportunities. No restrictions, just pure learning freedom.",
+      "Each approved event includes a dedicated discussion channel where participants can post updates, share information, and interact with others—creating an active and collaborative volunteer community.",
   },
 ];
 
@@ -41,15 +41,16 @@ export const HowItWorks = () => {
       id="howItWorks"
       className="container text-center py-24 sm:py-32"
     >
-      <h2 className="text-3xl md:text-4xl font-bold ">
+      <h2 className="text-3xl md:text-4xl font-bold">
         How{" "}
         <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
-          Signlish{" "}
+          Volunteer Hub{" "}
         </span>
-        Helps You Learn Sign Language
+        Works
       </h2>
       <p className="md:w-3/4 mx-auto mt-4 mb-8 text-xl text-muted-foreground">
-        Discover how Signlish uses advanced technology to help you learn sign language faster, easier, and more effectively.
+        Discover how Volunteer Hub supports the organization, coordination, and
+        interaction of volunteer activities in a single unified platform.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

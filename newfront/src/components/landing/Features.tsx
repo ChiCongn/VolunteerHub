@@ -6,13 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import image4 from "./assets/looking-ahead.png";
-import topics from "./assets/topics.png";
-import flashcard from "./assets/flashcard.png";
-import computervision from "./assets/computervision.png";
-import choice from "./assets/choice.png";
-import translate from "./assets/translate.png";
-import dic from "./assets/dictionary.png";
+
+/* Placeholder images – bạn thêm sau */
+const placeholder = "";
 
 interface FeatureProps {
   title: string;
@@ -22,54 +18,72 @@ interface FeatureProps {
 
 const features: FeatureProps[] = [
   {
-    title: "Learning Mode by Topics",
+    title: "Event Creation & Management",
     description:
-      "Learn sign language vocabulary through well-structured topics. Each lesson is designed to help you master signs quickly and confidently.",
-    image: topics,
+      "Event managers can easily create, edit, and manage volunteer events with detailed information such as time, location, description, and participation requirements.",
+    image: placeholder,
   },
   {
-    title: "Flashcards for Quick Practice",
+    title: "Volunteer Registration & Approval",
     description:
-      "Reinforce your memory with beautifully designed flashcards. Perfect for quick revisions and building long-term retention.",
-    image: flashcard,
+      "Volunteers can register for events while event managers review and approve registrations to ensure suitable participation for each activity.",
+    image: placeholder,
   },
   {
-    title: "Vision Mode with Real-Time Recognition",
+    title: "Volunteer Participation Tracking",
     description:
-      "Practice signs using AI-powered gesture recognition. Receive instant feedback on your hand shape, movement, and accuracy.",
-    image: computervision,
+      "Track volunteer attendance and completion status after events, providing a clear history of participation and contribution.",
+    image: placeholder,
   },
   {
-    title: "Multiple Choice Quizzes",
+    title: "Event Discussion Channels",
     description:
-      "Test your understanding through interactive quizzes. Improve comprehension and track your mastery of each topic.",
-    image: choice,
+      "Each approved event includes a dedicated discussion space where participants can post updates, comment, and interact with others before and after the event.",
+    image: placeholder,
   },
   {
-    title: "Two-Way Translation",
+    title: "Role-Based Access Control",
     description:
-      "Translate seamlessly between English and sign language. A fast and intuitive tool for learners of all levels.",
-    image: translate,
+      "The system supports multiple roles including volunteers, event managers, and administrators, each with clearly defined permissions.",
+    image: placeholder,
   },
   {
-    title: "Built-in Sign Language Dictionary",
+    title: "Notification System",
     description:
-      "Access a complete sign language dictionary with detailed explanations, examples, and visual demonstrations.",
-    image: dic,
+      "Receive real-time notifications for registration approvals, event updates, and completion status through the web platform.",
+    image: placeholder,
+  },
+  {
+    title: "Dashboard & Analytics",
+    description:
+      "View summarized insights such as upcoming events, active discussions, and popular activities through an intuitive dashboard.",
+    image: placeholder,
+  },
+  {
+    title: "Data Export & Administration",
+    description:
+      "Administrators can manage users, moderate events, and export system data in CSV or JSON format for reporting and analysis.",
+    image: placeholder,
+  },
+  {
+    title: "Search & Filter Events",
+    description:
+      "Volunteers can quickly find suitable events using search and filtering options based on time, category, location, or event status.",
+    image: placeholder,
   },
 ];
-
 
 const featureList: string[] = [
-  "Learning Mode by Vocabulary Topics",
-  "Flashcards for Quick Practice",
-  "Vision Mode with Real-Time Gesture Recognition",
-  "Multiple Choice Quizzes",
-  "Two-Way Translation: English and Sign Language",
-  "Built-in Sign Language Dictionary",
-  "Daily Streak and Progress Tracking",
+  "Event Creation & Management",
+  "Volunteer Registration",
+  "Participation Tracking",
+  "Event Discussion Channels",
+  "Role-Based Access Control",
+  "Real-Time Notifications",
+  "Dashboard & Analytics",
+  "Data Export & Administration",
+  "Search & Filter Events",
 ];
-
 
 export const Features = () => {
   return (
@@ -78,19 +92,16 @@ export const Features = () => {
       className="container py-24 sm:py-32 space-y-8"
     >
       <h2 className="text-3xl lg:text-4xl font-bold md:text-center">
-        Many{" "}
+        Powerful{" "}
         <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
-          Great Features
+          Features
         </span>
       </h2>
 
       <div className="flex flex-wrap md:justify-center gap-4">
         {featureList.map((feature: string) => (
           <div key={feature}>
-            <Badge
-              variant="secondary"
-              className="text-sm"
-            >
+            <Badge variant="secondary" className="text-sm">
               {feature}
             </Badge>
           </div>
@@ -107,11 +118,13 @@ export const Features = () => {
             <CardContent>{description}</CardContent>
 
             <CardFooter>
-              <img
-                src={image}
-                alt="About feature"
-                className="w-[200px] lg:w-[300px] mx-auto"
-              />
+              {image && (
+                <img
+                  src={image}
+                  alt="Feature illustration"
+                  className="w-[200px] lg:w-[300px] mx-auto"
+                />
+              )}
             </CardFooter>
           </Card>
         ))}

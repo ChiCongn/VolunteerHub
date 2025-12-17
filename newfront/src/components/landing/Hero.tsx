@@ -3,15 +3,15 @@ import { Button } from "@/components/ui/button"
 import { HeroCards } from "./HeroCards";
 
 export const Hero = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSignIn = () => {
-    navigate("/login")
-  }
+    navigate("/login");
+  };
 
   const handleSignUp = () => {
-    navigate("/register")
-  }
+    navigate("/register");
+  };
 
   return (
     <section className="container grid lg:grid-cols-2 place-items-center py-20 md:py-32 gap-10">
@@ -20,25 +20,29 @@ export const Hero = () => {
           <span className="block bg-gradient-to-r from-[#F596D3] to-[#D247BF] text-transparent bg-clip-text">
             Volunteer Hub
           </span>
-          <span className="block">is your</span>
+          <span className="block">is a</span>
           <span className="block bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text">
-            Sign Language
+            Volunteer Management
           </span>
-          <span className="block">Learning Platform</span>
+          <span className="block">Platform</span>
         </main>
 
-
         <p className="text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0">
-          Learn sign language easily with our interactive platform.
+          Connecting volunteers, event managers, and communities around
+          meaningful activities.
         </p>
 
         <div className="space-y-4 md:space-y-0 md:space-x-4">
-          <Button className="w-full md:w-1/3" onClick={handleSignIn}>Sign in</Button>
-          <Button variant="outline" className="w-full md:w-1/3" onClick={handleSignUp}>
+          <Button className="w-full md:w-1/3" onClick={handleSignIn}>
+            Sign in
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full md:w-1/3"
+            onClick={handleSignUp}
+          >
             Sign up
           </Button>
-
-
         </div>
       </div>
 
