@@ -12,7 +12,8 @@ import { UserPolicy } from "../../application/policies/user.policy";
 
 export const userRouter = Router();
 
-userRouter.get("/", authenticate, validate(ListUserFilterSchema), authorize(UserPolicy.list), userController.listUsers);
+userRouter.get("/", validate(ListUserFilterSchema), userController.listUsers);
+//userRouter.get("/", authenticate, validate(ListUserFilterSchema), authorize(UserPolicy.list), userController.listUsers);
 userRouter.get("/me", authenticate, authorize(UserPolicy.getCurrentUserProfile), userController.getCurrentUserProfile);
 userRouter.patch("/me", authenticate, validate(UpdateUserSchema), userController.updateProfile);
 userRouter.delete("/me", authenticate, authorize(UserPolicy.softDelete), userController.softDelete);

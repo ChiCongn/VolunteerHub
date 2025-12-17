@@ -37,13 +37,13 @@ statsRouter.get(
 );
 statsRouter.get(
     "/volunteers",
-    authenticate,
-    authorize(StatsPolicy.volunteerStats),
+    // authenticate,
+    // authorize(StatsPolicy.volunteerStats),
     statsController.getVolunteerStats
 );
 statsRouter.get(
     "/managers",
-    authenticate,
-    authorize(StatsPolicy.eventManagersStats),
+    // authenticate,
+    // authorize(StatsPolicy.eventManagersStats),
     statsController.getEventManagersStats
 );
