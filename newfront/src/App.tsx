@@ -7,7 +7,7 @@ import LandingPage from "./pages/Landing";
 import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Register";
 import { NotFound } from "./pages/NotFound";
-
+import { PostDetailPage } from "./pages/PostDetailPage";
 
 function App() {
   return (
@@ -20,6 +20,7 @@ function App() {
           <Route path="/events/:eventId" element={<CommunityEventPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<SignupPage />} />
+          <Route path="/posts/:postId" element={<PostDetailPage />} />
           {/* error routes*/}
           <Route path="*" element={<NotFound />} />
         </Routes>

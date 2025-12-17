@@ -27,7 +27,7 @@ app.get("/", (req, res) => {
 });
 
 // Mount event routes
-app.use("/api/events", eventRouter);
+app.use("/api/v1/events", eventRouter);
 // API routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);

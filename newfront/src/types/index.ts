@@ -15,6 +15,7 @@ export interface Event {
 
 // Post Interface
 export interface Post {
+    event: any;
     _id: string;
     content: string;
     imageUrl?: string;
