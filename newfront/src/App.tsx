@@ -15,8 +15,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/" element={<Page />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<Page />} />
         <Route path="/event" element={<EventPage />} />
         <Route path="/events/:eventId" element={<CommunityEventPage />} />
         <Route path="/vcl" element={<Login />} />

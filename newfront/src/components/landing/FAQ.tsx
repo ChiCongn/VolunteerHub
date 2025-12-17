@@ -13,32 +13,36 @@ interface FAQProps {
 
 const FAQList: FAQProps[] = [
   {
-    "question": "Is Signlish completely free to use?",
-    "answer": "Yes! Signlish offers a fully free learning experience, allowing you to explore core features without any cost. You can learn, practice, and improve your sign language skills right away.",
-    "value": "item-1"
+    question: "Is Volunteer Hub free to use?",
+    answer:
+      "Yes. Volunteer Hub is completely free for volunteers and event managers. All core features such as event browsing, registration, volunteer management, and community interaction are available at no cost.",
+    value: "item-1",
   },
   {
-    "question": "How does Signlish help improve my sign language skills?",
-    "answer": "Signlish uses advanced AI-driven gesture recognition to analyze your hand shapes, movement accuracy, and facial expressions. It provides real-time feedback so you can learn faster and communicate more confidently.",
-    "value": "item-2"
+    question: "Who can use Volunteer Hub?",
+    answer:
+      "Volunteer Hub supports three main roles: volunteers who participate in events, event managers who organize and manage activities, and administrators who oversee the system and ensure smooth operation.",
+    value: "item-2",
   },
   {
-    "question": "Does Signlish support beginners with no prior sign language knowledge?",
-    "answer": "Absolutely. Signlish is designed for all learners—from complete beginners to advanced users. Step-by-step tutorials, visual guides, and practice modules make it easy for anyone to start learning right away.",
-    "value": "item-3"
+    question: "How do volunteers join events on Volunteer Hub?",
+    answer:
+      "Volunteers can browse available events, view detailed information, and register to participate. Event managers review registrations and confirm participation before the event takes place.",
+    value: "item-3",
   },
   {
-    "question": "What technologies power Signlish’s learning platform?",
-    "answer": "Signlish integrates cutting-edge AI models, computer vision, and motion-tracking technology to deliver accurate sign recognition and personalized recommendations tailored to your learning style.",
-    "value": "item-4"
+    question: "What is the event discussion channel?",
+    answer:
+      "Each approved event includes a dedicated discussion channel where participants can post updates, ask questions, and interact with other members, similar to a social media wall.",
+    value: "item-4",
   },
   {
-    "question": "Can Signlish be used for both education and daily communication practice?",
-    "answer": "Yes. Whether you're preparing for exams, learning for school, or improving daily communication with the Deaf community, Signlish provides tools, exercises, and interactive lessons to support your goals.",
-    "value": "item-5"
-  }
-]
-
+    question: "Can I track my volunteer participation history?",
+    answer:
+      "Yes. Volunteers can view their participation history, including registered events, completion status, and related updates directly from their dashboard.",
+    value: "item-5",
+  },
+];
 
 export const FAQ = () => {
   return (

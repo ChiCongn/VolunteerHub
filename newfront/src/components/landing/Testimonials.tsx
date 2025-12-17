@@ -19,44 +19,45 @@ const testimonials: TestimonialProps[] = [
     image: "https://github.com/shadcn.png",
     name: "Emily Carter",
     userName: "@emily_c",
-    comment: "Signlish helps me learn signs quickly. So easy to use!",
+    comment:
+      "Volunteer Hub makes it incredibly easy to find meaningful volunteer activities and stay updated with event information.",
   },
   {
     image: "https://github.com/shadcn.png",
     name: "Marcus Hill",
     userName: "@marcus_hill",
-    comment: "Vision Mode is super convenient and really fun.",
+    comment:
+      "I love how everything is organized in one place. Registering for events and tracking my participation is super convenient.",
   },
-
   {
     image: "https://github.com/shadcn.png",
     name: "Sophia Nguyen",
     userName: "@sophia_n",
     comment:
-      "The interface is incredibly intuitive, and I love how each feature is designed to support beginners. The quizzes and flashcards work perfectly together, making it so much easier to remember signs and review what I’ve learned.",
+      "The event discussion channels are a great feature. They help volunteers communicate, ask questions, and stay connected before and after events.",
   },
   {
     image: "https://github.com/shadcn.png",
     name: "David Brooks",
     userName: "@david_brooks",
     comment:
-      "The two-way translation is amazing — being able to translate between English and sign language instantly feels magical. Combined with the built-in dictionary and clean UI, Signlish has genuinely improved how I study and practice every day.",
+      "As an event manager, Volunteer Hub saves me a lot of time. Managing registrations, confirming volunteers, and tracking participation has never been this smooth.",
   },
   {
     image: "https://github.com/shadcn.png",
     name: "Lily Harper",
     userName: "@lily_harper",
-    comment: "The streak system keeps me learning daily!",
+    comment:
+      "The dashboard gives me a clear overview of upcoming events and activities I care about. Very intuitive and useful.",
   },
   {
     image: "https://github.com/shadcn.png",
     name: "Ethan Morales",
     userName: "@ethan_m",
-    comment: "Highly recommend for beginners in sign language.",
+    comment:
+      "Volunteer Hub creates a real sense of community. It’s more than just event management — it connects people who want to make a difference.",
   },
 ];
-
-
 
 export const Testimonials = () => {
   return (
@@ -68,16 +69,16 @@ export const Testimonials = () => {
         Discover Why
         <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
           {" "}
-          People Love{" "}
+          People Trust{" "}
         </span>
-        Signlish
+        Volunteer Hub
       </h2>
 
       <p className="text-xl text-muted-foreground pt-4 pb-8">
-        How Signlish creates value for the community
+        How Volunteer Hub creates value for volunteers and event organizers
       </p>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 sm:block columns-2  lg:columns-3 lg:gap-6 mx-auto space-y-4 lg:space-y-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 sm:block columns-2 lg:columns-3 lg:gap-6 mx-auto space-y-4 lg:space-y-6">
         {testimonials.map(
           ({ image, name, userName, comment }: TestimonialProps) => (
             <Card
@@ -86,11 +87,8 @@ export const Testimonials = () => {
             >
               <CardHeader className="flex flex-row items-center gap-4 pb-2">
                 <Avatar>
-                  <AvatarImage
-                    alt=""
-                    src={image}
-                  />
-                  <AvatarFallback>OM</AvatarFallback>
+                  <AvatarImage alt="" src={image} />
+                  <AvatarFallback>VH</AvatarFallback>
                 </Avatar>
 
                 <div className="flex flex-col">

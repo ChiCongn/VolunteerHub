@@ -12,28 +12,30 @@ import {
 } from "@/components/ui/card";
 import { Check, Linkedin } from "lucide-react";
 import { LightBulbIcon } from "./Icons";
+import { useNavigate } from "react-router-dom";
 
 export const HeroCards = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="hidden lg:flex flex-row flex-wrap gap-8 relative w-[700px] h-[500px]">
       {/* Testimonial */}
       <Card className="absolute w-[340px] -top-[15px] drop-shadow-xl shadow-black/10 dark:shadow-white/10">
         <CardHeader className="flex flex-row items-center gap-4 pb-2">
           <Avatar>
-            <AvatarImage
-              alt=""
-              src="https://github.com/shadcn.png"
-            />
+            <AvatarImage alt="" src="https://github.com/shadcn.png" />
             <AvatarFallback>SH</AvatarFallback>
           </Avatar>
 
           <div className="flex flex-col">
-            <CardTitle className="text-lg">Viet Anh </CardTitle>
+            <CardTitle className="text-lg">Viet Anh</CardTitle>
             <CardDescription>@allain</CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent>This website is really helpful and effective for learning! Love it!</CardContent>
+        <CardContent>
+          Volunteer Hub makes organizing events and managing volunteers simple. Love it!
+        </CardContent>
       </Card>
 
       {/* Team */}
@@ -52,7 +54,8 @@ export const HeroCards = () => {
 
         <CardContent className="text-center pb-2">
           <p>
-            Signlish helps you communicate better by making sign language easy to understand.
+            Volunteer Hub helps connect volunteers and event managers through a
+            clear and interactive community space.
           </p>
         </CardContent>
 
@@ -89,21 +92,18 @@ export const HeroCards = () => {
               })}
             >
               <span className="sr-only">Linkedin icon</span>
-              <Linkedin size="20" />
+              <Linkedin size={20} />
             </a>
           </div>
         </CardFooter>
       </Card>
 
       {/* Pricing */}
-      <Card className="absolute top-[150px] left-[50px] w-72  drop-shadow-xl shadow-black/10 dark:shadow-white/10">
+      <Card className="absolute top-[150px] left-[50px] w-72 drop-shadow-xl shadow-black/10 dark:shadow-white/10">
         <CardHeader>
           <CardTitle className="flex item-center justify-between">
             Free
-            <Badge
-              variant="secondary"
-              className="text-sm text-primary"
-            >
+            <Badge variant="secondary" className="text-sm text-primary">
               Most popular
             </Badge>
           </CardTitle>
@@ -113,43 +113,45 @@ export const HeroCards = () => {
           </div>
 
           <CardDescription>
-            Enjoy all Signlish features at no cost — 100% free.
+            Access all Volunteer Hub features completely free.
           </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <Button className="w-full">Start now!</Button>
+          <Button onClick={() => navigate("/home")} className="w-full">
+            Start now!
+          </Button>
         </CardContent>
 
         <hr className="w-4/5 m-auto mb-4" />
 
         <CardFooter className="flex">
           <div className="space-y-4">
-            {["Unlimited Unlimited learning", "Fast and easy", "Highly effective"].map(
-              (benefit: string) => (
-                <span
-                  key={benefit}
-                  className="flex"
-                >
-                  <Check className="text-green-500" />{" "}
-                  <h3 className="ml-2">{benefit}</h3>
-                </span>
-              )
-            )}
+            {[
+              "Create and manage volunteer events",
+              "Coordinate volunteers efficiently",
+              "Engage through event discussion channels",
+            ].map((benefit: string) => (
+              <span key={benefit} className="flex">
+                <Check className="text-green-500" />
+                <h3 className="ml-2">{benefit}</h3>
+              </span>
+            ))}
           </div>
         </CardFooter>
       </Card>
 
       {/* Service */}
-      <Card className="absolute w-[350px] -right-[10px] bottom-[35px]  drop-shadow-xl shadow-black/10 dark:shadow-white/10">
+      <Card className="absolute w-[350px] -right-[10px] bottom-[35px] drop-shadow-xl shadow-black/10 dark:shadow-white/10">
         <CardHeader className="space-y-1 flex md:flex-row justify-start items-start gap-4">
           <div className="mt-1 bg-primary/20 p-1 rounded-2xl">
             <LightBulbIcon />
           </div>
           <div>
-            <CardTitle>Powerful Learning Technology</CardTitle>
+            <CardTitle>Smart Volunteer Coordination</CardTitle>
             <CardDescription className="text-md mt-2">
-              Enhance your sign language skills with powerful, cutting-edge technologies.            
+              Manage events, volunteers, and community interaction with modern
+              web technologies.
             </CardDescription>
           </div>
         </CardHeader>
