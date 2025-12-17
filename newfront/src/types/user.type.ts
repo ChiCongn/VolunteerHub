@@ -23,9 +23,6 @@ export interface User {
     status: UserStatus;
 
     notifications: string[];
-    postIds: string[];
-    participatedEventIds: string[];
-    registeredEventIds: string[];
 
     lastLogin?: Date | null;
     updatedAt?: Date;

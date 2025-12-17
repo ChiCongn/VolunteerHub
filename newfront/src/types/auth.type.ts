@@ -13,8 +13,13 @@ export interface AuthResponse {
         username: string;
         email: string;
         avatarUrl: string;
-        lastLogin: Date;
+
         role: UserRole;
         status: UserStatus;
+
+        notifications: string[];
+
+        lastLogin?: Date | null;
+        updatedAt?: Date;
     };
 }
