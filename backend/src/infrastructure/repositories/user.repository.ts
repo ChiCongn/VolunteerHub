@@ -50,7 +50,16 @@ export class UserRepository implements IUserRepository {
             where: { id: newUserId },
         });
 
-        return this.toAuthUser(createdUser);
+        return {
+            id: createdUser.id.toString(),
+            email: createdUser.email,
+            username: createdUser.username,
+            avatarUrl: createdUser.avatar_url ?? "",
+            role: createdUser.role,
+            status: createdUser.status,
+            notifications: [],
+            lastLogin: createdUser.last_login ?? null,
+        };
     }
 
     async findById(id: string): Promise<User> {
@@ -194,6 +203,7 @@ export class UserRepository implements IUserRepository {
             avatarUrl: user.avatar_url,
             role: user.role,
             status: user.status,
+            notifications: [],
             lastLogin: user.last_login ?? null,
         };
     }
@@ -711,17 +721,5 @@ export class UserRepository implements IUserRepository {
             notificationIds: prismaUser.notificationIds ?? [],
             postIds: prismaUser.postIds ?? [],
         });
-    }
-
-    private toAuthUser(user: any): AuthUser {
-        return {
-            id: user.id.toString(),
-            email: user.email,
-            username: user.username,
-            avatarUrl: user.avatar_url ?? "",
-            role: user.role,
-            status: user.status,
-            lastLogin: user.last_login ?? null,
-        };
     }
 }

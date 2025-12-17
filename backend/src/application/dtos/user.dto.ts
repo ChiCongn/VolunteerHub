@@ -43,10 +43,14 @@ export interface Credentials {
 
 export interface AuthUser {
     id: string;
-    email: string;
     username: string;
+    email: string;
     avatarUrl: string;
+
     role: UserRole;
     status: UserStatus;
-    lastLogin: Date | null;
+
+    notifications: string[];
+
+    lastLogin?: Date | null;
 }
