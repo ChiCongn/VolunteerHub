@@ -23,15 +23,44 @@ export class UserController {
             search,
         } = req.query;
 
-        const filter: ListUserFilterDto = { role, status, search };
+        logger.info(
+            {
+                action: "listUsers",
+                page,
+                limit,
+                sortBy,
+                order,
+                role,
+                status,
+                search,
+                requester: req.user?.sub,
+            },
+            "[UserController] List users"
+        );
 
-        const pagination: Pagination = { page, limit };
+        try {
+            const filter: ListUserFilterDto = { role, status, search };
 
-        const sortOption: SortOption = { field: sortBy, order };
+            const pagination: Pagination = { page, limit };
 
-        const result = await this.userService.listUsers(filter, pagination, sortOption);
+            const sortOption: SortOption = { field: sortBy, order };
 
-        return res.status(200).json(result);
+            const result = await this.userService.listUsers(filter, pagination, sortOption);
+
+            return res.status(200).json(result);
+        } catch (err) {
+            logger.error(
+                {
+                    error: err,
+                    action: "listUsers.failed",
+                },
+                "[UserController] List users failed"
+            );
+
+            return res.status(500).json({
+                message: "Failed to fetch users",
+            });
+        }
     };
 
     fetchUserPublicProfile = async (req: Request, res: Response) => {
