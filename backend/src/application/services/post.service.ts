@@ -40,6 +40,16 @@ export class PostService {
         return this.postRepo.findByEventId(eventId, pagination, sort);
     }
 
+    async findFeedByUser(userId: string, limit = 20) {
+        logger.debug(
+            { userId, limit, action: "findFeedByUser" },
+            "[PostService] Find feed for user"
+        );
+        const safeLimit = Math.min(Math.max(limit, 1), 50);
+
+        return this.postRepo.findFeedByUser(userId, safeLimit);
+    }
+
     async getPostsByAuthor(
         authorId: string,
         pagination?: Pagination,
