@@ -72,7 +72,7 @@ export class AuthService {
             expiresAt,
         });
 
-        return { accessToken, refreshToken };
+        return { user, accessToken, refreshToken };
     }
 
     async refresh(token: string) {
