@@ -16,17 +16,17 @@ export class AuthService {
     ) {}
 
     async register(data: CreateVolunteerDto) {
-        const volunteer = await this.userRepo.create(data);
+        const user = await this.userRepo.create(data);
         const accessToken = signAccessToken({
-            sub: volunteer.id,
-            email: volunteer.email,
-            role: volunteer.role,
+            sub: user.id,
+            email: user.email,
+            role: user.role,
         });
 
         const refreshToken = signRefreshToken({
-            sub: volunteer.id,
-            email: volunteer.email,
-            role: volunteer.role,
+            sub: user.id,
+            email: user.email,
+            role: user.role,
         });
 
         // default expires after 7 day, can change it (will replcae by .env)
@@ -34,12 +34,12 @@ export class AuthService {
 
         // store refresh token
         await this.refreshRepo.create({
-            userId: volunteer.id,
+            userId: user.id,
             token: refreshToken,
             expiresAt,
         });
 
-        return { volunteer, accessToken, refreshToken };
+        return { user, accessToken, refreshToken };
     }
 
     async login(credential: Credentials) {
