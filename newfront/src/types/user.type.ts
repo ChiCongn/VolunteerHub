@@ -27,3 +27,9 @@ export interface User {
     lastLogin?: Date | null;
     updatedAt?: Date;
 }
+
+export interface ListUserFilterDto {
+    role?: UserRole;
+    status?: UserStatus;
+    search?: string;
+}
