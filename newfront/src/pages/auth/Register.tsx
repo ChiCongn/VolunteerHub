@@ -19,6 +19,7 @@ import { authService } from "@/services/auth.service";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { getPasswordStrength } from "@/utils/password.utils";
+import { useUserStore } from "@/stores/user.store";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function SignupPage() {
@@ -54,12 +55,18 @@ export default function SignupPage() {
         data.email,
         data.password
       );
+      console.log(res);
+      const store = useUserStore.getState();
+      
+      store.setTokens(res.accessToken, res.refreshToken);
+      store.setUser(res.user);
 
       // setPendingEmail(payload.email);
       // setStep(2);
       //toast.success("Account created successfully! Welcome!");
       navigate("/dashboard");
     } catch (error: any) {
+        console.log(error);
       //   toast.error(
       //     error?.response?.data?.message ||
       //       "Registration failed. Please try again."
@@ -206,7 +213,13 @@ export default function SignupPage() {
                   </Field>
 
                   <Field>
-                    <Button type="submit">Create Account</Button>
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#43A047] hover:bg-[#388E3C]"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Creating account..." : "Create Account"}
+                    </Button>
                   </Field>
 
                   <FieldSeparator>Or continue with</FieldSeparator>
