@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Login from "./pages/login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Page from "./pages/dashboard";
 import { EventPage } from "./pages/eventPage";
 import { CommunityEventPage } from "./pages/testEvent";
@@ -7,23 +6,25 @@ import { CommunityEventPage } from "./pages/testEvent";
 import LandingPage from "./pages/Landing";
 import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Register";
-function Home() {
-  return <h1>ok</h1>;
-}
+import { NotFound } from "./pages/NotFound";
+
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/" element={<Page />} />
-        <Route path="/event" element={<EventPage />} />
-        <Route path="/events/:eventId" element={<CommunityEventPage />} />
-        <Route path="/vcl" element={<Login />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<SignupPage />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/dashboard" element={<Page />} />
+          <Route path="/events" element={<EventPage />} />
+          <Route path="/events/:eventId" element={<CommunityEventPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<SignupPage />} />
+          {/* error routes*/}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

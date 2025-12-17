@@ -1,12 +1,4 @@
-// src/types/index.ts
-
-// User Interface
-export interface User {
-    _id: string; // hoặc id tùy DB
-    username: string;
-    avatarUrl?: string;
-    displayName?: string;
-}
+import type { UserProfile } from "./user.type";
 
 // Event Interface (Dựa trên CreateEventProps của bạn)
 export interface Event {
@@ -26,7 +18,7 @@ export interface Post {
     _id: string;
     content: string;
     imageUrl?: string;
-    author: User; // Backend cần populate field này
+    author: UserProfile; // Backend cần populate field này
     createdAt: string;
     likes: string[];
     commentsCount?: number;
