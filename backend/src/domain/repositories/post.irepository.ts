@@ -1,9 +1,5 @@
 import { Post } from "../entities/post.entity";
-import { 
-    CreatePostDto, 
-    UpdatePostDto,
-    PostView
-} from "../../application/dtos/post.dto";
+import { CreatePostDto, UpdatePostDto, PostView } from "../../application/dtos/post.dto";
 
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
@@ -24,9 +20,11 @@ export interface IPostRepository {
         sort?: SortOption
     ): Promise<ListResult<PostView>>;
 
+    findFeedByUser(userId: string, limit: number): Promise<PostView[]>;
+
     findByAuthor(
-        authorId: string, 
-        pagination?: Pagination, 
+        authorId: string,
+        pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>>;
 
@@ -34,7 +32,7 @@ export interface IPostRepository {
     search(
         eventId: string,
         keyword: string,
-        pagination?: Pagination, 
+        pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>>;
 
