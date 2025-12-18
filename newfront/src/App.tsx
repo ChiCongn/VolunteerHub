@@ -10,6 +10,8 @@ import { NotFound } from "./pages/NotFound";
 import { UserManagementPage } from "./pages/admin/UsersStats";
 import { EventManagementPage } from "./pages/admin/EventsStats";
 import OverviewPage from "./pages/admin/Overview";
+import { PostDetailPage } from "./pages/PostDetailPage";
+import Community from "./pages/Community";
 
 function App() {
   return (
@@ -26,7 +28,8 @@ function App() {
           <Route path="/admin/overview" element={<OverviewPage />} />
           <Route path="/admin/users" element={<UserManagementPage />} />
           <Route path="/admin/events" element={<EventManagementPage />} />
-
+          <Route path="/posts/:postId" element={<PostDetailPage />} />
+          <Route path="/communities" element={<Community />} />
           {/* error routes*/}
           <Route path="*" element={<NotFound />} />
         </Routes>

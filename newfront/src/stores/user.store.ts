@@ -27,11 +27,15 @@ interface UserStore {
     isAdmin: boolean;
     isManager: boolean;
     hasRole: (role: UserRole) => boolean;
+
+    _hasHydrated: boolean;
+    setHasHydrated: (state: boolean) => void;
 }
 
 // Only persist lightweight fields to prevent bloated localStorage
 const LIGHT_USER_FIELDS = [
     "id",
+    "_id",
     "username",
     "email",
     "avatarUrl",
@@ -114,9 +118,14 @@ export const useUserStore = create<UserStore>()(
                 return get().user?.role === UserRole.EventManager;
             },
             hasRole: (role) => get().user?.role === role,
+            _hasHydrated: false,
+            setHasHydrated: (state) => set({ _hasHydrated: state }),
         }),
         {
             name: "volunteerhub-session",
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            },
             partialize: (state) => ({
                 user: state.user
                     ? Object.fromEntries(

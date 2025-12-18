@@ -50,9 +50,12 @@ export const authService = {
         }
 
         try {
-            const { data } = await apiClient.post<RefreshResponse>("/auth/refresh", {
-                refreshToken,
-            });
+            const { data } = await apiClient.post<RefreshResponse>(
+                "/auth/refresh",
+                {
+                    refreshToken,
+                }
+            );
             tokenService.save({
                 accessToken: data.accessToken,
                 refreshToken: data.refreshToken,
