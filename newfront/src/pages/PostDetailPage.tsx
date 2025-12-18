@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 // Components & UI
-import { Navbar05 } from "./navbar";
+import { Navbar05 } from "./Navbar";
 import LeftPanel from "../components/LeftPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -142,14 +142,7 @@ export const PostDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
-      <Navbar05 />
-
       <div className="flex w-full justify-center">
-        {/* 1. LEFT SIDEBAR */}
-        <div className="hidden md:block sticky top-[60px] h-[calc(100vh-60px)] z-30 w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <LeftPanel />
-        </div>
-
         {/* 2. MAIN CONTENT AREA */}
         <div className="flex flex-1 justify-center min-w-0">
           <div className="container mx-auto px-4 max-w-7xl py-6">

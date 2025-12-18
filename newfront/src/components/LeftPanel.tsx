@@ -10,25 +10,18 @@ import {
   Bookmark,
   User,
   Settings,
+  Newspaper,
 } from "lucide-react";
 
 export default function LeftPanel() {
   // 2. Khởi tạo hook navigate
   const navigate = useNavigate();
-
-    // 3. Cấu hình danh sách menu và đường dẫn tương ứng
-    const menuItems = [
-        { icon: Home, label: "Home", path: "/dashboard" }, // Trang chủ
-        { icon: Users, label: "Communities", path: "/communities" },
-        { icon: Bell, label: "Notifications", path: "/notifications" },
-        { icon: Bookmark, label: "Bookmarks", path: "/bookmarks" },
-        { icon: User, label: "Profile", path: "/profile" }, // Hoặc /u/username
-        { icon: Settings, label: "Settings", path: "/settings" },
-    ];
+  const location = useLocation();
 
   // 3. Cấu hình danh sách menu và đường dẫn tương ứng
   const menuItems = [
-    { icon: Home, label: "Home", path: "/home" }, // Trang chủ
+    { icon: Home, label: "Home", path: "/home" },
+    { icon: Newspaper, label: "Feed", path: "/dashboard" },
     { icon: Users, label: "Communities", path: "/communities" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Bookmark, label: "Bookmarks", path: "/bookmarks" },
@@ -37,7 +30,7 @@ export default function LeftPanel() {
   ];
 
   return (
-    <div className="border-border sticky top-0 h-full w-64 overflow-y-auto border-r p-4 bg-white">
+    <div className="border-border fixed top-16 h-full w-64 overflow-y-auto border-r p-4 bg-white">
       <nav className="space-y-2">
         {/* 4. Dùng vòng lặp map để render Button và xử lý onClick */}
         {menuItems.map((item) => {
