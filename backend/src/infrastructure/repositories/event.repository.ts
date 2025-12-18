@@ -163,6 +163,7 @@ export class EventRepository implements IEventRepository {
                 description: true,
                 start_time: true,
                 end_time: true,
+                status: true,
                 location: true,
                 owner_id: true,
                 image_url: true,
@@ -187,6 +188,7 @@ export class EventRepository implements IEventRepository {
             description: event.description,
             startTime: event.start_time,
             endTime: event.end_time ?? null,
+            status: event.status,
             location: event.location,
             imageUrl: event.image_url,
             ownerId: event.owner_id,
@@ -276,6 +278,7 @@ export class EventRepository implements IEventRepository {
                 location: string;
                 startTime: Date;
                 endTime: Date | null;
+                status: EventStatus;
                 description: string;
                 imageUrl: string;
                 ownerId: string;
@@ -285,7 +288,7 @@ export class EventRepository implements IEventRepository {
             }[]
         >(
             `
-            SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity 
+            SELECT id, name, location, start_time, end_time, status, description, image_url, owner_id, categories, register_count, capacity 
             FROM events
             ${whereClause}
             ORDER BY ${orderBy}
@@ -301,6 +304,7 @@ export class EventRepository implements IEventRepository {
             description: e.description,
             startTime: e.start_time,
             endTime: e.end_time ?? null,
+            status: e.status,
             location: e.location,
             ownerId: e.owner_id,
             imageUrl: e.image_url,
@@ -555,6 +559,7 @@ export class EventRepository implements IEventRepository {
                 location: string;
                 startTime: Date;
                 endTime: Date | null;
+                status: EventStatus;
                 description: string;
                 imageUrl: string;
                 ownerId: string;
@@ -564,7 +569,7 @@ export class EventRepository implements IEventRepository {
             }[]
         >(
             `
-            SELECT id, name, location, start_time, end_time, description, image_url, owner_id, categories, register_count, capacity
+            SELECT id, name, location, start_time, end_time, status, description, image_url, owner_id, categories, register_count, capacity
             FROM events
             ${whereClause}
             ORDER BY ${orderBy}
@@ -580,6 +585,7 @@ export class EventRepository implements IEventRepository {
             description: e.description,
             startTime: e.start_time,
             endTime: e.end_time ?? null,
+            status: e.status,
             location: e.location,
             ownerId: e.owner_id,
             imageUrl: e.image_url,
@@ -608,6 +614,7 @@ export class EventRepository implements IEventRepository {
                 description: true,
                 start_time: true,
                 end_time: true,
+                status: true,
                 location: true,
                 owner_id: true,
                 image_url: true,
@@ -623,6 +630,7 @@ export class EventRepository implements IEventRepository {
             description: e.description,
             startTime: e.start_time,
             endTime: e.end_time ? e.end_time : null,
+            status: e.status,
             location: e.location,
             ownerId: e.owner_id,
             imageUrl: e.image_url,

@@ -1,23 +1,6 @@
-// export interface OverviewStatsDto {
-//     users: {
-//         total: number;
-//         active: number;
-//         newToday: number;
-//     };
-//     events: {
-//         total: number;
-//         active: number;
-//         ongoing: number;
-//         upcoming: number;
-//     };
-//     registrations: {
-//         total: number;
-//         today: number;
-//         thisWeek: number;
-//     };
-// }
+import apiClient from "@/lib/api-client";
 
-export interface OverviewStatsDto {
+export interface OverviewStats {
     users: {
         dailyLogins: number[]; // Number of users logged in per day of the month
         totalUsers: number; // Total registered users
@@ -37,3 +20,10 @@ export interface OverviewStatsDto {
         totalRegistrations: number;
     };
 }
+
+export const overviewStatsService = {
+    async getVolunteerStats() {
+        const { data } = await apiClient.get<OverviewStats>("/stats");
+        return data;
+    },
+};

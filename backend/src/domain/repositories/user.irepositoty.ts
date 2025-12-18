@@ -32,9 +32,9 @@ export interface IUserRepository {
     // Admin view
     fetchAdminUserView(userId: string): Promise<AdminUserView | null>;
     listUsers(
-        filter?: ListUserFilterDto,
-        pagination?: Pagination,
-        sort?: SortOption
+        filter: ListUserFilterDto | undefined,
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<AdminUserView>>;
     count(filter?: ListUserFilterDto): Promise<number>;
     setUserLock(id: string, locked: boolean): Promise<void>;
