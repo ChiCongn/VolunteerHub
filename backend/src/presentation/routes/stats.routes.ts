@@ -17,9 +17,9 @@ statsRouter.get(
 );
 statsRouter.get(
     "/events",
-    authenticate,
+    // authenticate,
     validate(EventStatsFilterSchema),
-    authorize(StatsPolicy.allEventsStats),
+    // authorize(StatsPolicy.allEventsStats),
     statsController.getEventsStats
 );
 statsRouter.get(
