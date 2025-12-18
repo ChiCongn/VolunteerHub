@@ -57,18 +57,39 @@ export const commentService = {
         return comments as Comment[];
     },
 
+    // createComment: async (data: {
+    //     postId: string;
+    //     content: string;
+    //     parentId?: string;
+    // }) => {
+    //     const response = await apiClient.post("/comments", data);
+    //     const newItem = response.data;
+
+    //     return {
+    //         ...newItem,
+    //         _id: newItem.id || newItem._id,
+    //         // Đảm bảo có postId, nếu backend không trả về thì lấy từ data gửi đi
+    //         postId: newItem.postId || data.postId,
+    //         author: {
+    //             ...newItem.author,
+    //             _id: newItem.author?.id || newItem.author?._id,
+    //         },
+    //     } as Comment;
+    // },
+
     createComment: async (data: {
         postId: string;
         content: string;
+        authorId: string; // <--- Add this
         parentId?: string;
     }) => {
-        const response = await apiClient.post("/v1/comments", data);
+        // The 'data' object now includes authorId
+        const response = await apiClient.post("/comments", data);
         const newItem = response.data;
 
         return {
             ...newItem,
             _id: newItem.id || newItem._id,
-            // Đảm bảo có postId, nếu backend không trả về thì lấy từ data gửi đi
             postId: newItem.postId || data.postId,
             author: {
                 ...newItem.author,

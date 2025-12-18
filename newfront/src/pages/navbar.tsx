@@ -277,7 +277,8 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
 
     // 4. Lấy dữ liệu user từ Store (đã được persist trong localStorage)
     const { user, clearSession } = useUserStore();
-    
+    console.log(user);
+
     // 5. Ưu tiên hiển thị dữ liệu từ Store -> Props -> Default
     const displayUserName = user?.username || userName || "Guest";
     const displayUserEmail = user?.email || userEmail || "";

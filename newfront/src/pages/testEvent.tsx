@@ -36,8 +36,11 @@ export const CommunityEventPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
-  //user data
-  const { user } = useUserStore();
+  const user = useUserStore((s) => s.user);
+  useEffect(() => {
+    console.log("USER AFTER HYDRATE:", user);
+  }, [user]);
+
   // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
@@ -74,7 +77,7 @@ export const CommunityEventPage = () => {
         eventId: eventId,
         content: content,
         imageUrl: imageUrl,
-        authorId: "0f7af42e-a395-4419-bb5a-9dd661661f82",
+        authorId: user?.id ? user.id : "56278395-01e3-48cd-912b-c40a937af180",
       });
 
       const newPost: Post = {

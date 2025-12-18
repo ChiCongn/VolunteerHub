@@ -109,12 +109,13 @@ export const PostDetailPage = () => {
 
   // Handle Comment Submit
   const handleSubmitComment = async () => {
-    if (!commentText.trim() || !postId || !isAuthenticated) return;
+    //if (!commentText.trim() || !postId || !isAuthenticated) return;
     try {
       setIsSubmitting(true);
       const newComment = await commentService.createComment({
-        postId: postId,
+        postId: postId as string,
         content: commentText,
+        authorId: user?.id ?? "c1053a85-e0a0-46f8-87bf-261b98a5c5bc",
       });
       setComments((prev) => [newComment, ...prev]);
       setCommentText("");
@@ -250,7 +251,7 @@ export const PostDetailPage = () => {
                             className="pr-10 h-10 bg-white border-zinc-300 focus-visible:ring-1 focus-visible:ring-blue-500 rounded-full shadow-sm"
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
-                            disabled={!isAuthenticated || isSubmitting}
+                            //disabled={!isAuthenticated || isSubmitting}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
@@ -263,9 +264,9 @@ export const PostDetailPage = () => {
                             variant="ghost"
                             className="absolute right-1 top-1 h-8 w-8 text-blue-500 hover:bg-blue-50 rounded-full"
                             onClick={handleSubmitComment}
-                            disabled={
-                              !commentText || !isAuthenticated || isSubmitting
-                            }
+                            // disabled={
+                            //   !commentText || !isAuthenticated || isSubmitting
+                            // }
                           >
                             <Send className="w-4 h-4" />
                           </Button>
