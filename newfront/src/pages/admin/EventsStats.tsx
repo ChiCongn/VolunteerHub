@@ -23,6 +23,12 @@ import LeftPanel from "@/components/LeftPanel";
 import { EventCategory, EventStatus } from "@/types/enum";
 import { FilterEventBar } from "@/components/FilterEventBar";
 import type { Event } from "@/types/event.type";
+import {
+  eventManagementService,
+  type EventsStats,
+} from "@/services/admin/event-management.service";
+import { useDebounce } from "@/hooks/useDebounce";
+import { FilterEventsStatsBar } from "@/components/FilterEventsStatsBar";
 
 export function EventManagementPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -43,14 +49,40 @@ export function EventManagementPage() {
     EventStatus.Pending
   );
 
+  // stats
+  // stats filters
+  const [statsRange, setStatsRange] = useState<{
+    from?: string;
+    to?: string;
+  }>({});
+  const [selectedCategoryStats, setSelectedCategoryStats] = useState<
+    EventCategory | "all"
+  >("all");
+  const [selectedStatusStats, setSelectedStatusStats] = useState<EventStatus>(
+    EventStatus.Pending
+  );
+
+  const [stats, setStats] = useState<EventsStats | null>(null);
+
   // =========== service ===============
-  // fetch/filter users
+  const debouncedSearch = useDebounce(search, 400);
+  // fetch/filter events
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
       try {
+        const res = await eventManagementService.listEvents({
+          name: debouncedSearch || undefined,
+          status: selectedStatus,
+          categories:
+            selectedCategory === "all" ? undefined : [selectedCategory],
+        });
+
+        setEvents(res.items);
+        setTotalItems(res.total);
+        setTotalPages(Math.ceil(res.total / limit));
       } catch (error) {
-        console.error("Fetch users failed", error);
+        console.error("Fetch events failed", error);
         setEvents([]);
       } finally {
         setLoading(false);
@@ -58,32 +90,76 @@ export function EventManagementPage() {
     };
 
     fetchEvents();
-  }, [page, limit]);
+  }, [page, limit, debouncedSearch, selectedCategory, selectedStatus]);
+
+  useEffect(() => {
+    const now = new Date();
+    const from = new Date();
+    from.setDate(now.getDate() - 30);
+
+    setStatsRange({
+      from: from.toISOString().slice(0, 10),
+      to: now.toISOString().slice(0, 10),
+    });
+  }, []);
 
   // fetch stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        const stats = await eventManagementService.getEventsStats({
+          range:
+            statsRange.from || statsRange.to
+              ? {
+                  from: statsRange.from!,
+                  to: statsRange.to!,
+                }
+              : undefined,
+
+          status: selectedStatusStats ? [selectedStatusStats] : undefined,
+
+          categories:
+            selectedCategoryStats === "all"
+              ? undefined
+              : [selectedCategoryStats],
+        });
+
+        setStats(stats);
       } catch (error) {
         console.error("Fetch stats failed", error);
       }
     };
-
+    console.log("fetch stats");
     fetchStats();
-  }, []);
+  }, [
+    selectedCategoryStats,
+    selectedStatusStats,
+    statsRange.from,
+    statsRange.to,
+  ]);
+
+  const handleCategoryStatsChange = (category: EventCategory | "all") => {
+    console.log(stats);
+    setSelectedCategoryStats(category);
+  };
+
+  const handleStatusStatsChange = (status: EventStatus) => {
+    setSelectedStatusStats(status);
+  };
 
   // ========= filter handles =================
-  const handleSearch = (username: string) => {
-    if (!username || username === "") return;
-
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
     setPage(1); // reset pagination when filter changes
   };
 
   const handleCategoryChange = (category: EventCategory | "all") => {
+    setSelectedCategory(category);
     setPage(1); // reset pagination when filter changes
   };
 
   const handleStatusChange = (status: EventStatus) => {
+    setSelectedStatus(status);
     setPage(1); // reset pagination when filter changes
   };
 
@@ -108,6 +184,16 @@ export function EventManagementPage() {
               <p className="text-muted-foreground">Manage event</p>
             </div>
 
+            <FilterEventsStatsBar
+              selectedCategory={selectedCategoryStats}
+              selectedStatus={selectedStatusStats}
+              onCategoryChange={handleCategoryStatsChange}
+              onStatusChange={handleStatusStatsChange}
+              onRangeChange={(range) =>
+                setStatsRange((prev) => ({ ...prev, ...range }))
+              }
+            />
+
             {/* stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-card border border-border rounded-lg p-6 space-y-2">
@@ -115,18 +201,20 @@ export function EventManagementPage() {
                   <p className="text-sm text-muted-foreground">Total Events</p>
                   <Calendar className="w-5 h-5 text-[#43A047]" />
                 </div>
-                <p className="text-3xl font-semibold">{20}</p>
+                <p className="text-3xl font-semibold">
+                  {stats?.totalEvents ?? 0}
+                </p>
               </div>
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              {/* <div className="bg-card border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     Ongoing Events
                   </p>
                   <Trophy className="w-5 h-5 text-[#FFC107]" />
                 </div>
-                <p className="text-3xl font-semibold">{20}</p>
+                <p className="text-3xl font-semibold">{stats?.activeEvents}</p>
                 <p className="text-xs text-[#FFC107]">Top 15% of volunteers</p>
-              </div>
+              </div> */}
               <div className="bg-card border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
@@ -134,7 +222,7 @@ export function EventManagementPage() {
                   </p>
                   <Trophy className="w-5 h-5 text-[#FFC107]" />
                 </div>
-                <p className="text-3xl font-semibold">{20}</p>
+                <p className="text-3xl font-semibold">{stats?.completedEvents}</p>
                 <p className="text-xs text-[#FFC107]">.....</p>
               </div>
 
@@ -145,20 +233,24 @@ export function EventManagementPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-3xl font-semibold leading-none">20</p>
+                    <p className="text-3xl font-semibold leading-none">
+                      {stats?.participants.total ?? 0}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">Total</p>
                   </div>
                   <div>
-                    <p className="text-3xl font-semibold leading-none">20</p>
+                    <p className="text-3xl font-semibold leading-none">
+                      {stats?.participants.average ?? 0}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Average
                     </p>
                   </div>
                   <div>
-                    <p className="text-3xl font-semibold leading-none">20</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Median
+                    <p className="text-3xl font-semibold leading-none">
+                      {stats?.participants.median ?? 0}
                     </p>
+                    <p className="text-xs text-muted-foreground mt-1">Median</p>
                   </div>
                 </div>
               </div>
@@ -170,12 +262,12 @@ export function EventManagementPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-3xl font-semibold leading-none">20</p>
+                    <p className="text-3xl font-semibold leading-none">{stats?.totalPosts}</p>
                     <p className="text-xs text-muted-foreground mt-1">Total</p>
                   </div>
 
                   <div>
-                    <p className="text-3xl font-semibold leading-none">20</p>
+                    <p className="text-3xl font-semibold leading-none">{stats?.avgPostsPerEvent}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Average
                     </p>
