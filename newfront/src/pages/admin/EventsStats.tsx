@@ -18,8 +18,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Trophy } from "lucide-react";
-import { Navbar05 } from "../Navbar";
-import LeftPanel from "@/components/LeftPanel";
 import { EventCategory, EventStatus } from "@/types/enum";
 import { FilterEventBar } from "@/components/FilterEventBar";
 import type { Event } from "@/types/event.type";

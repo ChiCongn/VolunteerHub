@@ -13,8 +13,6 @@ import {
   MoreHorizontal,
   MessageCircle,
 } from "lucide-react";
-import { Navbar05 } from "./Navbar";
-import LeftPanel from "../components/LeftPanel";
 import { useUserStore } from "@/stores/user.store";
 import { useEffect } from "react";
 

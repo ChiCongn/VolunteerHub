@@ -19,8 +19,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, Trophy, Lock } from "lucide-react";
-import { Navbar05 } from "../Navbar";
-import LeftPanel from "@/components/LeftPanel";
 import type { UserProfile } from "@/types/user.type";
 import { UserRole, UserStatus } from "@/types/enum";
 import { FilterUserBar } from "@/components/FilterUserBar";
