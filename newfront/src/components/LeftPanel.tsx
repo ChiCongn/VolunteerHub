@@ -54,13 +54,6 @@ export default function LeftPanel() {
         })}
       </nav>
 
-      <Button
-        className="mt-6 w-full"
-        onClick={() => navigate("/create-post")} // Ví dụ chuyển đến trang tạo bài viết
-      >
-        Create Post
-      </Button>
-
       <div className="mt-8">
         <h3 className="mb-4 text-sm font-semibold">Your Communities</h3>
         <div className="space-y-2 flex flex-col">

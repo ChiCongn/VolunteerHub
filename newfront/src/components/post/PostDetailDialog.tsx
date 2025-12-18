@@ -7,6 +7,7 @@ import {
 import type { PostFeedView } from "@/components/post/PostData";
 import PostHeader from "@/components/post/PostHeader";
 import PostContent from "@/components/post/PostContent";
+import CommentSection from "@/components/comment/CommentSection";
 
 interface Props {
   post: PostFeedView | null;
@@ -14,18 +15,14 @@ interface Props {
   onClose: () => void;
 }
 
-export default function PostDetailDialog({
-  post,
-  open,
-  onClose,
-}: Props) {
+export default function PostDetailDialog({ post, open, onClose }: Props) {
   if (!post) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl p-0">
+      <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto p-0">
         <DialogHeader className="p-4 border-b">
-          <DialogTitle>Post</DialogTitle>
+          <DialogTitle className="flex justify-center">{post.author.name}'s Post</DialogTitle>
         </DialogHeader>
 
         <div className="p-4 space-y-4">
@@ -33,11 +30,9 @@ export default function PostDetailDialog({
           <PostHeader post={post} />
           <PostContent post={post} />
 
-          {/* COMMENT SECTION (placeholder) */}
+          {/* COMMENT SECTION */}
           <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              Comments will appear here…
-            </p>
+            <CommentSection />
           </div>
         </div>
       </DialogContent>

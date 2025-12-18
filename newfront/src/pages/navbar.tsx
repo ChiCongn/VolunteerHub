@@ -30,6 +30,7 @@ import {
 } from "@/components/cards/NotificationCard";
 
 import { useUserStore } from "@/stores/user.store";
+import { useAuth } from "@/components/context/AuthContext";
 
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
   return (
@@ -274,18 +275,26 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
 
     // 4. Lấy dữ liệu user từ Store (đã được persist trong localStorage)
     const { user, clearSession } = useUserStore();
-    console.log(user);
+    const { logout: authContextLogout, user: authUser } = useAuth();
 
-    // 5. Ưu tiên hiển thị dữ liệu từ Store -> Props -> Default
-    const displayUserName = user?.username || userName || "Guest";
-    const displayUserEmail = user?.email || userEmail || "";
-    const displayUserAvatar = user?.avatarUrl || userAvatar;
+    // Ưu tiên dùng AuthContext, fallback sang Store
+    const displayUser = authUser || user;
+    console.log("Display user:", displayUser);
 
-    // 6. Xử lý logic Logout: xóa store và chuyển trang
+    const displayUserName =
+      displayUser?.username || userName || "Guest";
+    const displayUserEmail = displayUser?.email || userEmail || "";
+    const displayUserAvatar =
+      displayUser?.avatarUrl ||userAvatar;
+
     const handleUserMenuClick = (item: string) => {
       if (item === "logout") {
-        clearSession(); // Xóa token và user khỏi store/localStorage
-        navigate("/login"); // Điều hướng về trang login
+        // Xóa từ Store
+        clearSession();
+        // Xóa từ AuthContext
+        authContextLogout();
+        // Điều hướng về trang login
+        navigate("/login");
       } else if (onUserItemClick) {
         onUserItemClick(item);
       }
