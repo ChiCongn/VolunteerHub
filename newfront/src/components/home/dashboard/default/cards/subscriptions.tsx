@@ -9,12 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /* ================= MOCK DATA ================= */
 
@@ -33,10 +28,7 @@ const MOCK_DATA: VolunteerProgressData[] = [
   { day: "Sun", hours: 3 },
 ];
 
-const TOTAL_THIS_WEEK = MOCK_DATA.reduce(
-  (sum, d) => sum + d.hours,
-  0
-);
+const TOTAL_THIS_WEEK = MOCK_DATA.reduce((sum, d) => sum + d.hours, 0);
 
 const TOTAL_LAST_WEEK = 16;
 
@@ -46,19 +38,15 @@ export default function VolunteerProgressCard() {
   const percentChange =
     TOTAL_LAST_WEEK > 0
       ? Math.round(
-          ((TOTAL_THIS_WEEK - TOTAL_LAST_WEEK) /
-            TOTAL_LAST_WEEK) *
-            100
+          ((TOTAL_THIS_WEEK - TOTAL_LAST_WEEK) / TOTAL_LAST_WEEK) * 100
         )
       : 0;
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">
-            Volunteer Hours (7 days)
-          </CardTitle>
+          <CardTitle className="text-base">Volunteer Hours (7 days)</CardTitle>
 
           <div className="text-3xl font-bold leading-none">
             {TOTAL_THIS_WEEK}
@@ -111,11 +99,7 @@ export default function VolunteerProgressCard() {
                 }}
               />
 
-              <Bar
-                dataKey="hours"
-                radius={[6, 6, 0, 0]}
-                fill="currentColor"
-              >
+              <Bar dataKey="hours" radius={[6, 6, 0, 0]} fill="currentColor">
                 <LabelList
                   dataKey="hours"
                   position="top"

@@ -1,8 +1,21 @@
-import { useState } from "react";
-import type { PostFeedView } from "@/components/post/PostData";
-import { mockPosts } from "@/components/post/PostData";
-import PostCard from "@/components/post/PostCard";
-import PostDetailDialog from "@/components/post/PostDetailDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  ImageIcon,
+  Smile,
+  Calendar,
+  MapPin,
+  Heart,
+  Repeat2,
+  Share,
+  MoreHorizontal,
+  MessageCircle,
+} from "lucide-react";
+import LeftPanel from "../components/LeftPanel";
+import { useUserStore } from "@/stores/user.store";
+import { useEffect } from "react";
 
 export default function Feed() {
   const [posts] = useState<PostFeedView[]>(mockPosts);
