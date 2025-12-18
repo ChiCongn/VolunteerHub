@@ -38,6 +38,7 @@ export interface PublicEventView {
     location: string;
     startTime: Date;
     endTime: Date | null;
+    status: EventStatus;
     description: string;
     imageUrl: string;
     ownerId: string;
