@@ -43,9 +43,9 @@ export class PostService {
     ): Promise<ListResult<PostView>> {
         await this.eventRepo.checkExistedAndApprovedEvent(eventId);
 
-        const sortableFields = new Set(["created_at", "author_id"]);
+        const sortableFields = new Set(["p.created_at", "p.author_id"]);
 
-        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "created_at";
+        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "p.created_at";
         const sortOrder = sort?.order?.toLowerCase() === "asc" ? "asc" : "desc";
         const normalizedSort: SortOption = {
             field: sortField,
@@ -74,9 +74,9 @@ export class PostService {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
-        const sortableFields = new Set(["created_at", "event_id"]);
+        const sortableFields = new Set(["p.created_at", "p.event_id"]);
 
-        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "created_at";
+        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "p.created_at";
         const sortOrder = sort?.order?.toLowerCase() === "asc" ? "asc" : "desc";
         const normalizedSort: SortOption = {
             field: sortField,
@@ -98,9 +98,9 @@ export class PostService {
     ): Promise<ListResult<PostView>> {
         await this.eventRepo.checkExistedAndApprovedEvent(eventId);
 
-        const sortableFields = new Set(["created_at", "author_id"]);
+        const sortableFields = new Set(["p.created_at", "p.author_id"]);
 
-        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "created_at";
+        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "p.created_at";
         const sortOrder = sort?.order?.toLowerCase() === "asc" ? "asc" : "desc";
         const normalizedSort: SortOption = {
             field: sortField,
