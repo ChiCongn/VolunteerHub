@@ -25,15 +25,15 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 import logger from "../../logger";
 import bcrypt from "bcrypt";
 import "dotenv/config";
-import { tr } from "zod/locales";
 import { AuthContext } from "../../application/policies/helpers";
 import { LoginStreakDto } from "../../application/dtos/users/login-streak.dto";
 import { MonthlyEventStatsDto } from "../../application/dtos/users/monthly-event-stats.dto";
+import { UserDailyActivityRow } from "../../application/dtos/users/week-online-stats.dto";
 import {
-    UserDailyActivityRow,
-    WeeklyOnlineStatsDto,
-} from "../../application/dtos/users/week-online-stats.dto";
-import { WeeklyEventCountRow, WeeklyEventParticipationDto } from "../../application/dtos/users/weekly-event-participant.dto";
+    WeeklyEventCountRow,
+    WeeklyEventParticipationDto,
+} from "../../application/dtos/users/weekly-event-participant.dto";
+import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;
@@ -510,6 +510,77 @@ export class UserRepository implements IUserRepository {
     }
 
     // =============== stats =================
+    /**
+     * Increments the login count for today.
+     * If the record doesn't exist for today, it creates it.
+     */
+    async trackLogin(userId: string): Promise<UserDailyActivity> {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        logger.debug(
+            {
+                userId,
+                activityDate: today,
+                action: "trackLogin",
+            },
+            "[UserRepository] Tracking user login"
+        );
+
+        const row = await this.prisma.user_daily_activity.upsert({
+            where: {
+                user_id_activity_date: {
+                    user_id: userId,
+                    activity_date: today,
+                },
+            },
+            update: {
+                login_count: { increment: 1 },
+            },
+            create: {
+                user_id: userId,
+                activity_date: today,
+                login_count: 1,
+                online_seconds: 0,
+            },
+        });
+        return {
+            userId: row.user_id,
+            activityDate: row.activity_date,
+            onlineSeconds: row.online_seconds,
+            loginCount: row.login_count,
+        };
+    }
+
+    /**
+     * Adds online seconds to the user's daily total.
+     */
+    async updateOnlineTime(userId: string, seconds: number): Promise<void> {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0); // Normalize to SQL DATE (midnight)
+
+        logger.debug(
+            {
+                userId,
+                activityDate: today,
+                secondsToAdd: seconds,
+                action: "updateOnlineTime",
+            },
+            "[UserRepository] Updating online activity time"
+        );
+        
+        await this.prisma.user_daily_activity.update({
+            where: {
+                user_id_activity_date: {
+                    user_id: userId,
+                    activity_date: today,
+                },
+            },
+            data: {
+                online_seconds: { increment: seconds },
+            },
+        });
+    }
+
     async getLoginStreak(
         userId: string,
         year: number,
