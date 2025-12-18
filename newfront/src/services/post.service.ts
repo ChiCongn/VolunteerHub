@@ -15,7 +15,6 @@ export const postService = {
             `/posts/event/${eventId}`
         );
 
-        // Dùng any tạm thời cho item để tránh lỗi TS khi truy cập field sai
         const items = response.data.items.map((item: any) => ({
             ...item,
             _id: item._id || item.id,

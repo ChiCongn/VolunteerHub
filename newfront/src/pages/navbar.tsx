@@ -285,10 +285,10 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
     console.log("Display user:", displayUser);
 
     const displayUserName =
-      displayUser?.username || displayUser?.name || userName || "Guest";
+      displayUser?.username || userName || "Guest";
     const displayUserEmail = displayUser?.email || userEmail || "";
     const displayUserAvatar =
-      displayUser?.avatarUrl || displayUser?.avatar || userAvatar;
+      displayUser?.avatarUrl ||userAvatar;
 
     const handleUserMenuClick = (item: string) => {
       if (item === "logout") {

@@ -10,7 +10,7 @@ import SignupPage from "./pages/auth/Register";
 import Home from "./pages/Home";
 import Feed from "./pages/Feed";
 import Community from "./pages/Community";
-import { CommunityEventPage } from "./pages/testEvent";
+import { CommunityEventPage } from "./pages/CommunityEventPage";
 import { PostDetailPage } from "./pages/PostDetailPage";
 
 import { UserManagementPage } from "./pages/admin/UsersStats";

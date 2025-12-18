@@ -1,30 +1,15 @@
 "use client";
 
-import {
-  PieChart,
-  Pie,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+import { PieChart, Pie, ResponsiveContainer, Cell } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const WEEKLY_GOAL = 10;
-const COMPLETED_EVENTS = 6; 
+const COMPLETED_EVENTS = 6;
 export default function WeeklyVolunteerGoalChart() {
-  const remainingEvents = Math.max(
-    WEEKLY_GOAL - COMPLETED_EVENTS,
-    0
-  );
+  const remainingEvents = Math.max(WEEKLY_GOAL - COMPLETED_EVENTS, 0);
 
-  const percentage = Math.round(
-    (COMPLETED_EVENTS / WEEKLY_GOAL) * 100
-  );
+  const percentage = Math.round((COMPLETED_EVENTS / WEEKLY_GOAL) * 100);
 
   const pieData = [
     { name: "Completed", value: COMPLETED_EVENTS },
@@ -32,11 +17,9 @@ export default function WeeklyVolunteerGoalChart() {
   ];
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
-        <CardTitle className="text-base">
-          Weekly Volunteer Goal
-        </CardTitle>
+        <CardTitle className="text-base">Weekly Volunteer Goal</CardTitle>
       </CardHeader>
 
       <CardContent className="flex items-center gap-6">
@@ -56,10 +39,7 @@ export default function WeeklyVolunteerGoalChart() {
                   className="text-[hsl(var(--chart-1))]"
                   fill="currentColor"
                 />
-                <Cell
-                  className="text-muted"
-                  fill="currentColor"
-                />
+                <Cell className="text-muted" fill="currentColor" />
               </Pie>
             </PieChart>
           </ResponsiveContainer>

@@ -48,26 +48,19 @@ export default function YearlyVolunteerActivityCard({
 }: {
   className?: string;
 }) {
-  const [data] =
-    useState<MonthlyVolunteerData[]>(MOCK_DATA);
-  const [lastYearTotal] =
-    useState(LAST_YEAR_TOTAL);
+  const [data] = useState<MonthlyVolunteerData[]>(MOCK_DATA);
+  const [lastYearTotal] = useState(LAST_YEAR_TOTAL);
 
-  const totalThisYear = data.reduce(
-    (sum, d) => sum + d.activities,
-    0
-  );
+  const totalThisYear = data.reduce((sum, d) => sum + d.activities, 0);
 
   const diff = totalThisYear - lastYearTotal;
   const diffPercent =
-    lastYearTotal > 0
-      ? Math.round((diff / lastYearTotal) * 100)
-      : 0;
+    lastYearTotal > 0 ? Math.round((diff / lastYearTotal) * 100) : 0;
 
   const isIncrease = diff >= 0;
 
   return (
-    <Card className={className}>
+    <Card className={className} className="bg-white">
       <CardHeader>
         <CardTitle className="text-base">
           Volunteer Activities (Yearly)
@@ -153,13 +146,10 @@ export default function YearlyVolunteerActivityCard({
           <div className="flex items-center gap-2">
             <span
               className={`text-sm font-medium ${
-                isIncrease
-                  ? "text-success"
-                  : "text-destructive"
+                isIncrease ? "text-success" : "text-destructive"
               }`}
             >
-              {isIncrease ? "▲" : "▼"}{" "}
-              {Math.abs(diff)} activities
+              {isIncrease ? "▲" : "▼"} {Math.abs(diff)} activities
             </span>
             <span className="text-sm text-muted-foreground">
               ({diffPercent > 0 ? "+" : ""}
@@ -167,15 +157,11 @@ export default function YearlyVolunteerActivityCard({
             </span>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            Compared to last year
-          </p>
+          <p className="text-sm text-muted-foreground">Compared to last year</p>
 
           <div className="flex items-center gap-4 pt-2">
             <div className="text-sm">
-              <span className="text-muted-foreground">
-                This year:{" "}
-              </span>
+              <span className="text-muted-foreground">This year: </span>
               <span className="font-semibold text-foreground">
                 {totalThisYear} activities
               </span>
@@ -184,9 +170,7 @@ export default function YearlyVolunteerActivityCard({
             <div className="h-4 w-px bg-border" />
 
             <div className="text-sm">
-              <span className="text-muted-foreground">
-                Last year:{" "}
-              </span>
+              <span className="text-muted-foreground">Last year: </span>
               <span className="font-semibold text-foreground">
                 {lastYearTotal} activities
               </span>
