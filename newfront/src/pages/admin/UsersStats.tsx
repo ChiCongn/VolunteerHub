@@ -29,6 +29,7 @@ import {
   type EventManagerStats,
   type VolunteerStats,
 } from "@/services/admin/user-management.service";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function UserManagementPage() {
   const [filterUsers, setFilterUsers] = useState<UserProfile[]>([]);
@@ -36,7 +37,7 @@ export function UserManagementPage() {
 
   // pagination
   const [page, setPage] = useState(1);
-  const [limit] = useState(5); // fixed page size
+  const [limit] = useState(10); // fixed page size
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -59,6 +60,8 @@ export function UserManagementPage() {
   );
 
   // =========== service ===============
+  const debouncedSearch = useDebounce(search, 400);
+
   // fetch/filter users
   useEffect(() => {
     const fetchUsers = async () => {
@@ -66,6 +69,7 @@ export function UserManagementPage() {
       try {
         const res = await userManagementService.listUser(
           {
+            search: debouncedSearch || undefined,
             role: selectedRole,
             status: selectedStatus,
           },
@@ -87,7 +91,7 @@ export function UserManagementPage() {
     };
 
     fetchUsers();
-  }, [page, limit, selectedRole, selectedStatus]);
+  }, [page, limit, debouncedSearch, selectedRole, selectedStatus]);
 
   // fetch stats
   useEffect(() => {
@@ -110,7 +114,6 @@ export function UserManagementPage() {
 
   // ========= filter handles =================
   const handleSearch = (username: string) => {
-    if (!username || username === "") return;
     setSearchQuery(username);
     setPage(1); // reset pagination when filter changes
   };
@@ -123,6 +126,33 @@ export function UserManagementPage() {
   const handleStatusChange = (status: UserStatus) => {
     setSelectedStatus(status);
     setPage(1); // reset pagination when filter changes
+  };
+
+  // =========== lock/unlock ================
+  const handleUserLock = async (userId: string, locked: boolean) => {
+    try {
+      // Call service instead of apiClient directly
+      await userManagementService.setUserLock(userId, locked);
+
+      // Optimistically update UI
+      setFilterUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? { ...u, status: locked ? UserStatus.Locked : UserStatus.Active }
+            : u
+        )
+      );
+
+      //toast.success(`User ${locked ? "locked" : "unlocked"} successfully`);
+    } catch (err) {
+      console.error("Failed to update user lock status", err);
+      //toast.error(`Failed to ${locked ? "lock" : "unlock"} user`);
+    }
+  };
+
+  // ============= view user =================
+  const handleViewUser = (userId: string) => {
+    // navigate
   };
 
   const visiblePages = Array.from(
@@ -160,7 +190,7 @@ export function UserManagementPage() {
                 </p>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              {/* <div className="bg-card border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Active</p>
                   <Clock className="w-5 h-5 text-[#2196F3]" />
@@ -179,7 +209,7 @@ export function UserManagementPage() {
                   {volunteerStats?.lockedCount}
                 </p>
                 <p className="text-xs text-[#FFC107]">Top 15% of volunteers</p>
-              </div>
+              </div> */}
 
               <div className="bg-card border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
@@ -207,7 +237,7 @@ export function UserManagementPage() {
                 <p className="text-xs text-[#FFC107]">Top 15% of volunteers</p>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              {/* <div className="bg-card border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Active</p>
                   <Trophy className="w-5 h-5 text-[#FFC107]" />
@@ -227,7 +257,7 @@ export function UserManagementPage() {
                   {managerStats?.lockedCount}
                 </p>
                 <p className="text-xs text-[#FFC107]">.....</p>
-              </div>
+              </div> */}
             </div>
 
             <FilterUserBar
@@ -297,10 +327,40 @@ export function UserManagementPage() {
                             {user.status}
                           </Badge>
                         </TableCell>
+                        {/* Actions */}
                         <TableCell className="text-right">
-                          <Button size="sm" variant="outline">
-                            <Lock className="w-4 h-4" />
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleViewUser(user.id)}
+                            >
+                              View
+                            </Button>
+
+                            {user.status === UserStatus.Active && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleUserLock(user.id, true)}
+                                >
+                                  Lock
+                                </Button>
+                              </>
+                            )}
+                            {user.status === UserStatus.Locked && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => handleUserLock(user.id, false)}
+                                >
+                                  Unlock
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
