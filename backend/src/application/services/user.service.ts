@@ -10,12 +10,47 @@ export class UserService {
     constructor(private readonly userRepo: IUserRepository) {}
 
     // admin
-    async listUsers(filter?: ListUserFilterDto, pagination?: Pagination, sort?: SortOption) {
+    async listUsers(
+        filter?: ListUserFilterDto,
+        pagination?: Pagination,
+        sort?: SortOption
+    ) {
+        // sanitize pagination (must be >= 1)
+        const page = Math.max(1, Number(pagination?.page) || 1);
+        const limit = Math.max(1, Number(pagination?.limit) || 10);
+
+        // whitelist sortable fields (business rule)
+        const sortableFields = new Set([
+            "role",
+            "status",
+            "username",
+            "email",
+            "created_at",
+            "last_login",
+        ]);
+
+        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "created_at";
+
+        const sortOrder = sort?.order?.toLowerCase() === "asc" ? "asc" : "desc";
+
+        const normalizedSort: SortOption = {
+            field: sortField,
+            order: sortOrder,
+        };
+
+        const normalizedPagination: Pagination = { page, limit };
+
         logger.debug(
-            { filter, pagination, sort, action: "listUsers" },
-            "[UserService] Listing users"
+            {
+                filter,
+                pagination: normalizedPagination,
+                sort: normalizedSort,
+                action: "listUsers",
+            },
+            "[UserService] Listing users (admin)"
         );
-        return this.userRepo.listUsers(filter, pagination, sort);
+
+        return this.userRepo.listUsers(filter, normalizedPagination, normalizedSort);
     }
 
     async fetchPublicProfileUserById(userId: string, isAdmin = false) {

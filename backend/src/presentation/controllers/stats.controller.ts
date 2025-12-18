@@ -2,6 +2,8 @@ import { Request, Response, RequestHandler } from "express";
 import { statsService, StatsService } from "../../application/services/stats.service";
 import logger from "../../logger";
 import { EventNotFoundError } from "../../domain/errors/event.error";
+import { EventsStatsFilter } from "../validators/stats/event-stats.schema";
+import { EventsStatsFilterDto } from "../../application/dtos/stats";
 
 export class StatsController {
     constructor(private readonly statsService: StatsService) {}
@@ -23,10 +25,19 @@ export class StatsController {
     };
 
     /** Aggregated stats for multiple events with optional filters */
-    getEventsStats = async (req: Request, res: Response) => {
+    getEventsStats: RequestHandler<any, any, any, EventsStatsFilter> = async (req, res) => {
         logger.info({ action: "getEventsStats" }, "[StatsController] Fetching all events stats");
         try {
-            const filters = req.body;
+            const filters: EventsStatsFilterDto = {
+                ...req.query,
+                range: req.query.from
+                    ? {
+                          from: req.query.from?.toISOString() || "",
+                          to: req.query.to?.toISOString() || "",
+                      }
+                    : undefined,
+            };
+
             const result = await this.statsService.getEventsStats(filters);
             return res.status(200).json(result);
         } catch (err) {

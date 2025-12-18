@@ -7,8 +7,11 @@ import LandingPage from "./pages/Landing";
 import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Register";
 import { NotFound } from "./pages/NotFound";
-import Home from "./pages/Home";
-
+import { UserManagementPage } from "./pages/admin/UsersStats";
+import { EventManagementPage } from "./pages/admin/EventsStats";
+import OverviewPage from "./pages/admin/Overview";
+import { PostDetailPage } from "./pages/PostDetailPage";
+import Community from "./pages/Community";
 
 function App() {
   return (
@@ -22,6 +25,12 @@ function App() {
           <Route path="/events/:eventId" element={<CommunityEventPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<SignupPage />} />
+
+          <Route path="/admin/overview" element={<OverviewPage />} />
+          <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/events" element={<EventManagementPage />} />
+          <Route path="/posts/:postId" element={<PostDetailPage />} />
+          <Route path="/communities" element={<Community />} />
           {/* error routes*/}
           <Route path="*" element={<NotFound />} />
         </Routes>

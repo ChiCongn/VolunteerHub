@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { postService, PostService } from "../../application/services/post.service";
+import logger from "../../logger";
 
 export class PostsController {
     private postService: PostService;
@@ -99,6 +100,17 @@ export class PostsController {
 
             return res.status(200).json(posts);
         } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
+    findFeed = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user.sub;
+            const posts = await this.postService.findFeedByUser(userId);
+            return res.status(200).json(posts);
+        } catch (error: any) {
+            logger.error({ error }, "[PostController] Find feed posts");
             return res.status(400).json({ error: error.message });
         }
     };

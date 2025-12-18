@@ -25,73 +25,179 @@ function dateRange(days: number) {
 export class StatsRepository implements IStatsRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
-    async getOverviewStats(): Promise<OverviewStatsDto> {
-        logger.debug("[StatsRepository] get overview of app");
-        const today = dateRange(1);
-        const week = dateRange(7);
+    // async getOverviewStats(): Promise<OverviewStatsDto> {
+    //     logger.debug("[StatsRepository] get overview of app");
+    //     const today = dateRange(1);
+    //     const week = dateRange(7);
 
-        const [row] = await this.prisma.$queryRaw<
+    //     const [row] = await this.prisma.$queryRaw<
+    //         Array<{
+    //             total_users: bigint;
+    //             active_users: bigint;
+    //             new_users_today: bigint;
+
+    //             total_events: bigint;
+    //             active_events: bigint;
+    //             ongoing_events: bigint;
+    //             upcoming_events: bigint;
+
+    //             total_regs: bigint;
+    //             regs_today: bigint;
+    //             regs_week: bigint;
+    //         }>
+    //     >`
+    //     SELECT
+    //         (SELECT COUNT(*) FROM users) AS total_users,
+    //         (SELECT COUNT(*) FROM users WHERE status = 'active') AS active_users,
+    //         (SELECT COUNT(*) FROM users WHERE created_at >= ${today.start}) AS new_users_today,
+
+    //         (SELECT COUNT(*) FROM events) AS total_events,
+    //         (SELECT COUNT(*) FROM events WHERE status IN ('approved', 'pending')) AS active_events,
+    //         (SELECT COUNT(*) FROM events WHERE status = 'ongoing') AS ongoing_events,
+    //         (SELECT COUNT(*) FROM events WHERE start_time > NOW()) AS upcoming_events,
+
+    //         (SELECT COUNT(*) FROM registrations) AS total_regs,
+    //         (SELECT COUNT(*) FROM registrations WHERE created_at >= ${today.start}) AS regs_today,
+    //         (SELECT COUNT(*) FROM registrations WHERE created_at >= ${week.start}) AS regs_week
+    //     `;
+
+    //     return {
+    //         users: {
+    //             total: Number(row.total_users),
+    //             active: Number(row.active_users),
+    //             newToday: Number(row.new_users_today),
+    //         },
+    //         events: {
+    //             total: Number(row.total_events),
+    //             active: Number(row.active_events),
+    //             ongoing: Number(row.ongoing_events),
+    //             upcoming: Number(row.upcoming_events),
+    //         },
+    //         registrations: {
+    //             total: Number(row.total_regs),
+    //             today: Number(row.regs_today),
+    //             thisWeek: Number(row.regs_week),
+    //         },
+    //     };
+    // }
+
+    async getOverviewStats(): Promise<OverviewStatsDto> {
+        logger.debug("[StatsRepository] Fetching overview of app");
+
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+        // Generate a series for days of the month
+        const dailySeries = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+        // Daily logins
+        const dailyLoginsRaw = await this.prisma.$queryRaw<Array<{ day: number; count: bigint }>>`
+            SELECT
+                EXTRACT(DAY FROM last_login) AS day,
+                COUNT(*) AS count
+            FROM users
+            WHERE last_login >= ${startOfMonth}
+            GROUP BY day
+            ORDER BY day
+        `;
+
+        const dailyLogins = dailySeries.map((day) => {
+            const row = dailyLoginsRaw.find((r) => Number(r.day) === day);
+            return row ? Number(row.count) : 0;
+        });
+
+        // Daily events created
+        const dailyCreatedRaw = await this.prisma.$queryRaw<Array<{ day: number; count: bigint }>>`
+            SELECT
+                EXTRACT(DAY FROM created_at) AS day,
+                COUNT(*) AS count
+            FROM events
+            WHERE created_at >= ${startOfMonth}
+            GROUP BY day
+            ORDER BY day
+        `;
+
+        const dailyCreated = dailySeries.map((day) => {
+            const row = dailyCreatedRaw.find((r) => Number(r.day) === day);
+            return row ? Number(row.count) : 0;
+        });
+
+        // Daily registrations
+        const dailyRegsRaw = await this.prisma.$queryRaw<Array<{ day: number; count: bigint }>>`
+            SELECT
+                EXTRACT(DAY FROM created_at) AS day,
+                COUNT(*) AS count
+            FROM registrations
+            WHERE created_at >= ${startOfMonth}
+            GROUP BY day
+            ORDER BY day
+        `;
+
+        const dailyRegistrations = dailySeries.map((day) => {
+            const row = dailyRegsRaw.find((r) => Number(r.day) === day);
+            return row ? Number(row.count) : 0;
+        });
+
+        // Top events by registrations
+        const topEventsByRegistration = await this.prisma.$queryRaw<
+            Array<{ name: string; count: bigint }>
+            >`
+            SELECT e.name, COUNT(r.id) AS count
+            FROM events e
+            LEFT JOIN registrations r ON r.event_id = e.id
+            GROUP BY e.id
+            ORDER BY count DESC
+            LIMIT 5
+        `;
+
+        // Totals
+        const [totals] = await this.prisma.$queryRaw<
             Array<{
                 total_users: bigint;
                 active_users: bigint;
-                new_users_today: bigint;
-
+                new_users_month: bigint;
                 total_events: bigint;
                 active_events: bigint;
-                ongoing_events: bigint;
-                upcoming_events: bigint;
-
+                completed_events: bigint;
+                canceled_events: bigint;
                 total_regs: bigint;
-                regs_today: bigint;
-                regs_week: bigint;
             }>
         >`
         SELECT
             (SELECT COUNT(*) FROM users) AS total_users,
             (SELECT COUNT(*) FROM users WHERE status = 'active') AS active_users,
-            (SELECT COUNT(*) FROM users WHERE created_at >= ${today.start}) AS new_users_today,
+            (SELECT COUNT(*) FROM users WHERE created_at >= ${startOfMonth}) AS new_users_month,
 
             (SELECT COUNT(*) FROM events) AS total_events,
-            (SELECT COUNT(*) FROM events WHERE status IN ('approved', 'pending')) AS active_events,
-            (SELECT COUNT(*) FROM events WHERE status = 'ongoing') AS ongoing_events,
-            (SELECT COUNT(*) FROM events WHERE start_time > NOW()) AS upcoming_events,
+            (SELECT COUNT(*) FROM events WHERE status IN ('approved','pending')) AS active_events,
+            (SELECT COUNT(*) FROM events WHERE status = 'completed') AS completed_events,
+            (SELECT COUNT(*) FROM events WHERE status = 'cancelled') AS canceled_events,
 
-            (SELECT COUNT(*) FROM registrations) AS total_regs,
-            (SELECT COUNT(*) FROM registrations WHERE created_at >= ${today.start}) AS regs_today,
-            (SELECT COUNT(*) FROM registrations WHERE created_at >= ${week.start}) AS regs_week
-        `;
-
-        logger.debug(
-            {
-                totalUsers: row.total_users.toString(),
-                activeUsers: row.active_users.toString(),
-                newUsersToday: row.new_users_today.toString(),
-                totalEvents: row.total_events.toString(),
-                activeEvents: row.active_events.toString(),
-                upcomingEvents: row.upcoming_events.toString(),
-                totalRegistrations: row.total_regs.toString(),
-                regsToday: row.regs_today.toString(),
-                regsWeek: row.regs_week.toString(),
-            },
-            "[StatsRepository] getOverviewStats result"
-        );
+            (SELECT COUNT(*) FROM registrations) AS total_regs
+    `;
 
         return {
             users: {
-                total: Number(row.total_users),
-                active: Number(row.active_users),
-                newToday: Number(row.new_users_today),
+                dailyLogins,
+                totalUsers: Number(totals.total_users),
+                activeUsers: Number(totals.active_users),
+                newUsers: Number(totals.new_users_month),
             },
             events: {
-                total: Number(row.total_events),
-                active: Number(row.active_events),
-                ongoing: Number(row.ongoing_events),
-                upcoming: Number(row.upcoming_events),
+                dailyCreated,
+                totalEvents: Number(totals.total_events),
+                activeEvents: Number(totals.active_events),
+                completedEvents: Number(totals.completed_events),
+                canceledEvents: Number(totals.canceled_events),
             },
             registrations: {
-                total: Number(row.total_regs),
-                today: Number(row.regs_today),
-                thisWeek: Number(row.regs_week),
+                dailyRegistrations,
+                totalRegistrations: Number(totals.total_regs),
+                topEventsByRegistration: topEventsByRegistration.map((e) => ({
+                    name: e.name,
+                    count: Number(e.count),
+                })),
             },
         };
     }
@@ -113,11 +219,11 @@ export class StatsRepository implements IStatsRepository {
         // 1. Date range  (event created/updated)
         if (range?.from) {
             params.push(range.from);
-            whereClauses.push(`e.created_at >= $${params.length}`);
+            whereClauses.push(`e.created_at >= $${params.length}::timestamptz`);
         }
         if (range?.to) {
             params.push(range.to);
-            whereClauses.push(`e.created_at <= $${params.length}`);
+            whereClauses.push(`e.created_at <= $${params.length}::timestamptz`);
         }
 
         // 2. Status filter
@@ -168,7 +274,7 @@ export class StatsRepository implements IStatsRepository {
             SELECT
                 COUNT(*) AS total_events,
 
-                COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS active_events,
+                COUNT(*) FILTER (WHERE status = 'approved') AS active_events,
                 COUNT(*) FILTER (WHERE status = 'completed') AS completed_events,
 
                 SUM(participant_count) AS total_participants,

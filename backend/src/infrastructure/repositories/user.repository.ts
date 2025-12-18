@@ -362,9 +362,9 @@ export class UserRepository implements IUserRepository {
 
     // for admin only (include root admin)
     async listUsers(
-        filter?: ListUserFilterDto,
-        pagination?: Pagination,
-        sort?: SortOption
+        filter: ListUserFilterDto | undefined,
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<AdminUserView>> {
         logger.debug(
             {
@@ -398,29 +398,13 @@ export class UserRepository implements IUserRepository {
 
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-        // Order clause
-        const sortableFields = new Set([
-            "role",
-            "status",
-            "username",
-            "email",
-            "created_at",
-            "last_login",
-        ]);
-        let orderBy: string;
+        const offset = (pagination.page - 1) * pagination.limit;
+        const orderBy = `${sort.field} ${sort.order}`;
 
-        if (sort && sortableFields.has(sort.field)) {
-            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
-            orderBy = `${sort.field} ${order}`;
-        } else {
-            orderBy = "created_at DESC";
-        }
-
-        // Pagination
-        const page = pagination?.page ?? 1;
-        const limit = pagination?.limit ?? 10;
-        const offset = (page - 1) * limit;
-        logger.debug({ whereClause, orderBy, page, limit }, "Executing user list query");
+        logger.debug(
+            { whereClause, orderBy, offset, limit: pagination.limit },
+            "[UserRepository] Executing user list query"
+        );
 
         const total = await this.count(filter);
 
@@ -442,7 +426,7 @@ export class UserRepository implements IUserRepository {
             ${whereClause}
             ORDER BY ${orderBy}
             OFFSET ${offset}
-            LIMIT ${limit};`,
+            LIMIT ${pagination.limit};`,
             ...params
         );
 
@@ -458,7 +442,7 @@ export class UserRepository implements IUserRepository {
             lastLogin: u.last_login ?? undefined,
         }));
 
-        return { items, total, page, limit };
+        return { items, total, page: pagination.page, limit: pagination.limit };
     }
 
     async setUserLock(id: string, locked: boolean): Promise<void> {

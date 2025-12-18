@@ -57,8 +57,8 @@ eventRouter.get(
 
 eventRouter.get("/admin/pending", authenticate, eventController.listEvents);
 
-eventRouter.patch("/:eventId/approve", authenticate, eventController.approveEvent);
+eventRouter.patch("/:eventId/approve", eventController.approveEvent);
 
-eventRouter.patch("/:eventId/reject", authenticate, eventController.rejectEvent);
+eventRouter.patch("/:eventId/reject", eventController.rejectEvent);
 
 eventRouter.patch("/:eventId/complete", authenticate, eventController.completeEvent);

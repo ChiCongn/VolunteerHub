@@ -12,7 +12,7 @@ import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
 import logger from "../../logger";
-import { EventStatus, UserStatus } from "../../domain/entities/enums";
+import { EventStatus, UserRole, UserStatus } from "../../domain/entities/enums";
 import { EventRepository } from "./event.repository";
 import { UserRepository } from "./user.repository";
 
@@ -171,6 +171,61 @@ export class PostRepository implements IPostRepository {
         }
 
         return { items, total, page, limit };
+    }
+
+    async findFeedByUser(userId: string, limit = 20): Promise<PostView[]> {
+        logger.debug({ userId, limit }, "[PostRepository] Finding feed for user");
+
+        const rows = await this.prisma.$queryRawUnsafe<
+            {
+                id: string;
+                content: string;
+                image_url: string | null;
+                created_at: Date;
+                author_id: string;
+                username: string;
+                avatar_url: string | null;
+                role: string;
+            }[]
+        >(
+            `
+            SELECT
+                p.id,
+                p.content,
+                p.image_url,
+                p.created_at,
+
+                u.id AS author_id,
+                u.username,
+                u.avatar_url,
+                u.role
+            FROM posts p
+            JOIN registrations r
+            ON r.event_id = p.event_id
+            JOIN users u
+            ON u.id = p.author_id
+            WHERE r.user_id = $1::uuid
+            AND r.status = 'approved'
+            AND p.deleted_at IS NULL
+            ORDER BY p.created_at DESC
+            LIMIT $2;
+            `,
+            userId,
+            limit
+        );
+
+        return rows.map((row) => ({
+            id: row.id,
+            content: row.content,
+            imageUrl: row.image_url ?? "",
+            createddAt: row.created_at,
+            author: {
+                id: row.author_id,
+                username: row.username,
+                avatarUrl: row.avatar_url ?? "",
+                role: row.role as UserRole,
+            },
+        }));
     }
 
     async findByAuthor(
@@ -356,10 +411,7 @@ export class PostRepository implements IPostRepository {
         });
 
         if (!result) {
-            logger.warn(
-                { postId, action: "findAuthorId" },
-                "[PostService] Post not found"
-            );
+            logger.warn({ postId, action: "findAuthorId" }, "[PostService] Post not found");
             throw new PostNotFoundError(postId);
         }
 
@@ -378,10 +430,7 @@ export class PostRepository implements IPostRepository {
         });
 
         if (!result) {
-            logger.warn(
-                { postId, action: "findEventIdByPostId" },
-                "[PostService] Post not found"
-            );
+            logger.warn({ postId, action: "findEventIdByPostId" }, "[PostService] Post not found");
             throw new PostNotFoundError(postId);
         }
 
