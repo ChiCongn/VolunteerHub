@@ -19,6 +19,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/dashboard" element={<Page />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/events/:eventId" element={<CommunityEventPage />} />

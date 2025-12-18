@@ -1,0 +1,42 @@
+import SubscriptionsCard from "./cards/subscriptions";
+import MetricCard from "./cards/metric";
+import WelcomeCard from "./cards/welcome-card";
+import TopicProgressChart from "./cards/topic-progress";
+import StreakCalendar from "./cards/streak";
+import LeftPanel from "@/components/LeftPanel";
+import { Navbar05 } from "@/pages/navbar";
+
+export default function Page() {
+  return (
+    <div className="flex flex-col h-screen">
+      {/* Navbar */}
+      <Navbar05 />
+
+      {/* Content with Sidebar */}
+      <div className="flex flex-1">
+        {/* Left Sidebar */}
+        <div className="w-64 border-r overflow-y-auto">
+          <LeftPanel />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
+            <div className="lg:col-span-2 lg:row-span-2 h-full">
+              <WelcomeCard name="VietViet" />
+            </div>
+
+            <SubscriptionsCard />
+
+            <TopicProgressChart />
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <StreakCalendar />
+            <MetricCard />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
