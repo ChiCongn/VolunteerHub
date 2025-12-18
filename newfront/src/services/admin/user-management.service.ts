@@ -30,6 +30,10 @@ export const userManagementService = {
         );
         return data;
     },
+
+    async setUserLock(userId: string, locked: boolean) {
+        await apiClient.patch(`/users/${userId}/lock`, { locked });
+    },
 };
 
 export interface VolunteerStats {
