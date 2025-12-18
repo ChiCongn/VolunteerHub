@@ -16,24 +16,24 @@ export interface IPostRepository {
     // Public view
     findByEventId(
         eventId: string,
-        pagination?: Pagination,
-        sort?: SortOption
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<PostView>>;
 
     findFeedByUser(userId: string, limit: number): Promise<PostView[]>;
 
     findByAuthor(
         authorId: string,
-        pagination?: Pagination,
-        sort?: SortOption
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<PostView>>;
 
     // Search by keyword
     search(
         eventId: string,
         keyword: string,
-        pagination?: Pagination,
-        sort?: SortOption
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<PostView>>;
 
     // Stats

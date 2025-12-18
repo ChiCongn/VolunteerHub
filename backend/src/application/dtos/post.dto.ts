@@ -17,5 +17,9 @@ export interface PostView {
     author: PublicUserProfile;
     content: string;
     imageUrl: string;
-    createddAt: Date;
+    createdAt: Date;
+    event: {
+        id: string;
+        name: string;
+    };
 }
