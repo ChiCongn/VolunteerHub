@@ -14,4 +14,5 @@ export const STATUS_FILTERS = [
   { value: "all", label: "All Status" },
   { value: EventStatus.Pending, label: "Pending" },
   { value: EventStatus.Approved, label: "Approved" },
+  { value: EventStatus.Completed, label: "Completed" },
 ] as const;
