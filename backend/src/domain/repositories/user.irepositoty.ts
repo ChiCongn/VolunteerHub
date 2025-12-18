@@ -13,7 +13,10 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { AuthContext } from "../../application/policies/helpers";
 import { UserDailyActivityRow } from "../../application/dtos/users/week-online-stats.dto";
-import { WeeklyEventCountRow, WeeklyEventParticipationDto } from "../../application/dtos/users/weekly-event-participant.dto";
+import {
+    WeeklyEventCountRow,
+    WeeklyEventParticipationDto,
+} from "../../application/dtos/users/weekly-event-participant.dto";
 import { MonthlyEventStatsDto } from "../../application/dtos/users/monthly-event-stats.dto";
 import { LoginStreakDto } from "../../application/dtos/users/login-streak.dto";
 import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
@@ -43,12 +46,15 @@ export interface IUserRepository {
     ): Promise<ListResult<AdminUserView>>;
 
     // =========== stats ===========
-    getLoginStreak(
+    getActivityDatesInMonth(
         userId: string,
-        year: number,
-        month: number // 1-12
-    ): Promise<LoginStreakDto>;
-    getMonthlyEventStats(userId: string, year: number): Promise<MonthlyEventStatsDto>;
+        start: string,
+        end: string
+    ): Promise<{ activity_date: string }[]>;
+    getApprovedRegistrationCountsByYear(
+        userId: string,
+        year: number
+    ): Promise<{ month: number; count: number }[]>;
     getDailyOnlineActivity(userId: string, from: Date): Promise<UserDailyActivityRow[]>;
     getWeeklyEventParticipation(
         userId: string,

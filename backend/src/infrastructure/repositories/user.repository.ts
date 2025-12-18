@@ -567,7 +567,7 @@ export class UserRepository implements IUserRepository {
             },
             "[UserRepository] Updating online activity time"
         );
-        
+
         await this.prisma.user_daily_activity.update({
             where: {
                 user_id_activity_date: {
@@ -581,70 +581,100 @@ export class UserRepository implements IUserRepository {
         });
     }
 
-    async getLoginStreak(
+    // async getLoginStreak(
+    //     userId: string,
+    //     year: number,
+    //     month: number // 1-12
+    // ): Promise<LoginStreakDto> {
+    //     logger.debug(
+    //         { userId, year, month, action: "getLoginStreak" },
+    //         "[UserRepository] Fetching login streak for user"
+    //     );
+    //     const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
+    //     const monthEnd = `
+    //         (DATE '${monthStart}' + INTERVAL '1 month' - INTERVAL '1 day')::date
+    //     `;
+
+    //     const rows = await this.prisma.$queryRawUnsafe<{ activity_date: string }[]>(
+    //         `
+    //         SELECT activity_date::text
+    //         FROM user_daily_activity
+    //         WHERE user_id = $1::uuid
+    //             AND activity_date BETWEEN $2::date AND ${monthEnd}
+    //         ORDER BY activity_date ASC
+    //         `,
+    //         userId,
+    //         monthStart
+    //     );
+
+    //     return {
+    //         month: `${year}-${String(month).padStart(2, "0")}`,
+    //         activeDates: rows.map((r) => r.activity_date),
+    //     };
+    // }
+    async getActivityDatesInMonth(
         userId: string,
-        year: number,
-        month: number // 1-12
-    ): Promise<LoginStreakDto> {
+        start: string,
+        end: string
+    ): Promise<{ activity_date: string }[]> {
         logger.debug(
-            { userId, year, month, action: "getLoginStreak" },
-            "[UserRepository] Fetching login streak for user"
+            { userId, start, end, action: "getActivityDatesInMonth" },
+            "[UserRepository] Fetching activity dates"
         );
-        const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
-        const monthEnd = `
-            (DATE '${monthStart}' + INTERVAL '1 month' - INTERVAL '1 day')::date
-        `;
 
-        const rows = await this.prisma.$queryRawUnsafe<{ activity_date: string }[]>(
-            `
-            SELECT activity_date::text
-            FROM user_daily_activity
-            WHERE user_id = $1::uuid
-                AND activity_date BETWEEN $2::date AND ${monthEnd}
-            ORDER BY activity_date ASC
-            `,
+        return await this.prisma.$queryRawUnsafe<{ activity_date: string }[]>(
+            `SELECT activity_date::text FROM user_daily_activity
+             WHERE user_id = $1::uuid AND activity_date BETWEEN $2::date AND $3::date
+             ORDER BY activity_date ASC`,
             userId,
-            monthStart
+            start,
+            end
         );
-
-        return {
-            month: `${year}-${String(month).padStart(2, "0")}`,
-            activeDates: rows.map((r) => r.activity_date),
-        };
     }
 
-    async getMonthlyEventStats(userId: string, year: number): Promise<MonthlyEventStatsDto> {
-        logger.debug(
-            { userId, year, action: "getMonthlyEventStats" },
-            "[UserRepository] Calculating monthly event stats"
-        );
-        const rows = await this.prisma.$queryRawUnsafe<{ month: number; count: number }[]>(
-            `
-            SELECT
-                EXTRACT(MONTH FROM r.created_at)::int AS month,
-                COUNT(*)::int AS count
-            FROM registrations r
-            WHERE r.user_id = $1::uuid
-                AND r.status = 'approved'
-                AND EXTRACT(YEAR FROM r.created_at) = $2
-            GROUP BY month
-            ORDER BY month
-            `,
-            userId,
-            year
-        );
+    // async getMonthlyEventStats(userId: string, year: number): Promise<MonthlyEventStatsDto> {
+    //     logger.debug(
+    //         { userId, year, action: "getMonthlyEventStats" },
+    //         "[UserRepository] Calculating monthly event stats"
+    //     );
+    //     const rows = await this.prisma.$queryRawUnsafe<{ month: number; count: number }[]>(
+    //         `
+    //         SELECT
+    //             EXTRACT(MONTH FROM r.created_at)::int AS month,
+    //             COUNT(*)::int AS count
+    //         FROM registrations r
+    //         WHERE r.user_id = $1::uuid
+    //             AND r.status = 'approved'
+    //             AND EXTRACT(YEAR FROM r.created_at) = $2
+    //         GROUP BY month
+    //         ORDER BY month
+    //         `,
+    //         userId,
+    //         year
+    //     );
 
-        // fill missing months
-        const monthlyCounts = Array.from({ length: 12 }, (_, i) => {
-            const m = i + 1;
-            const found = rows.find((r) => r.month === m);
-            return {
-                month: m,
-                joinedEvents: found?.count ?? 0,
-            };
-        });
+    //     // fill missing months
+    //     const monthlyCounts = Array.from({ length: 12 }, (_, i) => {
+    //         const m = i + 1;
+    //         const found = rows.find((r) => r.month === m);
+    //         return {
+    //             month: m,
+    //             joinedEvents: found?.count ?? 0,
+    //         };
+    //     });
 
-        return { year, monthlyCounts };
+    //     return { year, monthlyCounts };
+    // }
+    async getApprovedRegistrationCountsByYear(userId: string, year: number): Promise<{ month: number; count: number }[]> {
+        logger.debug({ userId, year, action: "getApprovedRegistrationCountsByYear" }, "[UserRepository] Fetching registration counts");
+
+        return await this.prisma.$queryRawUnsafe<{ month: number; count: number }[]>(
+            `SELECT EXTRACT(MONTH FROM r.created_at)::int AS month, COUNT(*)::int AS count
+             FROM registrations r
+             WHERE r.user_id = $1::uuid AND r.status = 'approved' AND EXTRACT(YEAR FROM r.created_at) = $2
+             GROUP BY month ORDER BY month`,
+            userId, year
+        );
     }
 
     async getDailyOnlineActivity(userId: string, from: Date): Promise<UserDailyActivityRow[]> {
