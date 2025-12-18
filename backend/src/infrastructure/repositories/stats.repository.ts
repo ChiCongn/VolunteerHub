@@ -113,11 +113,11 @@ export class StatsRepository implements IStatsRepository {
         // 1. Date range  (event created/updated)
         if (range?.from) {
             params.push(range.from);
-            whereClauses.push(`e.created_at >= $${params.length}`);
+            whereClauses.push(`e.created_at >= $${params.length}::timestamptz`);
         }
         if (range?.to) {
             params.push(range.to);
-            whereClauses.push(`e.created_at <= $${params.length}`);
+            whereClauses.push(`e.created_at <= $${params.length}::timestamptz`);
         }
 
         // 2. Status filter
@@ -168,7 +168,7 @@ export class StatsRepository implements IStatsRepository {
             SELECT
                 COUNT(*) AS total_events,
 
-                COUNT(*) FILTER (WHERE status IN ('approved','pending')) AS active_events,
+                COUNT(*) FILTER (WHERE status IN ('approved')) AS active_events,
                 COUNT(*) FILTER (WHERE status = 'completed') AS completed_events,
 
                 SUM(participant_count) AS total_participants,
