@@ -131,7 +131,8 @@ export class EventController {
     async rejectEvent(req: Request, res: Response): Promise<void> {
         try {
             const eventId = req.params.eventId;
-            const { reason } = req.body;
+            // Provide default reason if not supplied
+            const { reason = "thich thi tu choi thoi" } = req.body;
             await this.eventRepository.rejectEvent(eventId, reason);
             res.status(200).json({ message: "Event rejected successfully." });
         } catch (error) {
