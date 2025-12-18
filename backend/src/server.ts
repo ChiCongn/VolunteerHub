@@ -27,13 +27,13 @@ app.get("/", (req, res) => {
 });
 
 // Mount event routes
-app.use("/api/events", eventRouter);
+app.use("/api/v1/events", eventRouter);
 // API routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/comments", commentRouter);
-app.use("/api/v1/stats", statsRouter)
+app.use("/api/v1/stats", statsRouter);
 
 // Global error handler (must be last)
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
