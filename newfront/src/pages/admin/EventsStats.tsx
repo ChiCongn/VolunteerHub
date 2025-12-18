@@ -163,6 +163,33 @@ export function EventManagementPage() {
     setPage(1); // reset pagination when filter changes
   };
 
+  // ======= approve/reject ==========
+  const handleApproveEvent = async (eventId: string) => {
+    try {
+      await eventManagementService.approveEvent(eventId);
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, status: "approved" } : e))
+      );
+      //toast.success("Event approved successfully");
+    } catch (err) {
+      console.error(err);
+      //toast.error("Failed to approve event");
+    }
+  };
+
+  const handleRejectEvent = async (eventId: string) => {
+    try {
+      await eventManagementService.rejectEvent(eventId);
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, status: "rejected" } : e))
+      );
+      //toast.success("Event rejected successfully");
+    } catch (err) {
+      console.error(err);
+      //toast.error("Failed to reject event");
+    }
+  };
+
   const visiblePages = Array.from(
     { length: totalPages },
     (_, i) => i + 1
@@ -222,7 +249,9 @@ export function EventManagementPage() {
                   </p>
                   <Trophy className="w-5 h-5 text-[#FFC107]" />
                 </div>
-                <p className="text-3xl font-semibold">{stats?.completedEvents}</p>
+                <p className="text-3xl font-semibold">
+                  {stats?.completedEvents}
+                </p>
                 <p className="text-xs text-[#FFC107]">.....</p>
               </div>
 
@@ -262,12 +291,16 @@ export function EventManagementPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-3xl font-semibold leading-none">{stats?.totalPosts}</p>
+                    <p className="text-3xl font-semibold leading-none">
+                      {stats?.totalPosts}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">Total</p>
                   </div>
 
                   <div>
-                    <p className="text-3xl font-semibold leading-none">{stats?.avgPostsPerEvent}</p>
+                    <p className="text-3xl font-semibold leading-none">
+                      {stats?.avgPostsPerEvent}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Average
                     </p>
@@ -375,10 +408,18 @@ export function EventManagementPage() {
 
                             {event.status === EventStatus.Pending && (
                               <>
-                                <Button size="sm" variant="default">
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => handleApproveEvent(event.id)}
+                                >
                                   Approve
                                 </Button>
-                                <Button size="sm" variant="destructive">
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleRejectEvent(event.id)}
+                                >
                                   Reject
                                 </Button>
                               </>
