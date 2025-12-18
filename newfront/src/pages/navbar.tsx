@@ -225,7 +225,6 @@ export interface Navbar05Props extends React.HTMLAttributes<HTMLElement> {
     onNotificationItemClick?: (item: string) => void;
     onUserItemClick?: (item: string) => void;
 }
-// Default navigation links
 
 export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
     (
