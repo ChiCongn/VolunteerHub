@@ -4,11 +4,14 @@ import { CreatePostDto, UpdatePostDto, PostView } from "../dtos/post.dto";
 import { Pagination } from "../dtos/pagination.dto";
 import { SortOption } from "../dtos/sort-option.dto";
 import { ListResult } from "../dtos/list-result.dto";
-import { postRepo } from "../../infrastructure/repositories";
+import { eventRepo, postRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
+import { IEventRepository } from "../../domain/repositories/event.irepository";
 
 export class PostService {
-    constructor(private readonly postRepo: IPostRepository) {}
+    constructor(private readonly postRepo: IPostRepository,
+        private readonly eventRepo: IEventRepository
+    ) {}
 
     // ================= Core CRUD =================
     async createPost(data: CreatePostDto): Promise<Post> {
@@ -37,7 +40,22 @@ export class PostService {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PostView>> {
-        return this.postRepo.findByEventId(eventId, pagination, sort);
+        await this.eventRepo.checkExistedAndApprovedEvent(eventId);
+
+        const sortableFields = new Set(["created_at", "author_id"]);
+
+        const sortField = sort && sortableFields.has(sort.field) ? sort.field : "created_at";
+        const sortOrder = sort?.order?.toLowerCase() === "asc" ? "asc" : "desc";
+        const normalizedSort: SortOption = {
+            field: sortField,
+            order: sortOrder,
+        };
+
+        const page = Math.max(1, Number(pagination?.page) || 1);
+        const limit = Math.max(1, Number(pagination?.limit) || 10);
+        const normalizedPagination: Pagination = { page, limit };
+        
+        return this.postRepo.findByEventId(eventId, normalizedPagination, normalizedSort);
     }
 
     async findFeedByUser(userId: string, limit = 20) {
@@ -94,4 +112,4 @@ export class PostService {
     }
 }
 
-export const postService = new PostService(postRepo);
+export const postService = new PostService(postRepo, eventRepo);
