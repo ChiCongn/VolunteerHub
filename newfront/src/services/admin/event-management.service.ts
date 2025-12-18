@@ -44,6 +44,20 @@ export const eventManagementService = {
         });
         return data;
     },
+
+    async approveEvent(eventId: string) {
+        const { data } = await apiClient.patch<{ message: string }>(
+            `/events/${eventId}/approve`
+        );
+        return data;
+    },
+
+    async rejectEvent(eventId: string) {
+        const { data } = await apiClient.patch<{ message: string }>(
+            `/events/${eventId}/reject`
+        );
+        return data;
+    },
 };
 
 export interface EventFilter {
