@@ -3,9 +3,6 @@ import MetricCard from "./cards/metric";
 import WelcomeCard from "./cards/welcome-card";
 import TopicProgressChart from "./cards/topic-progress";
 import StreakCalendar from "./cards/streak";
-import LeftPanel from "@/components/LeftPanel";
-import { Navbar05 } from "@/pages/Navbar";
-import AllPost from "@/pages/Feed";
 
 export default function Page() {
   return (
