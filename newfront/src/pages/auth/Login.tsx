@@ -16,10 +16,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/user.store";
+import { useAuth } from "@/components/context/AuthContext";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login: authContextLogin } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,10 +39,13 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const res = await authService.login(data.email, data.password);
-        console.log(res);
+      console.log(res);
       const store = useUserStore.getState();
       store.setTokens(res.accessToken, res.refreshToken);
       store.setUser(res.user);
+
+      // Cũng lưu vào AuthContext (optional, nếu muốn dùng cả hai)
+      authContextLogin(res.user, res.accessToken, res.refreshToken);
 
       //toast.success("Welcome back to VolunteerHub!");
       navigate("/home");
@@ -145,7 +150,7 @@ export default function LoginPage() {
                   </Button>
 
                   <FieldDescription className="text-center">
-                    Don&apos;t have an account?{" "}
+                    Don't have an account?{" "}
                     <a
                       href="/register"
                       className="underline underline-offset-4"

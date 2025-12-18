@@ -3,6 +3,7 @@ import type { PostFeedView } from "@/components/post/PostData";
 import { mockPosts } from "@/components/post/PostData";
 import PostCard from "@/components/post/PostCard";
 import PostDetailDialog from "@/components/post/PostDetailDialog";
+import CreatePost from "@/components/post/PostCreate";
 
 export default function Feed() {
   const [posts] = useState<PostFeedView[]>(mockPosts);
@@ -24,6 +25,7 @@ export default function Feed() {
     <>
       <div className="flex flex-1 justify-center min-w-0">
         <div className="w-full max-w-2xl space-y-4 p-4">
+            <CreatePost />
           {posts.map((post) => (
             <PostCard
               key={post.id}

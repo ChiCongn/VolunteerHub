@@ -22,7 +22,7 @@ export const mockPosts: PostFeedView[] = [
         },
         content:
             "When you want to study law but you realize you've got more potential as the criminal 😼",
-        image: "https://images.unsplash.com/photo-1595433562696-19b8a1b6f4a2?q=80&w=1200",
+        image: "https://picsum.photos/200/300",
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
         likeCount: 1240,
         commentCount: 326,
@@ -50,6 +50,7 @@ export const mockPosts: PostFeedView[] = [
         },
         content:
             "Why choose one path when you can explore both? Learning never stops.",
+        image: "https://picsum.photos/200/300",
         createdAt: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
         likeCount: 87,
         commentCount: 12,
