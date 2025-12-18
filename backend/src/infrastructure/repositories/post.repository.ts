@@ -110,67 +110,84 @@ export class PostRepository implements IPostRepository {
     // Public view
     async findByEventId(
         eventId: string,
-        pagination?: Pagination,
-        sort?: SortOption
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<PostView>> {
         logger.debug(
             { eventId, pagination, sort, action: "list posts by event" },
             "[PostRepository] Finding posts by eventId"
         );
-        await this.eventRepo.checkExistedAndApprovedEvent(eventId);
-
-        // Order clause
-        const sortableFields = new Set(["created_at", "author_id"]);
-        let orderBy: string;
-
-        if (sort && sortableFields.has(sort.field)) {
-            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
-            orderBy = `${sort.field} ${order}`;
-        } else {
-            orderBy = "created_at DESC";
-        }
 
         // Pagination
-        const page = pagination?.page ?? 1;
-        const limit = pagination?.limit ?? 10;
-        const offset = (page - 1) * limit;
+        const offset = (pagination.page - 1) * pagination.limit;
+        const orderBy = `${sort.field} ${sort.order}`;
 
         // Total count
         const total = await this.countByEventId(eventId);
 
         // Fetch items
-        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+        const itemsRaw = await this.prisma.$queryRawUnsafe<
             {
-                id: string;
+                post_id: string;
+                post_content: string;
+                post_image_url: string | null;
+                post_created_at: Date;
+
                 event_id: string;
+                event_name: string;
+
                 author_id: string;
-                content: string;
-                image_url: string | null;
-                created_at: Date;
+                author_username: string;
+                author_avatar_url: string | null;
+                author_role: UserRole;
             }[]
         >(
             `
-            SELECT id, event_id, author_id, content, image_url, created_at
-            FROM posts
-            WHERE event_id = $1::uuid AND deleted_at IS NULL
+            SELECT
+                p.id            AS post_id,
+                p.content       AS post_content,
+                p.image_url     AS post_image_url,
+                p.created_at    AS post_created_at,
+
+                e.id            AS event_id,
+                e.name          AS event_name,
+
+                u.id            AS author_id,
+                u.username      AS author_username,
+                u.avatar_url    AS author_avatar_url,
+                u.role          AS author_role
+            FROM posts p
+            JOIN events e ON e.id = p.event_id
+            JOIN users  u ON u.id = p.author_id
+            WHERE p.event_id = $1::uuid
+                AND p.deleted_at IS NULL
             ORDER BY ${orderBy}
             OFFSET ${offset}
-            LIMIT ${limit};`,
+            LIMIT ${pagination.limit};
+            `,
             eventId
         );
-        const items: PostView[] = [];
-        for (const itemRaw of itemsRaw) {
-            const authorProfile = await this.userRepo.fetchPublicProfile(itemRaw.author_id);
-            items.push({
-                id: itemRaw.id,
-                author: authorProfile,
-                content: itemRaw.content,
-                imageUrl: itemRaw.image_url ?? undefined,
-                createddAt: itemRaw.created_at,
-            });
-        }
 
-        return { items, total, page, limit };
+        const items: PostView[] = itemsRaw.map((r) => ({
+            id: r.post_id,
+            content: r.post_content,
+            imageUrl: r.post_image_url ?? "",
+            createdAt: r.post_created_at,
+
+            event: {
+                id: r.event_id,
+                name: r.event_name,
+            },
+
+            author: {
+                id: r.author_id,
+                username: r.author_username,
+                avatarUrl: r.author_avatar_url ?? "",
+                role: r.author_role,
+            },
+        }));
+
+        return { items, total, page: pagination.page, limit: pagination.limit };
     }
 
     async findFeedByUser(userId: string, limit = 20): Promise<PostView[]> {
@@ -182,34 +199,43 @@ export class PostRepository implements IPostRepository {
                 content: string;
                 image_url: string | null;
                 created_at: Date;
+
                 author_id: string;
                 username: string;
                 avatar_url: string | null;
                 role: string;
+
+                event_id: string;
+                event_name: string;
             }[]
         >(
             `
-            SELECT
-                p.id,
-                p.content,
-                p.image_url,
-                p.created_at,
+        SELECT
+            p.id,
+            p.content,
+            p.image_url,
+            p.created_at,
 
-                u.id AS author_id,
-                u.username,
-                u.avatar_url,
-                u.role
-            FROM posts p
-            JOIN registrations r
+            u.id          AS author_id,
+            u.username,
+            u.avatar_url,
+            u.role,
+
+            e.id          AS event_id,
+            e.name        AS event_name
+        FROM posts p
+        JOIN events e
+            ON e.id = p.event_id
+        JOIN registrations r
             ON r.event_id = p.event_id
-            JOIN users u
+        JOIN users u
             ON u.id = p.author_id
-            WHERE r.user_id = $1::uuid
+        WHERE r.user_id = $1::uuid
             AND r.status = 'approved'
             AND p.deleted_at IS NULL
-            ORDER BY p.created_at DESC
-            LIMIT $2;
-            `,
+        ORDER BY p.created_at DESC
+        LIMIT $2;
+        `,
             userId,
             limit
         );
@@ -218,114 +244,113 @@ export class PostRepository implements IPostRepository {
             id: row.id,
             content: row.content,
             imageUrl: row.image_url ?? "",
-            createddAt: row.created_at,
+            createdAt: row.created_at,
             author: {
                 id: row.author_id,
                 username: row.username,
                 avatarUrl: row.avatar_url ?? "",
                 role: row.role as UserRole,
             },
+            event: {
+                id: row.event_id,
+                name: row.event_name,
+            },
         }));
     }
 
     async findByAuthor(
         authorId: string,
-        pagination?: Pagination,
-        sort?: SortOption
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<PostView>> {
         logger.debug(
             { authorId, pagination, sort, action: "list posts by author" },
             "[PostRepository] Finding posts by authorId"
         );
-        const user = await this.userRepo.findById(authorId);
-        if (!user || user.status === UserStatus.Deleted || user.status === UserStatus.Pending) {
-            logger.warn(`Author with id ${authorId} is not found or deactivated`);
-            throw new PostNotFoundError(
-                `Author with id ${authorId} is is not existed or deactivated`
-            );
-        }
-        // Order clause
-        const sortableFields = new Set(["created_at", "event_id"]);
-        let orderBy: string;
-
-        if (sort && sortableFields.has(sort.field)) {
-            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
-            orderBy = `${sort.field} ${order}`;
-        } else {
-            orderBy = "created_at DESC";
-        }
 
         // Pagination
-        const page = pagination?.page ?? 1;
-        const limit = pagination?.limit ?? 10;
-        const offset = (page - 1) * limit;
+        const offset = (pagination.page - 1) * pagination.limit;
+        const orderBy = `${sort.field} ${sort.order}`;
 
         // Total count
         const total = await this.countByUserId(authorId);
 
         // Fetch items
-        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+        const itemsRaw = await this.prisma.$queryRawUnsafe<
             {
-                id: string;
+                post_id: string;
+                post_content: string;
+                post_image_url: string | null;
+                post_created_at: Date;
+
                 event_id: string;
+                event_name: string;
+
                 author_id: string;
-                content: string;
-                image_url: string | null;
-                created_at: Date;
+                author_username: string;
+                author_avatar_url: string | null;
+                author_role: UserRole;
             }[]
         >(
             `
-            SELECT id, event_id, author_id, content, image_url, created_at
-            FROM posts
-            WHERE author_id = $1::uuid AND deleted_at IS NULL
+            SELECT
+                p.id            AS post_id,
+                p.content       AS post_content,
+                p.image_url     AS post_image_url,
+                p.created_at    AS post_created_at,
+
+                e.id            AS event_id,
+                e.name          AS event_name,
+
+                u.id            AS author_id,
+                u.username      AS author_username,
+                u.avatar_url    AS author_avatar_url,
+                u.role          AS author_role
+            FROM posts p
+            JOIN events e ON e.id = p.event_id
+            JOIN users  u ON u.id = p.author_id
+            WHERE p.author_id = $1::uuid
+                AND p.deleted_at IS NULL
             ORDER BY ${orderBy}
             OFFSET ${offset}
-            LIMIT ${limit};`,
+            LIMIT ${pagination.limit};
+            `,
             authorId
         );
-        const items: PostView[] = [];
-        for (const itemRaw of itemsRaw) {
-            const authorProfile = await this.userRepo.fetchPublicProfile(itemRaw.author_id);
-            items.push({
-                id: itemRaw.id,
-                author: authorProfile,
-                content: itemRaw.content,
-                imageUrl: itemRaw.image_url ?? undefined,
-                createddAt: itemRaw.created_at,
-            });
-        }
 
-        return { items, total, page, limit };
+        const items: PostView[] = itemsRaw.map((r) => ({
+            id: r.post_id,
+            content: r.post_content,
+            imageUrl: r.post_image_url ?? "",
+            createdAt: r.post_created_at,
+
+            event: {
+                id: r.event_id,
+                name: r.event_name,
+            },
+
+            author: {
+                id: r.author_id,
+                username: r.author_username,
+                avatarUrl: r.author_avatar_url ?? "",
+                role: r.author_role,
+            },
+        }));
+
+        return { items, total, page: pagination.page, limit: pagination.limit };
     }
 
     // Search by keyword
     async search(
         eventId: string,
         keyword: string,
-        pagination?: Pagination,
-        sort?: SortOption
+        pagination: Pagination,
+        sort: SortOption
     ): Promise<ListResult<PostView>> {
         logger.debug(
             { eventId, keyword, pagination, sort, action: "search posts" },
             "[PostRepository] Searching posts by keyword"
         );
-        await this.eventRepo.checkExistedAndApprovedEvent(eventId);
-
-        // Order clause
-        const sortableFields = new Set(["created_at", "author_id"]);
-        let orderBy: string;
-
-        if (sort && sortableFields.has(sort.field)) {
-            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
-            orderBy = `${sort.field} ${order}`;
-        } else {
-            orderBy = "created_at DESC";
-        }
-
-        // Pagination
-        const page = pagination?.page ?? 1;
-        const limit = pagination?.limit ?? 10;
-        const offset = (page - 1) * limit;
 
         // Total count
         const total = await this.prisma.posts.count({
@@ -336,40 +361,74 @@ export class PostRepository implements IPostRepository {
             },
         });
 
+        // Pagination
+        const offset = (pagination.page - 1) * pagination.limit;
+        const orderBy = `${sort.field} ${sort.order}`;
+
         // Fetch items
-        const itemsRaw: any[] = await this.prisma.$queryRawUnsafe<
+        const itemsRaw = await this.prisma.$queryRawUnsafe<
             {
-                id: string;
+                post_id: string;
+                post_content: string;
+                post_image_url: string | null;
+                post_created_at: Date;
+
                 event_id: string;
+                event_name: string;
+
                 author_id: string;
-                content: string;
-                image_url: string | null;
-                created_at: Date;
+                author_username: string;
+                author_avatar_url: string | null;
+                author_role: UserRole;
             }[]
         >(
             `
-            SELECT id, event_id, author_id, content, image_url, created_at
-            FROM posts
-            WHERE event_id = $1::uuid AND content ILIKE '%' || $2 || '%' AND deleted_at IS NULL
+            SELECT
+                p.id            AS post_id,
+                p.content       AS post_content,
+                p.image_url     AS post_image_url,
+                p.created_at    AS post_created_at,
+
+                e.id            AS event_id,
+                e.name          AS event_name,
+
+                u.id            AS author_id,
+                u.username      AS author_username,
+                u.avatar_url    AS author_avatar_url,
+                u.role          AS author_role
+            FROM posts p
+            JOIN events e ON e.id = p.event_id
+            JOIN users  u ON u.id = p.author_id
+            WHERE p.event_id = $1::uuid
+                AND p.deleted_at IS NULL
+                AND p.content ILIKE '%' || ${keyword} || '%'
             ORDER BY ${orderBy}
             OFFSET ${offset}
-            LIMIT ${limit};`,
-            eventId,
-            keyword
+            LIMIT ${pagination.limit};
+            `,
+            eventId
         );
-        const items: PostView[] = [];
-        for (const itemRaw of itemsRaw) {
-            const authorProfile = await this.userRepo.fetchPublicProfile(itemRaw.author_id);
-            items.push({
-                id: itemRaw.id,
-                author: authorProfile,
-                content: itemRaw.content,
-                imageUrl: itemRaw.image_url ?? undefined,
-                createddAt: itemRaw.created_at,
-            });
-        }
 
-        return { items, total, page, limit };
+        const items: PostView[] = itemsRaw.map((r) => ({
+            id: r.post_id,
+            content: r.post_content,
+            imageUrl: r.post_image_url ?? "",
+            createdAt: r.post_created_at,
+
+            event: {
+                id: r.event_id,
+                name: r.event_name,
+            },
+
+            author: {
+                id: r.author_id,
+                username: r.author_username,
+                avatarUrl: r.author_avatar_url ?? "",
+                role: r.author_role,
+            },
+        }));
+
+        return { items, total, page: pagination.page, limit: pagination.limit };
     }
 
     // Stats
