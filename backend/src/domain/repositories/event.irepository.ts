@@ -44,6 +44,8 @@ export interface IEventRepository {
         sort?: SortOption
     ): Promise<ListResult<PublicEventView>>;
 
+    checkExistedAndApprovedEvent(eventId: string): Promise<void>;
+
     findByOwnerId(ownerId: string): Promise<PublicEventView[]>;
     count(filters?: EventFilterDto): Promise<number>;
     exists(eventId: string): Promise<boolean>;
