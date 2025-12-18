@@ -18,10 +18,11 @@ import {
 } from "lucide-react";
 
 import { EventHeader } from "../components/EventHeader";
-import { PostCard } from "../components/PostCard";
+import { PostCard } from "../components/cards/PostCard";
 import { CreatePostModal } from "../components/CreatePostModal";
 
 // Import Service & Types
+import { useUserStore } from "@/stores/user.store";
 import { eventService } from "@/services/event.service";
 import { postService } from "@/services/post.service";
 import type { Event, Post } from "@/types";
@@ -35,6 +36,8 @@ export const CommunityEventPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
+  //user data
+  const { user } = useUserStore();
   // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
@@ -71,6 +74,7 @@ export const CommunityEventPage = () => {
         eventId: eventId,
         content: content,
         imageUrl: imageUrl,
+        authorId: "0f7af42e-a395-4419-bb5a-9dd661661f82",
       });
 
       const newPost: Post = {

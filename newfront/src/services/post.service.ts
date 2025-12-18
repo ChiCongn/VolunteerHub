@@ -31,6 +31,7 @@ export const postService = {
         eventId: string;
         content: string;
         imageUrl?: string;
+        authorId: string;
     }) => {
         const response = await apiClient.post("/posts", data);
         return response.data;

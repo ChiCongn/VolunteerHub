@@ -20,19 +20,16 @@ import { useEffect } from "react";
 
 export default function Page() {
   const user = useUserStore((s) => s.user);
-
   useEffect(() => {
     console.log("USER AFTER HYDRATE:", user);
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Navbar05 />
 
-      {/* --- CẤU TRÚC LAYOUT MỚI (Giống EventPage) --- */}
       <div className="flex w-full justify-center">
         {/* 1. LEFT PANEL (Sidebar trái - Sticky) */}
-        {/* top-[60px] để chừa chỗ cho Navbar, h-[calc(100vh-60px)] để full chiều cao còn lại */}
         <div className="hidden md:block sticky top-[60px] h-[calc(100vh-60px)] w-64 border-r z-30 overflow-y-auto">
           <LeftPanel />
         </div>
@@ -222,9 +219,9 @@ export default function Page() {
           </div>
 
           {/* --- RIGHT SIDEBAR (Sticky nếu muốn, hoặc scroll theo trang) --- */}
-          <div className="hidden lg:block w-80 space-y-6 p-4">
+          <div className="hidden lg:block w-80 space-y-6 p-4 bg-white">
             {/* Who to Follow */}
-            <Card>
+            <Card className=" bg-transparent">
               <CardHeader>
                 <CardTitle>Who to follow</CardTitle>
               </CardHeader>
@@ -289,7 +286,7 @@ export default function Page() {
             </Card>
 
             {/* Trending Topics */}
-            <Card>
+            <Card className=" bg-transparent">
               <CardHeader>
                 <CardTitle>Trending Topics</CardTitle>
               </CardHeader>

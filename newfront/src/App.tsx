@@ -8,6 +8,7 @@ import LoginPage from "./pages/auth/Login";
 import SignupPage from "./pages/auth/Register";
 import { NotFound } from "./pages/NotFound";
 import { PostDetailPage } from "./pages/PostDetailPage";
+import Community from "./pages/Community";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<SignupPage />} />
           <Route path="/posts/:postId" element={<PostDetailPage />} />
+          <Route path="/communities" element={<Community />} />
           {/* error routes*/}
           <Route path="*" element={<NotFound />} />
         </Routes>
