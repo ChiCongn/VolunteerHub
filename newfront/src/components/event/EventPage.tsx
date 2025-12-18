@@ -4,6 +4,7 @@ import { events } from "@/components/event/event";
 export default function EventPage() {
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Events</h1>
         <p className="text-muted-foreground">
