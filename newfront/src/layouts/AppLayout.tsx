@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { Navbar05 } from "@/pages/Navbar";
+import { Navbar05 } from "@/pages/navbar";
 import LeftPanel from "@/components/LeftPanel";
 
 export default function AppLayout() {

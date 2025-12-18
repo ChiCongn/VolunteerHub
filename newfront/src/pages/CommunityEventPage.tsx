@@ -3,8 +3,6 @@ import { useParams } from "react-router";
 import { formatDistanceToNow } from "date-fns";
 
 // UI Components
-import { Navbar05 } from "./Navbar";
-import LeftPanel from "../components/LeftPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
