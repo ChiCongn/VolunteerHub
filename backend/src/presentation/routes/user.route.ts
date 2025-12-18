@@ -33,8 +33,8 @@ userRouter.get(
 );
 userRouter.patch(
     "/:userId/lock",
-    authenticate,
+    //authenticate,
     validate(LockUserSchema),
-    authorize(UserPolicy.setUserLock),
+    //authorize(UserPolicy.setUserLock),
     userController.setUserLock
 );

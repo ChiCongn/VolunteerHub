@@ -11,8 +11,8 @@ export const statsRouter = Router();
 
 statsRouter.get(
     "/",
-    authenticate,
-    authorize(StatsPolicy.overview),
+    //authenticate,
+    //authorize(StatsPolicy.overview),
     statsController.getOverviewStats
 );
 statsRouter.get(
