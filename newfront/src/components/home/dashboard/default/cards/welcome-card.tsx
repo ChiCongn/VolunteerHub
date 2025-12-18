@@ -1,9 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 type WelcomeCardProps = {
   name?: string;
@@ -11,18 +8,14 @@ type WelcomeCardProps = {
 
 import volunteerIllustration from "../../../../../assets/hello.svg";
 
-export default function WelcomeCard({
-  name = "Volunteer",
-}: WelcomeCardProps) {
+export default function WelcomeCard({ name = "Volunteer" }: WelcomeCardProps) {
   const navigate = useNavigate();
 
   return (
-    <Card className="relative h-full overflow-hidden flex">
+    <Card className="relative h-full overflow-hidden flex bg-white">
       <CardContent className="flex flex-1 items-center justify-between gap-6 p-6">
         <div className="max-w-xl space-y-3">
-          <h2 className="text-2xl font-semibold">
-            Welcome back, {name} 👋
-          </h2>
+          <h2 className="text-2xl font-semibold">Welcome back, {name} 👋</h2>
 
           <p className="text-base text-muted-foreground">
             Ready to make a positive impact today?
@@ -35,10 +28,7 @@ export default function WelcomeCard({
             and collaborating through real-time discussion channels.
           </p>
 
-          <Button
-            className="mt-2"
-            onClick={() => navigate("/events")}
-          >
+          <Button className="mt-2" onClick={() => navigate("/events")}>
             Explore Volunteer Events
           </Button>
         </div>

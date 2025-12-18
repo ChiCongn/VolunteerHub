@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   eachDayOfInterval,
   endOfMonth,
@@ -25,15 +20,10 @@ import { useMemo, useState } from "react";
 export default function StreakCalendar() {
   const today = new Date();
 
-  const [currentMonth, setCurrentMonth] = useState<Date>(
-    startOfMonth(today)
-  );
+  const [currentMonth, setCurrentMonth] = useState<Date>(startOfMonth(today));
 
   const last4Days = useMemo(
-    () =>
-      Array.from({ length: 4 }, (_, i) =>
-        subDays(today, i + 1)
-      ),
+    () => Array.from({ length: 4 }, (_, i) => subDays(today, i + 1)),
     [today]
   );
 
@@ -52,7 +42,6 @@ export default function StreakCalendar() {
   const CURRENT_STREAK = 5;
   const LONGEST_STREAK = 21;
 
-
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentMonth),
     end: endOfMonth(currentMonth),
@@ -64,20 +53,16 @@ export default function StreakCalendar() {
   );
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
-        <CardTitle className="text-base">
-          Volunteer Streak
-        </CardTitle>
+        <CardTitle className="text-base">Volunteer Streak</CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-4">
         {/* ===== Month navigation ===== */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() =>
-              setCurrentMonth(subMonths(currentMonth, 1))
-            }
+            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
             className="rounded p-1 hover:bg-muted"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -88,9 +73,7 @@ export default function StreakCalendar() {
           </div>
 
           <button
-            onClick={() =>
-              setCurrentMonth(addMonths(currentMonth, 1))
-            }
+            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
             disabled={isFutureMonth}
             className="rounded p-1 hover:bg-muted disabled:opacity-30"
           >
@@ -109,9 +92,7 @@ export default function StreakCalendar() {
         <div className="grid grid-cols-7 gap-2">
           {/* Empty cells */}
           {Array.from({
-            length:
-              (getDay(startOfMonth(currentMonth)) + 6) %
-              7,
+            length: (getDay(startOfMonth(currentMonth)) + 6) % 7,
           }).map((_, i) => (
             <div key={`empty-${i}`} />
           ))}
@@ -120,32 +101,24 @@ export default function StreakCalendar() {
             const isToday = isSameDay(day, today);
             const isFuture = isAfter(day, today);
 
-            let style =
-              "bg-muted text-muted-foreground";
+            let style = "bg-muted text-muted-foreground";
 
             // 🔵 Today
             if (isToday) {
-              style =
-                "bg-[var(--chart-1)] text-primary-foreground";
+              style = "bg-[var(--chart-1)] text-primary-foreground";
             }
 
             // 🟢 4 ngày gần nhất
-            else if (
-              last4Days.some((d) => isSameDay(d, day))
-            ) {
-              style =
-                "bg-[var(--chart-4)] text-primary-foreground";
+            else if (last4Days.some((d) => isSameDay(d, day))) {
+              style = "bg-[var(--chart-4)] text-primary-foreground";
             }
 
             // 🟢 Các ngày streak cũ (mock)
             else if (
               !isFuture &&
-              mockOldStreakDays.some((d) =>
-                isSameDay(d, day)
-              )
+              mockOldStreakDays.some((d) => isSameDay(d, day))
             ) {
-              style =
-                "bg-[var(--chart-4)] text-primary-foreground";
+              style = "bg-[var(--chart-4)] text-primary-foreground";
             }
 
             return (
@@ -155,11 +128,7 @@ export default function StreakCalendar() {
                 rounded-full text-sm font-medium
                 transition-colors duration-200
                 ${style}
-                ${
-                  isToday
-                    ? "ring-2 ring-primary ring-offset-2"
-                    : ""
-                }
+                ${isToday ? "ring-2 ring-primary ring-offset-2" : ""}
               `}
               >
                 {format(day, "d")}
@@ -171,16 +140,12 @@ export default function StreakCalendar() {
         {/* ===== Mock info ===== */}
         <div className="flex justify-between text-sm pt-2">
           <span>🔥 Current streak</span>
-          <span className="font-bold">
-            {CURRENT_STREAK} days
-          </span>
+          <span className="font-bold">{CURRENT_STREAK} days</span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span>🏆 Longest streak</span>
-          <span className="font-bold">
-            {LONGEST_STREAK} days
-          </span>
+          <span className="font-bold">{LONGEST_STREAK} days</span>
         </div>
       </CardContent>
     </Card>
