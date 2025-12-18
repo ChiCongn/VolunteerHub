@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useUserStore } from "@/stores/user.store";
 import EventPage from "@/components/event/EventPage";
+import { mockEvents } from "@/components/event/EventData";
 
 export default function Community() {
   const user = useUserStore((s) => s.user);
@@ -11,9 +12,8 @@ export default function Community() {
 
   return (
     <div className="flex flex-1 justify-center min-w-0">
-      {/* MAIN COLUMN */}
       <div className="w-full max-w-5xl min-h-screen p-4">
-        <EventPage />
+        <EventPage events={mockEvents} />
       </div>
     </div>
   );
