@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 import { formatDistanceToNow } from "date-fns";
 
 // UI Components
-import { Navbar05 } from "./navbar";
+import { Navbar05 } from "./Navbar";
 import LeftPanel from "../components/LeftPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -107,9 +107,6 @@ export const CommunityEventPage = () => {
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
-      <Navbar05 />
-
-      {/* --- MODAL RENDERING --- */}
       <CreatePostModal
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
@@ -118,11 +115,6 @@ export const CommunityEventPage = () => {
       />
 
       <div className="flex w-full justify-center">
-        {/* 1. LEFT SIDEBAR (Sticky) */}
-        <div className="hidden md:block sticky top-[60px] h-[calc(100vh-60px)] z-30 w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <LeftPanel />
-        </div>
-
         {/* 2. MAIN CONTENT AREA */}
         <div className="flex flex-1 justify-center min-w-0">
           <div className="w-full">

@@ -43,7 +43,7 @@ export default function LoginPage() {
       store.setUser(res.user);
 
       //toast.success("Welcome back to VolunteerHub!");
-      navigate("/dashboard");
+      navigate("/home");
     } catch (error: any) {
       console.log(error);
       //   toast.error(

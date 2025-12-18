@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, Trophy, Lock } from "lucide-react";
-import { Navbar05 } from "../navbar";
+import { Navbar05 } from "../Navbar";
 import LeftPanel from "@/components/LeftPanel";
 import type { UserProfile } from "@/types/user.type";
 import { UserRole, UserStatus } from "@/types/enum";
@@ -162,12 +162,8 @@ export function UserManagementPage() {
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
-      <Navbar05 />
 
       <div className="flex w-full justify-center">
-        <div className="hidden md:block sticky top-[60px] h-[calc(100vh-60px)] z-30 w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <LeftPanel />
-        </div>
 
         <div className="flex flex-1 justify-center min-w-0">
           <div className="space-y-6 w-full max-w-6xl p-6">

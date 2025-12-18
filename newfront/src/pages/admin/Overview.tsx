@@ -1,6 +1,6 @@
 import { Calendar, Trophy, Clock } from "lucide-react";
 import { ChartLineLinear } from "@/components/LineChart";
-import { Navbar05 } from "../navbar";
+import { Navbar05 } from "../Navbar";
 import LeftPanel from "@/components/LeftPanel";
 import {
   overviewStatsService,
@@ -71,13 +71,7 @@ export default function OverviewPage() {
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
-      <Navbar05 />
-
       <div className="flex w-full justify-center">
-        {/* Sidebar */}
-        <div className="hidden md:block sticky top-[60px] h-[calc(100vh-60px)] z-30 w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <LeftPanel />
-        </div>
 
         {/* Main content */}
         <div className="flex flex-1 justify-center min-w-0">
