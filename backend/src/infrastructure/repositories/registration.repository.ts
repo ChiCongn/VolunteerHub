@@ -2,13 +2,43 @@ import { PrismaClient, registrations } from "../prisma/generated/client";
 import logger from "../../logger";
 import { IRegistrationRepository } from "../../domain/repositories/registration.irepository";
 import { Pagination } from "../../application/dtos/pagination.dto";
-import { Registration, RegistrationFilterDto } from "../../application/dtos/registration.dto";
+import {
+    Registration,
+    RegistrationEntity,
+    RegistrationFilterDto,
+} from "../../application/dtos/registration.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { RegistrationStatus, UserRole } from "../../domain/entities/enums";
 import { ListResult } from "../../application/dtos/list-result.dto";
+import { RegistrationNotFoundError } from "../../domain/errors/registration.error";
 
 export class RegistrationRepository implements IRegistrationRepository {
     constructor(private readonly prisma: PrismaClient) {}
+
+    async findById(registrationId: string): Promise<RegistrationEntity> {
+        const row = await this.prisma.registrations.findUnique({
+            where: { id: registrationId },
+            select: {
+                id: true,
+                user_id: true,
+                event_id: true,
+                status: true,
+                created_at: true,
+            },
+        });
+
+        if (!row) {
+            throw new RegistrationNotFoundError(registrationId);
+        }
+
+        return {
+            id: row.id,
+            userId: row.user_id,
+            eventId: row.event_id,
+            status: row.status,
+            createdAt: row.created_at,
+        };
+    }
 
     async register(userId: string, eventId: string): Promise<string> {
         logger.debug(
@@ -34,10 +64,13 @@ export class RegistrationRepository implements IRegistrationRepository {
     }
 
     async withdrawRegistration(id: string): Promise<void> {
-        logger.debug({
-            registrationId: id,
-            action: "unregister",
-        });
+        logger.debug(
+            {
+                registrationId: id,
+                action: "unregister",
+            },
+            "[RegistrationRepository] Registering to enroll an event"
+        );
         await this.prisma.registrations.delete({ where: { id } });
     }
 

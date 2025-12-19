@@ -4,6 +4,7 @@ import { EventRepository } from "./event.repository";
 import { NotificationRepository } from "./notificatiion.repository";
 import { PostRepository } from "./post.repository";
 import { RefreshTokenRepository } from "./refresh-token.repository";
+import { RegistrationRepository } from "./registration.repository";
 import { StatsRepository } from "./stats.repository";
 import { UserRepository } from "./user.repository";
 
@@ -15,3 +16,4 @@ export const commentRepo = new CommentRepository(prisma, userRepo, postRepo);
 export const notificationRepo = new NotificationRepository(prisma);
 export const refreshRepo = new RefreshTokenRepository(prisma);
 export const statsRepo = new StatsRepository(prisma);
+export const registrationRepo = new RegistrationRepository(prisma);
