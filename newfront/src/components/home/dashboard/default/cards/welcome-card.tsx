@@ -28,7 +28,7 @@ export default function WelcomeCard({ name = "Volunteer" }: WelcomeCardProps) {
             and collaborating through real-time discussion channels.
           </p>
 
-          <Button className="mt-2" onClick={() => navigate("/events")}>
+          <Button className="mt-2" onClick={() => navigate("/feed")}>
             Explore Volunteer Events
           </Button>
         </div>
