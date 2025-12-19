@@ -16,10 +16,11 @@ export default function PostHeader({ post }: Props) {
       </Avatar>
 
       <div className="leading-tight">
-        <div className="font-medium">
-          {post.author.name}
+        <div className="text-sm">
+          <span className="font-medium">{post.author.name}</span>
+          <span className="text-muted-foreground mx-1">đã thêm vào</span>
+          <span className="font-medium">{post.event.name}</span>
         </div>
-
         <div className="text-xs text-muted-foreground">
           {post.createdAt.toLocaleString()}
         </div>
