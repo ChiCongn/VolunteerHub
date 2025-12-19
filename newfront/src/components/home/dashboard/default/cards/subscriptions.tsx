@@ -69,7 +69,7 @@ export default function VolunteerProgressCard() {
   const percentChange = stats?.comparePercent ?? 0;
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Volunteer Hours (7 days)</CardTitle>

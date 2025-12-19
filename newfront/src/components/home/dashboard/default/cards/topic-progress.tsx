@@ -57,7 +57,7 @@ export default function WeeklyVolunteerGoalChart() {
   }
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle className="text-base">Weekly Volunteer Goal</CardTitle>
       </CardHeader>

@@ -1,59 +1,115 @@
-import { set } from "date-fns"
-import { createContext, useContext, useState, useEffect } from "react"
-import type { ReactNode } from "react"
-
-interface User {
-  _id: string
-  loading: boolean
-  email: string
-  name: string
-}
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import type { User } from "@/types/user.type";
 
 interface AuthContextType {
-  user: User | null
-  login: (user: User, token: string) => void
-  logout: () => void
-  loading: boolean
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  login: (user: User, accessToken: string, refreshToken?: string) => void;
+  logout: () => void;
+  loading: boolean;
+  isAuthenticated: boolean;
+  updateUser: (userData: Partial<User>) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true) 
+  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Lúc mount, check localStorage
+  // Khởi tạo: Lấy dữ liệu từ localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem("user")
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
-    }
-    setLoading(false)
-  }, [])
+    const initializeAuth = () => {
+      try {
+        const savedUser = localStorage.getItem("auth_user");
+        const savedAccessToken = localStorage.getItem("access_token");
+        const savedRefreshToken = localStorage.getItem("refresh_token");
 
-  const login = (userData: User, token: string) => {
-    setUser(userData)
-    localStorage.setItem("user", JSON.stringify(userData))
-    localStorage.setItem("access_token", token)
-  }
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+        if (savedAccessToken) {
+          setAccessToken(savedAccessToken);
+        }
+        if (savedRefreshToken) {
+          setRefreshToken(savedRefreshToken);
+        }
+      } catch (error) {
+        console.error("Failed to initialize auth from localStorage:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  const login = (
+    userData: User,
+    newAccessToken: string,
+    newRefreshToken?: string
+  ) => {
+    setUser(userData);
+    setAccessToken(newAccessToken);
+    if (newRefreshToken) {
+      setRefreshToken(newRefreshToken);
+    }
+
+    // Lưu vào localStorage
+    localStorage.setItem("auth_user", JSON.stringify(userData));
+    localStorage.setItem("access_token", newAccessToken);
+    if (newRefreshToken) {
+      localStorage.setItem("refresh_token", newRefreshToken);
+    }
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("user")
-    localStorage.removeItem("access_token")
-  }
+    setUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+
+    // Xóa khỏi localStorage
+    localStorage.removeItem("auth_user");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
+    }
+  };
+
+  const isAuthenticated = !!accessToken && !!user;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        accessToken,
+        refreshToken,
+        login,
+        logout,
+        loading,
+        isAuthenticated,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within AuthProvider")
+    throw new Error("useAuth must be used within AuthProvider");
   }
-  return context
+  return context;
 }

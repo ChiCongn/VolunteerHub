@@ -104,10 +104,10 @@ export class UserController {
     };
 
     setUserLock = async (req: Request, res: Response) => {
-        logger.info(
-            { userId: req.user.sub, action: "setUserLock" },
-            "[UserController] Fetch user public profile"
-        );
+        // logger.info(
+        //     { userId: req.user.sub, action: "setUserLock" },
+        //     "[UserController] Fetch user public profile"
+        // );
 
         try {
             const { userId } = req.params;
