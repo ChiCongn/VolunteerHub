@@ -15,7 +15,7 @@ export default function PostContent({ post }: Props) {
         <img
           src={post.image}
           alt="Post image"
-          className="rounded-md border object-cover max-h-[500px] w-full"
+          className="rounded-md border object-cover max-h-[300px] w-full"
         />
       )}
     </div>
