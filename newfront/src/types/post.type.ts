@@ -1,5 +1,6 @@
-import type { UserRole } from "./enum";
-export interface PostView {
+import type { PublicUserProfile } from "./user.type";
+
+export interface Post {
     id: string;
     author: PublicUserProfile;
     content: string;
@@ -9,10 +10,6 @@ export interface PostView {
         id: string;
         name: string;
     };
-}
-export interface PublicUserProfile {
-    id: string;
-    username: string;
-    avatarUrl: string;
-    role: UserRole;
+    reactionCount: number;
+    commentCount: number;
 }
