@@ -1,7 +1,5 @@
 import { Calendar, Trophy, Clock } from "lucide-react";
 import { ChartLineLinear } from "@/components/LineChart";
-import { Navbar05 } from "../Navbar";
-import LeftPanel from "@/components/LeftPanel";
 import {
   overviewStatsService,
   type OverviewStats,

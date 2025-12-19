@@ -7,6 +7,10 @@ import { ListUserFilter } from "../validators/user/list-user-filter.schema";
 import { UserRole } from "../../domain/entities/enums";
 import { CannotModifyRootAdminError, UserNotFoundError } from "../../domain/errors/user.error";
 import logger from "../../logger";
+import {
+    GetLoginStreakSchema,
+    GetMonthlyStatsSchema,
+} from "../validators/stats/user-activity.schema";
 
 export class UserController {
     constructor(private readonly userService: UserService) {}
@@ -257,6 +261,113 @@ export class UserController {
             );
 
             return res.status(500).json({ message: "Failed to search user" });
+        }
+    };
+
+    // =============== stats ==================
+    trackUserLogin = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+
+        logger.info(
+            { userId, action: "trackUserLogin" },
+            "[UserController] Manually tracking user login activity"
+        );
+
+        try {
+            const activity = await this.userService.trackUserLogin(userId);
+
+            return res.status(200).json({
+                message: "Login tracked successfully",
+                data: activity,
+            });
+        } catch (err) {
+            logger.error(
+                { error: err, userId, action: "trackUserLogin" },
+                "[UserController] Failed to track login activity"
+            );
+
+            if (err instanceof UserNotFoundError) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    getLoginStreak = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+
+        // Use the schema to validate and set defaults
+        const { year, month } = GetLoginStreakSchema.query.parse(req.query);
+
+        logger.info({ userId, year, month }, "[UserController] Fetching streak");
+
+        try {
+            const streak = await this.userService.getLoginStreak(userId, year, month);
+            return res.status(200).json(streak);
+        } catch (err) {
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    updateOnlineTime = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+
+        // Validates the request body
+        const { seconds } = req.body;
+
+        try {
+            await this.userService.recordOnlineTime(userId, seconds);
+            return res.status(204).send();
+        } catch (err) {
+            logger.error({ err, userId }, "[UserController] Heartbeat failed");
+            return res.status(400).json({ message: err });
+        }
+    };
+
+    getMonthlyEventStats = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+        const { year } = GetMonthlyStatsSchema.query.parse(req.query);
+
+        try {
+            const stats = await this.userService.getMonthlyEventStats(userId, year);
+            return res.status(200).json(stats);
+        } catch (err) {
+            return res.status(500).json({ message: "Failed to fetch monthly stats" });
+        }
+    };
+
+    getWeeklyOnline = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+
+        try {
+            // Aggregating two related weekly stats for a cleaner dashboard response
+            const online = await this.userService.getWeeklyOnlineStats(userId);
+
+            return res.status(200).json(online);
+        } catch (err) {
+            logger.error({ err, userId }, "[UserController] Error fetching weekly summary");
+            return res.status(500).json({ message: "Failed to fetch weekly summary" });
+        }
+    };
+
+    getWeeklyEventParticipation = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+
+        try {
+            const participation = await this.userService.getWeeklyEventParticipation(userId);
+            return res.status(200).json(participation);
+        } catch (err) {
+            logger.error(
+                { err, userId },
+                "[UserController] Error fetching weekly event participation"
+            );
+            return res.status(500).json({ message: "Failed to fetch weekly event participation" });
         }
     };
 }

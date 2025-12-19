@@ -25,8 +25,15 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 import logger from "../../logger";
 import bcrypt from "bcrypt";
 import "dotenv/config";
-import { tr } from "zod/locales";
 import { AuthContext } from "../../application/policies/helpers";
+import { LoginStreakDto } from "../../application/dtos/users/login-streak.dto";
+import { MonthlyEventStatsDto } from "../../application/dtos/users/monthly-event-stats.dto";
+import { UserDailyActivityRow } from "../../application/dtos/users/week-online-stats.dto";
+import {
+    WeeklyEventCountRow,
+    WeeklyEventParticipationDto,
+} from "../../application/dtos/users/weekly-event-participant.dto";
+import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;
@@ -502,6 +509,256 @@ export class UserRepository implements IUserRepository {
         return Number(result[0]?.count ?? 0);
     }
 
+    // =============== stats =================
+    /**
+     * Increments the login count for today.
+     * If the record doesn't exist for today, it creates it.
+     */
+    async trackLogin(userId: string): Promise<UserDailyActivity> {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        logger.debug(
+            {
+                userId,
+                activityDate: today,
+                action: "trackLogin",
+            },
+            "[UserRepository] Tracking user login"
+        );
+
+        const row = await this.prisma.user_daily_activity.upsert({
+            where: {
+                user_id_activity_date: {
+                    user_id: userId,
+                    activity_date: today,
+                },
+            },
+            update: {
+                login_count: { increment: 1 },
+            },
+            create: {
+                user_id: userId,
+                activity_date: today,
+                login_count: 1,
+                online_seconds: 0,
+            },
+        });
+        return {
+            userId: row.user_id,
+            activityDate: row.activity_date,
+            onlineSeconds: row.online_seconds,
+            loginCount: row.login_count,
+        };
+    }
+
+    /**
+     * Adds online seconds to the user's daily total.
+     */
+    async updateOnlineTime(userId: string, seconds: number): Promise<void> {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0); // Normalize to SQL DATE (midnight)
+
+        logger.debug(
+            {
+                userId,
+                activityDate: today,
+                secondsToAdd: seconds,
+                action: "updateOnlineTime",
+            },
+            "[UserRepository] Updating online activity time"
+        );
+
+        await this.prisma.user_daily_activity.update({
+            where: {
+                user_id_activity_date: {
+                    user_id: userId,
+                    activity_date: today,
+                },
+            },
+            data: {
+                online_seconds: { increment: seconds },
+            },
+        });
+    }
+
+    // async getLoginStreak(
+    //     userId: string,
+    //     year: number,
+    //     month: number // 1-12
+    // ): Promise<LoginStreakDto> {
+    //     logger.debug(
+    //         { userId, year, month, action: "getLoginStreak" },
+    //         "[UserRepository] Fetching login streak for user"
+    //     );
+    //     const monthStart = `${year}-${String(month).padStart(2, "0")}-01`;
+    //     const monthEnd = `
+    //         (DATE '${monthStart}' + INTERVAL '1 month' - INTERVAL '1 day')::date
+    //     `;
+
+    //     const rows = await this.prisma.$queryRawUnsafe<{ activity_date: string }[]>(
+    //         `
+    //         SELECT activity_date::text
+    //         FROM user_daily_activity
+    //         WHERE user_id = $1::uuid
+    //             AND activity_date BETWEEN $2::date AND ${monthEnd}
+    //         ORDER BY activity_date ASC
+    //         `,
+    //         userId,
+    //         monthStart
+    //     );
+
+    //     return {
+    //         month: `${year}-${String(month).padStart(2, "0")}`,
+    //         activeDates: rows.map((r) => r.activity_date),
+    //     };
+    // }
+    async getActivityDatesInMonth(
+        userId: string,
+        start: string,
+        end: string
+    ): Promise<{ activity_date: string }[]> {
+        logger.debug(
+            { userId, start, end, action: "getActivityDatesInMonth" },
+            "[UserRepository] Fetching activity dates"
+        );
+
+        return await this.prisma.$queryRawUnsafe<{ activity_date: string }[]>(
+            `SELECT activity_date::text FROM user_daily_activity
+             WHERE user_id = $1::uuid AND activity_date BETWEEN $2::date AND $3::date
+             ORDER BY activity_date ASC`,
+            userId,
+            start,
+            end
+        );
+    }
+
+    // async getMonthlyEventStats(userId: string, year: number): Promise<MonthlyEventStatsDto> {
+    //     logger.debug(
+    //         { userId, year, action: "getMonthlyEventStats" },
+    //         "[UserRepository] Calculating monthly event stats"
+    //     );
+    //     const rows = await this.prisma.$queryRawUnsafe<{ month: number; count: number }[]>(
+    //         `
+    //         SELECT
+    //             EXTRACT(MONTH FROM r.created_at)::int AS month,
+    //             COUNT(*)::int AS count
+    //         FROM registrations r
+    //         WHERE r.user_id = $1::uuid
+    //             AND r.status = 'approved'
+    //             AND EXTRACT(YEAR FROM r.created_at) = $2
+    //         GROUP BY month
+    //         ORDER BY month
+    //         `,
+    //         userId,
+    //         year
+    //     );
+
+    //     // fill missing months
+    //     const monthlyCounts = Array.from({ length: 12 }, (_, i) => {
+    //         const m = i + 1;
+    //         const found = rows.find((r) => r.month === m);
+    //         return {
+    //             month: m,
+    //             joinedEvents: found?.count ?? 0,
+    //         };
+    //     });
+
+    //     return { year, monthlyCounts };
+    // }
+    async getApprovedRegistrationCountsByYear(userId: string, year: number): Promise<{ month: number; count: number }[]> {
+        logger.debug({ userId, year, action: "getApprovedRegistrationCountsByYear" }, "[UserRepository] Fetching registration counts");
+
+        return await this.prisma.$queryRawUnsafe<{ month: number; count: number }[]>(
+            `SELECT EXTRACT(MONTH FROM r.created_at)::int AS month, COUNT(*)::int AS count
+             FROM registrations r
+             WHERE r.user_id = $1::uuid AND r.status = 'approved' AND EXTRACT(YEAR FROM r.created_at) = $2
+             GROUP BY month ORDER BY month`,
+            userId, year
+        );
+    }
+
+    async getDailyOnlineActivity(userId: string, from: Date): Promise<UserDailyActivityRow[]> {
+        logger.debug(
+            { userId, from, action: "getDailyOnlineActivity" },
+            "[UserRepository] Fetching daily online activity"
+        );
+
+        return await this.prisma.$queryRawUnsafe<UserDailyActivityRow[]>(
+            `
+            SELECT
+                activity_date::date AS "activityDate",
+                online_seconds AS "onlineSeconds"
+            FROM user_daily_activity
+            WHERE user_id = $1::uuid
+                AND activity_date >= $2::date
+            `,
+            userId,
+            from
+        );
+    }
+
+    async getWeeklyEventParticipation(
+        userId: string,
+        target = 10
+    ): Promise<WeeklyEventParticipationDto> {
+        logger.debug(
+            { userId, target, action: "getWeeklyEventParticipation" },
+            "[UserRepository] Checking weekly event participation progress"
+        );
+
+        const row = await this.prisma.$queryRawUnsafe<{ count: number; week_start: string }[]>(
+            `
+            SELECT
+                date_trunc('week', r.created_at)::date AS week_start,
+                COUNT(*)::int AS count
+            FROM registrations r
+            WHERE r.user_id = $1::uuid
+                AND r.status = 'approved'
+                AND r.created_at >= date_trunc('week', now())
+            GROUP BY week_start
+            `,
+            userId
+        );
+
+        const joinedEvents = row[0]?.count ?? 0;
+        const weekStart = row[0]?.week_start ?? new Date().toISOString().slice(0, 10);
+
+        return {
+            weekStart,
+            joinedEvents,
+            target,
+            progressPercent: Math.min(100, (joinedEvents / target) * 100),
+        };
+    }
+
+    async getWeeklyApprovedEventCount(
+        userId: string,
+        weekStart: Date
+    ): Promise<WeeklyEventCountRow | null> {
+        logger.debug(
+            { userId, weekStart, action: "getWeeklyApprovedEventCount" },
+            "[UserRepository] Fetching weekly approved event count"
+        );
+
+        const rows = await this.prisma.$queryRawUnsafe<WeeklyEventCountRow[]>(
+            `
+            SELECT
+                date_trunc('week', r.created_at)::date AS "weekStart",
+                COUNT(*)::int AS "count"
+            FROM registrations r
+            WHERE r.user_id = $1::uuid
+                AND r.status = 'approved'
+                AND r.created_at >= $2::date
+            GROUP BY 1
+            `,
+            userId,
+            weekStart
+        );
+
+        return rows[0] ?? null;
+    }
+
+    // ================ utils =================
     async exists(id: string): Promise<boolean> {
         const count = await this.prisma.users.count({
             where: { id },
