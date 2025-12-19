@@ -340,21 +340,34 @@ export class UserController {
         }
     };
 
-    getWeeklySummary = async (req: Request, res: Response) => {
+    getWeeklyOnline = async (req: Request, res: Response) => {
+        //const userId = req.user.sub;
+        const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+
+        try {
+            // Aggregating two related weekly stats for a cleaner dashboard response
+            const online = await this.userService.getWeeklyOnlineStats(userId);
+
+            return res.status(200).json(online);
+        } catch (err) {
+            logger.error({ err, userId }, "[UserController] Error fetching weekly summary");
+            return res.status(500).json({ message: "Failed to fetch weekly summary" });
+        }
+    };
+
+    getWeeklyEventParticipation = async (req: Request, res: Response) => {
         const userId = req.user.sub;
         //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
 
         try {
-            // Aggregating two related weekly stats for a cleaner dashboard response
-            const [online, participation] = await Promise.all([
-                this.userService.getWeeklyOnlineStats(userId),
-                this.userService.getWeeklyEventParticipation(userId),
-            ]);
-
-            return res.status(200).json({ online, participation });
+            const participation = await this.userService.getWeeklyEventParticipation(userId);
+            return res.status(200).json(participation);
         } catch (err) {
-            logger.error({ err, userId }, "[UserController] Error fetching weekly summary");
-            return res.status(500).json({ message: "Failed to fetch weekly summary" });
+            logger.error(
+                { err, userId },
+                "[UserController] Error fetching weekly event participation"
+            );
+            return res.status(500).json({ message: "Failed to fetch weekly event participation" });
         }
     };
 }
