@@ -341,8 +341,8 @@ export class UserController {
     };
 
     getWeeklyOnline = async (req: Request, res: Response) => {
-        //const userId = req.user.sub;
-        const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+        const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
 
         try {
             // Aggregating two related weekly stats for a cleaner dashboard response
