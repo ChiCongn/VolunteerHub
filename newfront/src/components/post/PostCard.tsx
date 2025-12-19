@@ -16,6 +16,7 @@ export default function PostCard({ post, onCommentClick }: PostCardProps) {
         <PostHeader post={post} />
         <PostContent post={post} />
         <PostActions
+          postId={post.id} // Thêm dòng này
           likeCount={post.reactionCount}
           commentCount={post.commentCount}
           onCommentClick={() => onCommentClick?.(post)}

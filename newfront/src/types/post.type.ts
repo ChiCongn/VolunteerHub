@@ -13,3 +13,13 @@ export interface Post {
     reactionCount: number;
     commentCount: number;
 }
+
+export interface Reaction {
+  postId: string;
+  authorId: string;
+  emoji: string;
+  user?: {
+    username: string;
+    avatar_url: string;
+  };
+}
