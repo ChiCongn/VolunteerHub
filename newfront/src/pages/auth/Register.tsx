@@ -20,6 +20,8 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { getPasswordStrength } from "@/utils/password.utils";
 import { useUserStore } from "@/stores/user.store";
+import { useAuth } from "@/components/context/AuthContext";
+import { userStartsService } from "@/services/user/user-stats.service";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function SignupPage() {
@@ -30,6 +32,7 @@ export default function SignupPage() {
     confirm: false,
   });
   const navigate = useNavigate();
+  const { login: authContextLogin } = useAuth();
 
   // const [pendingEmail, setPendingEmail] = useState<string>("");
 
@@ -61,6 +64,9 @@ export default function SignupPage() {
       store.setTokens(res.accessToken, res.refreshToken);
       store.setUser(res.user);
 
+      authContextLogin(res.user, res.accessToken, res.refreshToken);
+      userStartsService.trackUserLogin();
+      
       // setPendingEmail(payload.email);
       // setStep(2);
       //toast.success("Account created successfully! Welcome!");
