@@ -11,7 +11,7 @@ interface PostCardProps {
 
 export default function PostCard({ post, onCommentClick }: PostCardProps) {
   return (
-    <Card className="bg-card">
+    <Card className="bg-white">
       <CardContent className="space-y-3 p-4">
         <PostHeader post={post} />
         <PostContent post={post} />
