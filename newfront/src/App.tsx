@@ -18,6 +18,8 @@ import { EventManagementPage } from "./pages/admin/EventsStats";
 import OverviewPage from "./pages/admin/Overview";
 
 import { NotFound } from "./pages/NotFound";
+import Settings from "./pages/Setting";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -36,8 +38,8 @@ function App() {
             <Route path="/posts/:postId" element={<PostDetailPage />} />
             <Route path="/notifications" element={<div>Notifications</div>} />
             <Route path="/bookmarks" element={<div>Bookmarks</div>} />
-            <Route path="/profile" element={<div>Profile</div>} />
-            <Route path="/settings" element={<div>Settings</div>} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/admin/overview" element={<OverviewPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/events" element={<EventManagementPage />} />
