@@ -7,6 +7,9 @@ import { UpdateEventSchema } from "../validators/event/update-event.schema";
 import { GetEventSchema } from "../validators/event/get-event.schema";
 import { CancelEventSchema } from "../validators/event/cancel-event.schema";
 import { postController } from "../controllers/posts.controller";
+import { registrationController } from "../controllers/registration.controller";
+import { CreateRegistrationSchema } from "../validators/registration/create-registration.schema";
+import { RegistrationFilterSchema } from "../validators/registration/filter-registration.schema";
 
 export const eventRouter = Router();
 
@@ -29,6 +32,19 @@ eventRouter.get("/:eventId", authenticate, validate(GetEventSchema), eventContro
 eventRouter.post("/:eventId", authenticate, validate(GetEventSchema), eventController.deleteEvent);
 eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);
 eventRouter.get("/:eventId/search", authenticate, postController.searchPosts);
+eventRouter.post(
+    "/:eventId/registrations",
+    authenticate,
+    validate(RegistrationFilterSchema),
+    registrationController.register
+);
+
+eventRouter.get(
+    "/:eventId/registrations",
+    authenticate,
+    validate(CreateRegistrationSchema),
+    registrationController.listRegistration
+);
 
 eventRouter.post(
     "/:eventId/cancel",

@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { EventIdSchema, RegistrationIdSchema } from "../param/id.schema";
+import { RegistrationIdSchema } from "../param/id.schema";
 
 export const UpdateRegistrationApprovalSchema = {
     params: z.object({
-        eventId: EventIdSchema,
-        regId: RegistrationIdSchema,
+        registrationId: RegistrationIdSchema,
     }),
     body: z.object({
         approved: z.boolean(),

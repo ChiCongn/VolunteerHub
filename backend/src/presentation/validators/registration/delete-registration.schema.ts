@@ -1,9 +1,8 @@
 import { z } from "zod";
 import { EventIdSchema, RegistrationIdSchema } from "../param/id.schema";
 
-export const UpdateRegistrationApprovalSchema = {
+export const DeleteRegistrationSchema = {
     params: z.object({
-        eventId: EventIdSchema,
-        regId: RegistrationIdSchema,
+        registrationId: RegistrationIdSchema,
     }),
 };
