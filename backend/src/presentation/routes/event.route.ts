@@ -6,6 +6,7 @@ import { CreateEventSchema } from "../validators/event/create-event.schema";
 import { UpdateEventSchema } from "../validators/event/update-event.schema";
 import { GetEventSchema } from "../validators/event/get-event.schema";
 import { CancelEventSchema } from "../validators/event/cancel-event.schema";
+import { postController } from "../controllers/posts.controller";
 
 export const eventRouter = Router();
 
@@ -26,6 +27,8 @@ eventRouter.patch(
 eventRouter.get("/:eventId", authenticate, validate(GetEventSchema), eventController.getEventById);
 
 eventRouter.post("/:eventId", authenticate, validate(GetEventSchema), eventController.deleteEvent);
+eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);
+eventRouter.get("/:eventId/search", authenticate, postController.searchPosts);
 
 eventRouter.post(
     "/:eventId/cancel",
