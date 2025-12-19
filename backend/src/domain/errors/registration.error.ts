@@ -28,3 +28,13 @@ export class CannotWithdrawAfterStartError extends DomainError {
         ]);
     }
 }
+
+export class InvalidRegistrationStateError extends DomainError {
+    constructor(registrationId: string, status: string) {
+        super(
+            "INVALID_REGISTRATION_STATE",
+            `Cannot withdraw registration ${registrationId} with status ${status}`,
+            [registrationId, status]
+        );
+    }
+}

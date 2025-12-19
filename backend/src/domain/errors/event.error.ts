@@ -23,10 +23,9 @@ export class EventCannotBeCancelledError extends DomainError {
 }
 
 export class EventCapacityExceededError extends DomainError {
-    constructor(eventId: string, capacity: number) {
-        super("EVENT_FULL", `Event ${eventId} is at full capacity (${capacity})`, [
+    constructor(eventId: string) {
+        super("EVENT_FULL", `Event ${eventId} is at full capacity`, [
             eventId,
-            capacity.toString(),
         ]);
     }
 }

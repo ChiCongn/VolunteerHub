@@ -24,3 +24,26 @@ export interface EventStatsDto {
         to: string;
     };
 }
+
+export interface EventRegistrationStatusCountDto {
+    participatedCount: number;
+    pendingCount: number;
+    rejectCount: number;
+}
+
+export interface DailyParticipantDto {
+    date: string;
+    participantCount: number;
+}
+
+export interface DailyPostDto {
+    date: string;
+    postCount: number;
+}
+
+export interface EventGoalComparisonDto {
+    eventId: string;
+    targetParticipants: number; // capacity
+    actualParticipants: number; // registered count
+    completionRate: number;
+}
