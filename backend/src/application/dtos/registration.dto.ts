@@ -14,7 +14,7 @@ export interface RejectRegistrationDto {
 
 export interface RegistrationFilterDto {
     eventId: string;
-    userId?: string;
+    username?: string;
     status?: RegistrationStatus;
 }
 
