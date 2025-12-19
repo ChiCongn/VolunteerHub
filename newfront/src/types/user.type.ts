@@ -1,5 +1,12 @@
 import type { UserRole, UserStatus } from "./enum";
 
+export interface PublicUserProfile {
+    id: string;
+    username: string;
+    avatarUrl: string;
+    role: UserRole;
+}
+
 export interface UserProfile {
     id: string;
     username: string;

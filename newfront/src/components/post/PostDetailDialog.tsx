@@ -4,11 +4,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { PostFeedView } from "@/components/post/PostData";
+import type { Post } from "@/types/post.type";
 import PostHeader from "@/components/post/PostHeader";
 import PostContent from "@/components/post/PostContent";
 import CommentSection from "@/components/comment/CommentSection";
-import type { Post } from "@/types";
 
 interface Props {
   post: Post | null;

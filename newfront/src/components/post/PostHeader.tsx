@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { PostFeedView } from "@/components/post/PostData";
-import type { Post } from "@/types";
+import type { Post } from "@/types/post.type";
 
 interface Props {
   post: Post;
