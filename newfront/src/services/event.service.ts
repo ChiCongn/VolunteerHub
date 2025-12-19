@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client";
-import type { Event } from "@/types";
+import type { Event } from "@/types/event.type";
 
 export interface PaginatedEvents {
     items: Event[];

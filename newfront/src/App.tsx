@@ -11,7 +11,6 @@ import Home from "./pages/Home";
 import Feed from "./pages/Feed";
 import Community from "./pages/Community";
 import { CommunityEventPage } from "./pages/CommunityEventPage";
-import { PostDetailPage } from "./pages/PostDetailPage";
 
 import { UserManagementPage } from "./pages/admin/UsersStats";
 import { EventManagementPage } from "./pages/admin/EventsStats";
@@ -37,14 +36,12 @@ function App() {
             <Route path="/feed" element={<Feed />} /> {/* Feed */}
             <Route path="/communities" element={<Community />} />
             <Route path="/events/:eventId" element={<CommunityEventPage />} />
-            <Route path="/posts/:postId" element={<PostDetailPage />} />
             <Route path="/notifications" element={<div>Notifications</div>} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/admin/overview" element={<OverviewPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/events" element={<EventManagementPage />} />
-            <Route path="/create-event" element={<CreateEventPage />} />
             <Route path="/event-manage" element={<ManageEvent />} />
           </Route>
 
