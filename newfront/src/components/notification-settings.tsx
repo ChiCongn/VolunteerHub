@@ -6,7 +6,7 @@ import React from "react"
 
 export function NotificationSettings(): React.ReactElement {
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle>Notification Settings</CardTitle>
         <CardDescription>Configure how you receive notifications.</CardDescription>

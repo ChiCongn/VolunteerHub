@@ -215,7 +215,7 @@ const UserMenu = ({
         </div>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onItemClick?.("profile")}>
+      <DropdownMenuItem onClick={() => onItemClick?.("/profile")}>
         Profile
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onItemClick?.("settings")}>
