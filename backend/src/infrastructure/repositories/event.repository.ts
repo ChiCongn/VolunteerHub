@@ -701,6 +701,37 @@ export class EventRepository implements IEventRepository {
         return count > 0;
     }
 
+    async canRegisterForEvent(eventId: string): Promise<boolean> {
+        const event = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: {
+                capacity: true,
+                register_count: true,
+            },
+        });
+
+        if (!event) {
+            throw new EventNotFoundError(eventId);
+        }
+
+        return event.register_count < event.capacity;
+    }
+
+    async getEventStartTime(eventId: string): Promise<Date> {
+        const event = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: {
+                start_time: true,
+            },
+        });
+
+        if (!event) {
+            throw new EventNotFoundError(eventId);
+        }
+
+        return event.start_time;
+    }
+
     async findOwner(eventId: string): Promise<string> {
         logger.debug(
             { eventId, action: "findOwner" },
