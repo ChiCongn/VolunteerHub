@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import React, { useState } from "react";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface AccountSettingsProps {
   fullname: string;

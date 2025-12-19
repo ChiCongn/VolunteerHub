@@ -3,19 +3,19 @@ import MetricCard from "./cards/metric";
 import WelcomeCard from "./cards/welcome-card";
 import TopicProgressChart from "./cards/topic-progress";
 import StreakCalendar from "./cards/streak";
-import { useUserStore } from "@/stores/user.store";
+import { useAuthState } from "@/hooks/useAuthState";
+
 export default function Page() {
-  const user = useUserStore((state) => state.user);
-  const name = user?.username || "User";
+  const { userName } = useAuthState();
+
   return (
     <div className="flex-1 overflow-y-auto p-4">
       <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
         <div className="lg:col-span-2 lg:row-span-2 h-full">
-          <WelcomeCard name={name} />
+          <WelcomeCard name={userName} />
         </div>
 
         <SubscriptionsCard />
-
         <TopicProgressChart />
       </div>
 
