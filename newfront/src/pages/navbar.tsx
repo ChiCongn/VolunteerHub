@@ -215,7 +215,7 @@ const UserMenu = ({
         </div>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onItemClick?.("/profile")}>
+      <DropdownMenuItem onClick={() => onItemClick?.("profile")}>
         Profile
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => onItemClick?.("settings")}>
@@ -255,7 +255,6 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
       className,
       logo = <Logo />,
       logoHref = "#",
-      // Dữ liệu fallback
       userName,
       userEmail,
       userAvatar,
@@ -281,29 +280,27 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
     const displayUser = authUser || user;
     console.log("Display user:", displayUser);
 
-    const displayUserName =
-      displayUser?.username || userName || "Guest";
+    const displayUserName = displayUser?.username || userName || "Guest";
     const displayUserEmail = displayUser?.email || userEmail || "";
-    const displayUserAvatar =
-      displayUser?.avatarUrl ||userAvatar;
+    const displayUserAvatar = displayUser?.avatarUrl || userAvatar;
 
     const handleUserMenuClick = (item: string) => {
       if (item === "logout") {
-        // Xóa từ Store
         clearSession();
-        // Xóa từ AuthContext
         authContextLogout();
-        // Điều hướng về trang login
         navigate("/login");
+      } else if (item === "profile") {
+        navigate("/profile");
+      } else if (item === "settings") {
+        navigate("/settings");
       } else if (onUserItemClick) {
         onUserItemClick(item);
       }
     };
 
-    // 7. Xử lý logic click Logo: chuyển về dashboard
     const handleLogoClick = (e: React.MouseEvent) => {
       e.preventDefault();
-      navigate("/dashboard");
+      navigate("/home");
     };
 
     useEffect(() => {
