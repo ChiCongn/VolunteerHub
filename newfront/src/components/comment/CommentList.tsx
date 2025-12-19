@@ -7,6 +7,7 @@ interface Props {
 }
 
 export default function CommentList({ comments }: { comments: Comment[] }) {
+  const reversedComments = [...comments].reverse();
   return (
     <div className="space-y-4">
       {/* {comments.map((comment) => (
@@ -17,7 +18,7 @@ export default function CommentList({ comments }: { comments: Comment[] }) {
           No comments yet. Be the first to share your thoughts!
         </div>
       ) : (
-        comments.map((comment) => (
+        reversedComments.map((comment) => (
           <CommentItem key={comment._id} comment={comment} />
         ))
       )}

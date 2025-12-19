@@ -25,12 +25,13 @@ export default function PostDetailDialog({
 }: Props) {
   if (!post) return null;
 
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="!max-w-3xl !max-h-[90vh] overflow-y-auto p-0 m-5">
         <DialogHeader className="p-4 border-b">
           <DialogTitle className="flex justify-center">
-            {post.author.username}'s Post
+            {post.author.username || "User"}'s Post
           </DialogTitle>
         </DialogHeader>
         <div className="p-4 space-y-4">
