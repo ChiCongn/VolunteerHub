@@ -44,7 +44,7 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div className="w-full max-w-none p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Image */}
       <Card className="md:col-span-1">
         <CardContent className="flex flex-col items-center justify-center h-full gap-4">

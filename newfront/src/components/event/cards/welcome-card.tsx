@@ -6,7 +6,7 @@ type WelcomeCardProps = {
   name?: string;
 };
 
-import volunteerIllustration from "@/assets/hello.svg"
+import volunteerIllustration from "@/assets/hello.svg";
 
 export default function WelcomeCard({name}: WelcomeCardProps) {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function WelcomeCard({name}: WelcomeCardProps) {
     <Card className="relative h-full overflow-hidden flex bg-white">
       <CardContent className="flex flex-1 items-center justify-between gap-6 p-6">
         <div className="max-w-xl space-y-3">
-          <h2 className="text-2xl font-semibold">Welcome back, {name} 👋</h2>
+          <h2 className="text-2xl font-semibold">Welcome Manager, {name} 👋</h2>
 
           <p className="text-base text-muted-foreground">
             Ready to make a positive impact today?

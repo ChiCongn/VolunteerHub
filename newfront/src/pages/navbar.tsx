@@ -248,7 +248,6 @@ export interface Navbar05Props extends React.HTMLAttributes<HTMLElement> {
   onUserItemClick?: (item: string) => void;
 }
 
-// --- Main Component: Navbar05 ---
 export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
   (
     {
@@ -267,16 +266,13 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
     },
     ref
   ) => {
-    // 3. Khởi tạo navigate hook
     const navigate = useNavigate();
     const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
 
-    // 4. Lấy dữ liệu user từ Store (đã được persist trong localStorage)
     const { user, clearSession } = useUserStore();
     const { logout: authContextLogout, user: authUser } = useAuth();
 
-    // Ưu tiên dùng AuthContext, fallback sang Store
     const displayUser = authUser || user;
     console.log("Display user:", displayUser);
 
@@ -363,7 +359,6 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
                 </PopoverContent>
               </Popover>
             )}
-            {/* Main nav */}
             <div className="flex items-center gap-6">
               <button
                 onClick={handleLogoClick} // Gọi hàm điều hướng
@@ -374,7 +369,6 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
                   VolunteerHub
                 </span>
               </button>
-              {/* Navigation menu */}
               {!isMobile && (
                 <NavigationMenu className="flex">
                   <NavigationMenuList className="gap-1"></NavigationMenuList>
@@ -382,16 +376,13 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
               )}
             </div>
           </div>
-          {/* Right side */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              {/* Notification */}
               <NotificationMenu
                 notificationCount={notificationCount}
                 onItemClick={onNotificationItemClick}
               />
             </div>
-            {/* User menu */}
             <UserMenu
               userName={displayUserName}
               userEmail={displayUserEmail}
