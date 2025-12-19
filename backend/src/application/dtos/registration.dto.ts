@@ -24,3 +24,11 @@ export interface Registration {
     status: RegistrationStatus;
     createdAt: Date;
 }
+
+export interface RegistrationEntity {
+    id: string;
+    userId: string;
+    eventId: string;
+    status: RegistrationStatus;
+    createdAt: Date;
+}

@@ -6,7 +6,10 @@ export const RegistrationFilterSchema = {
     query: z
         .object({
             eventId: EventIdSchema.optional(),
-            userId: UserIdSchema.optional(),
+            username: z
+                .string()
+                .min(1, "At least one character in username is required")
+                .optional(),
             status: z.nativeEnum(RegistrationStatus).optional(),
         })
         .strict(),
