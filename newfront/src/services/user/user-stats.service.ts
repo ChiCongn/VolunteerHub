@@ -24,11 +24,29 @@ export const userStartsService = {
     },
 
     async getMonthlyParticipatedEvent(year: number) {
-        const { data } = await apiClient.get<MonthlyEventStats>("/users/me/stats/monthly-events", {
-            params: {
-                year
-            },
+        const { data } = await apiClient.get<MonthlyEventStats>(
+            "/users/me/stats/monthly-events",
+            {
+                params: {
+                    year,
+                },
+            }
+        );
+        return data;
+    },
+
+    async recordOnlineTime(seconds: number) {
+        // TODO: prevent user manually call this api
+        await apiClient.post("/users/me/heartbeat", {
+            seconds,
         });
+    },
+
+    trackUserLogin: async () => {
+        // Assuming your route is POST /users/me/login-activity
+        const { data } = await apiClient.post<{ message: string; data: any }>(
+            `/users/me/track-login`
+        );
         return data;
     },
 };
@@ -72,4 +90,11 @@ export interface MonthlyEventStats {
         month: number; // 1 - 12
         joinedEvents: number;
     }[];
+}
+
+export interface UserDailyActivity {
+    userId: string;
+    activityDate: Date;
+    onlineSeconds: number;
+    loginCount: number;
 }

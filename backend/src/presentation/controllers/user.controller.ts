@@ -302,6 +302,11 @@ export class UserController {
         // Use the schema to validate and set defaults
         const { year, month } = GetLoginStreakSchema.query.parse(req.query);
 
+        logger.info(
+            { userId, year, month, action: "getLoginStreak" },
+            "[UserController] Fetching streak"
+        );
+
         logger.info({ userId, year, month }, "[UserController] Fetching streak");
 
         try {
@@ -314,9 +319,12 @@ export class UserController {
 
     updateOnlineTime = async (req: Request, res: Response) => {
         const userId = req.user.sub;
-
-        // Validates the request body
         const { seconds } = req.body;
+
+        logger.info(
+            { userId, seconds, action: "updateOnlineTime" },
+            "[UserController] Recording heartbeat"
+        );
 
         try {
             await this.userService.recordOnlineTime(userId, seconds);
@@ -329,8 +337,12 @@ export class UserController {
 
     getMonthlyEventStats = async (req: Request, res: Response) => {
         const userId = req.user.sub;
-        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
         const { year } = GetMonthlyStatsSchema.query.parse(req.query);
+
+        logger.info(
+            { userId, year, action: "getMonthlyEventStats" },
+            "[UserController] Fetching monthly event stats"
+        );
 
         try {
             const stats = await this.userService.getMonthlyEventStats(userId, year);
@@ -342,7 +354,11 @@ export class UserController {
 
     getWeeklyOnline = async (req: Request, res: Response) => {
         const userId = req.user.sub;
-        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+        
+        logger.info(
+            { userId, action: "getWeeklyOnline" },
+            "[UserController] Fetching weekly online summary"
+        );
 
         try {
             // Aggregating two related weekly stats for a cleaner dashboard response
@@ -357,7 +373,11 @@ export class UserController {
 
     getWeeklyEventParticipation = async (req: Request, res: Response) => {
         const userId = req.user.sub;
-        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
+
+        logger.info(
+            { userId, action: "getWeeklyEventParticipation" },
+            "[UserController] Fetching weekly participation"
+        );
 
         try {
             const participation = await this.userService.getWeeklyEventParticipation(userId);

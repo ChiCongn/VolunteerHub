@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/user.store";
 import { useAuth } from "@/components/context/AuthContext";
+import { userStartsService } from "@/services/user/user-stats.service";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function LoginPage() {
@@ -46,6 +47,9 @@ export default function LoginPage() {
 
       // Cũng lưu vào AuthContext (optional, nếu muốn dùng cả hai)
       authContextLogin(res.user, res.accessToken, res.refreshToken);
+
+      // track user after loging in
+      userStartsService.trackUserLogin();
 
       //toast.success("Welcome back to VolunteerHub!");
       navigate("/home");
