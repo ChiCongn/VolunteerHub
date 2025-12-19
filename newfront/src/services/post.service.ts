@@ -1,31 +1,10 @@
 import apiClient from "@/lib/api-client";
+import { type ListResult } from "@/types/paging";
 import type { Post } from "@/types/post.type";
 
-// Định nghĩa response type cho API list
-interface PostListResponse {
-    items: Post[];
-    total: number;
-    page: number;
-    limit: number;
-}
-
 export const postService = {
-    getPostsByEvent: async (eventId: string) => {
-        const response = await apiClient.get<PostListResponse>(
-            `/posts/event/${eventId}`
-        );
-
-        const items = response.data.items.map((item: any) => ({
-            ...item,
-            _id: item._id || item.id,
-            createdAt:
-                item.createdAt || item.createddAt || new Date().toISOString(),
-        }));
-
-        return items as Post[];
-    },
-
     // POST /api/v1/posts
+    // TODO: remove authorId 
     createPost: async (data: {
         eventId: string;
         content: string;
@@ -74,9 +53,68 @@ export const postService = {
         return mappedPost as unknown as Post;
     },
 
+    // TODO: Implement infinite scrolling (pagination).
+    // Load the next batch of posts when the user reaches the end of the current list
+    // to avoid loading all posts at once.
+    async getPostsByEvent(eventId: string) {
+        const { data } = await apiClient.get<ListResult<Post>>(
+            `/events/${eventId}/posts`
+        );
+        return data;
+    },
+
+    // TODO: Implement infinite scrolling (pagination).
+    // Load the next batch of posts when the user reaches the end of the current list
+    // to avoid loading all posts at once.
     async getFeedPosts() {
-        const {data} = await apiClient.get<Post[]>("/posts/feed");
+        const { data } = await apiClient.get<Post[]>("/posts/feed");
         console.log(data);
+        return data;
+    },
+
+    async searchPostInEvent(eventId: string, keyword: string) {
+        const { data } = await apiClient.get<ListResult<Post>>(
+            `/events/${eventId}/search`,
+            {
+                params: {
+                    keyword,
+                },
+            }
+        );
+        return data;
+    },
+
+    async restorePost(postId: string) {
+        await apiClient.patch(`/posts/${postId}/restore`);
+    },
+
+    async deletePost(postId: string) {
+        await apiClient.delete(`/posts/${postId}`);
+    },
+
+    async updatedPost(
+        postId: string,
+        newContent?: string,
+        newImageUrl?: string
+    ) {
+        // Validate that at least one field is provided
+        if (newContent === undefined && newImageUrl === undefined) {
+            throw new Error(
+                "At least one field (content or image) must be provided."
+            );
+        }
+
+        // Validate content length if it is being updated
+        if (newContent !== undefined && newContent.trim().length <= 1) {
+            throw new Error("Content must be longer than 1 character.");
+        }
+
+        // Perform the PATCH request
+        // We only include properties that are defined
+        const { data } = await apiClient.patch<Post>(`/posts/${postId}`, {
+            ...(newContent !== undefined && { content: newContent }),
+            ...(newImageUrl !== undefined && { imageUrl: newImageUrl }),
+        });
         return data;
     },
 };
