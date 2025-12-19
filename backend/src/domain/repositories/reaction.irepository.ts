@@ -9,5 +9,5 @@ export interface IReactionRepository {
     findByUserIdAndPostId(userId: string, postId: string): Promise<Reaction | null>;
     countByPostId(postId: string): Promise<number>;
     update(id: string, data: UpdateReactionDto): Promise<Reaction>;
-    delete(id: string): Promise<void>;
+    delete(postId: string, userId: string): Promise<void>;
 }

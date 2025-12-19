@@ -1,5 +1,3 @@
-import React from "react";
-// 1. Import các hook và component từ react-router-dom
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,28 +9,62 @@ import {
   User,
   Settings,
   Newspaper,
+  Calendar,
+  Shield,
 } from "lucide-react";
 
+import { useAuthState } from "@/hooks/useAuthState";
+
+// Volunteer: 'volunteer',
+// EventManager: 'event_manager',
+// Admin: 'admin',
+// RootAdmin: 'root_admin'
+
 export default function LeftPanel() {
-  // 2. Khởi tạo hook navigate
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthState();
 
-  // 3. Cấu hình danh sách menu và đường dẫn tương ứng
   const menuItems = [
-    { icon: Home, label: "Home", path: "/home" },
-    { icon: Newspaper, label: "Feed", path: "/feed" },
-    { icon: Users, label: "Communities", path: "/communities" },
-    { icon: Bell, label: "Notifications", path: "/notifications" },
-    { icon: Bookmark, label: "Bookmarks", path: "/bookmarks" },
-    { icon: User, label: "Profile", path: "/profile" }, // Hoặc /u/username
-    { icon: Settings, label: "Settings", path: "/settings" },
+    ...(user?.role === "volunteer"
+      ? [
+          { icon: Home, label: "Home", path: "/home" },
+          { icon: Newspaper, label: "Feed", path: "/feed" },
+          { icon: Users, label: "Communities", path: "/communities" },
+          { icon: Bell, label: "Notifications", path: "/notifications" },
+          { icon: User, label: "Profile", path: "/profile" },
+          { icon: Settings, label: "Settings", path: "/settings" },
+        ]
+      : []),
+
+    ...(user?.role === "event_manager"
+      ? [
+          { icon: Calendar, label: "Manager Overview", path: "/event-manage" },
+          { icon: Newspaper, label: "Feed", path: "/feed" },
+          { icon: Users, label: "Communities", path: "/communities" },
+          { icon: Bell, label: "Notifications", path: "/notifications" },
+          { icon: User, label: "Profile", path: "/profile" },
+          { icon: Settings, label: "Settings", path: "/settings" },
+        ]
+      : []),
+
+    ...(user?.role === "admin"
+      ? [
+          { icon: Shield, label: "Admin Overview", path: "/admin/overview" },
+          { icon: Users, label: "User Management", path: "/admin/users" },
+          { icon: Calendar, label: "Event Management", path: "/admin/events" },
+          { icon: Newspaper, label: "Feed", path: "/feed" },
+          { icon: Users, label: "Communities", path: "/communities" },
+          { icon: Bell, label: "Notifications", path: "/notifications" },
+          { icon: User, label: "Profile", path: "/profile" },
+          { icon: Settings, label: "Settings", path: "/settings" },
+        ]
+      : []),
   ];
 
   return (
     <div className="border-border fixed top-16 h-full w-64 overflow-y-auto border-r p-4 bg-white">
       <nav className="space-y-2">
-        {/* 4. Dùng vòng lặp map để render Button và xử lý onClick */}
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
@@ -57,7 +89,6 @@ export default function LeftPanel() {
       <div className="mt-8">
         <h3 className="mb-4 text-sm font-semibold">Your Communities</h3>
         <div className="space-y-2 flex flex-col">
-          {/* 5. Thay thế thẻ <a> bằng thẻ <Link> để không reload trang */}
           <Link
             to="/r/design" // Đường dẫn ví dụ
             className="flex items-center text-sm hover:underline p-1"

@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -7,7 +10,6 @@ import {
   YAxis,
   LabelList,
 } from "recharts";
-import { useState, useEffect, useMemo } from "react";
 
 import {
   Card,
@@ -16,76 +18,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  userStartsService,
-  type MonthlyEventStats,
-} from "@/services/user/user-stats.service";
+
+/* ================= MOCK DATA ================= */
 
 const MONTH_NAMES = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-export default function YearlyVolunteerActivityCard({
+// Completed events per month (current year)
+const mockThisYear = [
+  2, 3, 4, 5, 6, 8,
+  10, 9, 7, 6, 5, 4,
+];
+
+// Completed events per month (last year)
+const mockLastYear = [
+  1, 2, 3, 4, 5, 6,
+  7, 6, 5, 4, 3, 2,
+];
+
+/* ============================================= */
+
+export default function YearlyCompletedEventsCard({
   className,
 }: {
   className?: string;
 }) {
-  const [stats, setStats] = useState<MonthlyEventStats | null>(null);
-  const [lastYearTotal, setLastYearTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      setLoading(true);
-      try {
-        // Fetch data for current year and previous year to calculate the difference
-        const [thisYearData, lastYearData] = await Promise.all([
-          userStartsService.getMonthlyParticipatedEvent(currentYear),
-          userStartsService.getMonthlyParticipatedEvent(currentYear - 1),
-        ]);
-
-        setStats(thisYearData);
-
-        const lastYearSum = lastYearData.monthlyCounts.reduce(
-          (sum, m) => sum + m.joinedEvents,
-          0
-        );
-        setLastYearTotal(lastYearSum);
-      } catch (error) {
-        console.error("Error fetching yearly stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [currentYear]);
-
-  // Transform backend [1-12] data into Recharts format { month: "Jan", activities: X }
+  // Map mock data → Recharts format
   const chartData = useMemo(() => {
-    if (!stats) return [];
-    return stats.monthlyCounts.map((item) => ({
-      month: MONTH_NAMES[item.month - 1],
-      activities: item.joinedEvents,
+    return MONTH_NAMES.map((month, index) => ({
+      month,
+      completed: mockThisYear[index],
     }));
-  }, [stats]);
+  }, []);
 
   const totalThisYear = useMemo(
-    () => chartData.reduce((sum, d) => sum + d.activities, 0),
-    [chartData]
+    () => mockThisYear.reduce((sum, v) => sum + v, 0),
+    []
+  );
+
+  const lastYearTotal = useMemo(
+    () => mockLastYear.reduce((sum, v) => sum + v, 0),
+    []
   );
 
   const diff = totalThisYear - lastYearTotal;
@@ -93,22 +70,14 @@ export default function YearlyVolunteerActivityCard({
     lastYearTotal > 0 ? Math.round((diff / lastYearTotal) * 100) : 100;
   const isIncrease = diff >= 0;
 
-  if (loading) {
-    return (
-      <Card className={`${className} animate-pulse`}>
-        <div className="h-[400px] bg-muted/20 rounded-lg" />
-      </Card>
-    );
-  }
-
   return (
     <Card className={className}>
-      <CardHeader >
+      <CardHeader>
         <CardTitle className="text-base">
-          Volunteer Activities ({currentYear})
+          Completed Events ({currentYear})
         </CardTitle>
         <CardDescription>
-          Number of volunteer events you joined this year
+          Number of completed events per month
         </CardDescription>
       </CardHeader>
 
@@ -132,6 +101,7 @@ export default function YearlyVolunteerActivityCard({
                 width={32}
                 tick={{ fontSize: 12 }}
               />
+
               <Tooltip
                 cursor={{ stroke: "hsl(var(--border))" }}
                 content={({ active, payload }) => {
@@ -142,7 +112,7 @@ export default function YearlyVolunteerActivityCard({
                           {payload[0].payload.month}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {payload[0].value} activities
+                          {payload[0].value} completed events
                         </div>
                       </div>
                     );
@@ -150,16 +120,17 @@ export default function YearlyVolunteerActivityCard({
                   return null;
                 }}
               />
+
               <Line
                 type="monotone"
-                dataKey="activities"
+                dataKey="completed"
                 stroke="currentColor"
                 strokeWidth={2}
                 dot={{ r: 4, fill: "currentColor" }}
                 activeDot={{ r: 6, fill: "currentColor" }}
               >
                 <LabelList
-                  dataKey="activities"
+                  dataKey="completed"
                   position="top"
                   fill="currentColor"
                   fontSize={12}
@@ -177,16 +148,18 @@ export default function YearlyVolunteerActivityCard({
                 isIncrease ? "text-green-600" : "text-destructive"
               }`}
             >
-              {isIncrease ? "▲" : "▼"} {Math.abs(diff)} activities
+              {isIncrease ? "▲" : "▼"} {Math.abs(diff)} events
             </span>
             <span className="text-sm text-muted-foreground">
-              ({diffPercent > 0 && isIncrease ? "+" : ""}
+              ({isIncrease && diffPercent > 0 ? "+" : ""}
               {diffPercent}%)
             </span>
           </div>
+
           <p className="text-sm text-muted-foreground">
             Compared to last year ({currentYear - 1})
           </p>
+
           <div className="flex items-center gap-4 pt-2">
             <div className="text-sm">
               <span className="text-muted-foreground">This year: </span>

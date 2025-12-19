@@ -7,8 +7,9 @@ import { RefreshTokenRepository } from "./refresh-token.repository";
 import { RegistrationRepository } from "./registration.repository";
 import { StatsRepository } from "./stats.repository";
 import { UserRepository } from "./user.repository";
+import { ReactionRepository } from "./reaction.repository";
 
-console.log('export all repo');
+console.log("export all repo");
 export const userRepo = new UserRepository(prisma);
 export const eventRepo = new EventRepository(prisma, userRepo);
 export const postRepo = new PostRepository(prisma, eventRepo, userRepo);
@@ -17,3 +18,4 @@ export const notificationRepo = new NotificationRepository(prisma);
 export const refreshRepo = new RefreshTokenRepository(prisma);
 export const statsRepo = new StatsRepository(prisma);
 export const registrationRepo = new RegistrationRepository(prisma);
+export const reactionRepo = new ReactionRepository(prisma);

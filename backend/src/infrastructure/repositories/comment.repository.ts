@@ -83,10 +83,10 @@ export class CommentRepository implements ICommentRepository {
         let orderBy: string;
 
         if (sort && sortableFields.has(sort.field)) {
-            const order = sort.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+            const order = sort.order?.toLowerCase() === "desc" ? "DESC" : "ASC";
             orderBy = `${sort.field} ${order}`;
         } else {
-            orderBy = "created_at DESC";
+            orderBy = "created_at ASC";
         }
 
         // Pagination

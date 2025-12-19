@@ -16,7 +16,7 @@ export class Reaction {
 
     }
 
-    updateComment(updateReaction: UpdateReactionProps) {
+    updateReaction(updateReaction: UpdateReactionProps) {
         this.emoji = updateReaction.emoji;
     }
 

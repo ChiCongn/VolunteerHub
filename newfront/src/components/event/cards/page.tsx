@@ -1,9 +1,9 @@
-import SubscriptionsCard from "./cards/subscriptions";
-import MetricCard from "./cards/metric";
-import WelcomeCard from "./cards/welcome-card";
-import TopicProgressChart from "./cards/topic-progress";
-import StreakCalendar from "./cards/streak";
+import SubscriptionsCard from "./subscriptions"
+import MetricCard from "./metric";
+import WelcomeCard from "./welcome-card";
 import { useAuthState } from "@/hooks/useAuthState";
+import PersonEvent from "./personevent";
+import CreateEventCtaCard from "./eventcreate";
 
 export default function Page() {
   const { userName } = useAuthState();
@@ -14,14 +14,13 @@ export default function Page() {
         <div className="lg:col-span-2 lg:row-span-2 h-full">
           <WelcomeCard name={userName} />
         </div>
-
+        <CreateEventCtaCard />
         <SubscriptionsCard />
-        <TopicProgressChart />
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <StreakCalendar />
         <MetricCard />
+        <PersonEvent />
       </div>
     </div>
   );
