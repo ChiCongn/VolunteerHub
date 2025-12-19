@@ -1,19 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { formatDistanceToNow } from "date-fns";
 
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  MoreHorizontal,
-  ImageIcon,
-  Link as LinkIcon,
-  Calendar,
-} from "lucide-react";
+import { MoreHorizontal, Link as LinkIcon, Calendar } from "lucide-react";
 
 import { EventHeader } from "../components/EventHeader";
 import { PostCard } from "../components/cards/PostCard";
@@ -23,7 +16,8 @@ import { CreatePostModal } from "../components/CreatePostModal";
 import { useUserStore } from "@/stores/user.store";
 import { eventService } from "@/services/event.service";
 import { postService } from "@/services/post.service";
-import type { Event, Post } from "@/types";
+import type { Post } from "@/types/post.type";
+import type { Event } from "@/types/event.type";
 
 export const CommunityEventPage = () => {
   const { eventId } = useParams();
@@ -51,7 +45,7 @@ export const CommunityEventPage = () => {
         ]);
 
         setEvent(eventData);
-        setPosts(postsData);
+        setPosts(postsData.items);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -71,6 +65,7 @@ export const CommunityEventPage = () => {
     if (!eventId) return;
 
     try {
+      //TODO: remove author id
       const newPostData = await postService.createPost({
         eventId: eventId,
         content: content,
@@ -80,7 +75,7 @@ export const CommunityEventPage = () => {
 
       const newPost: Post = {
         ...newPostData.data,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(), // convert Date to string to render
       };
 
       setPosts((prev) => [newPost, ...prev]);
@@ -148,7 +143,7 @@ export const CommunityEventPage = () => {
 
                   {/* Posts List */}
                   {posts.map((post) => (
-                    <PostCard key={post._id} post={post} />
+                    <PostCard key={post.id} post={post} />
                   ))}
                   {posts.length === 0 && (
                     <div className="text-center py-10 text-zinc-500">
