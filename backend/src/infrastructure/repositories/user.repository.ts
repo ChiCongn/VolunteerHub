@@ -683,11 +683,11 @@ export class UserRepository implements IUserRepository {
             "[UserRepository] Fetching daily online activity"
         );
 
-        return this.prisma.$queryRawUnsafe<UserDailyActivityRow[]>(
+        return await this.prisma.$queryRawUnsafe<UserDailyActivityRow[]>(
             `
             SELECT
-                activity_date::date AS activityDate,
-                online_seconds AS onlineSeconds
+                activity_date::date AS "activityDate",
+                online_seconds AS "onlineSeconds"
             FROM user_daily_activity
             WHERE user_id = $1::uuid
                 AND activity_date >= $2::date
