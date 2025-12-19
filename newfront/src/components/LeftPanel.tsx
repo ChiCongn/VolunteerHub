@@ -21,7 +21,7 @@ export default function LeftPanel() {
   // 3. Cấu hình danh sách menu và đường dẫn tương ứng
   const menuItems = [
     { icon: Home, label: "Home", path: "/home" },
-    { icon: Newspaper, label: "Feed", path: "/dashboard" },
+    { icon: Newspaper, label: "Feed", path: "/feed" },
     { icon: Users, label: "Communities", path: "/communities" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Bookmark, label: "Bookmarks", path: "/bookmarks" },

@@ -52,6 +52,8 @@ export const useUserStore = create<UserStore>()(
             accessToken: null,
             refreshToken: null,
 
+            _hasHydrated: false,
+
             setUser: (user) => set({ user }),
 
             updateUser: (data) =>
@@ -118,7 +120,7 @@ export const useUserStore = create<UserStore>()(
                 return get().user?.role === UserRole.EventManager;
             },
             hasRole: (role) => get().user?.role === role,
-            _hasHydrated: false,
+
             setHasHydrated: (state) => set({ _hasHydrated: state }),
         }),
         {
