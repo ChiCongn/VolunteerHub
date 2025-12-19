@@ -22,6 +22,11 @@ import { Event } from "../../domain/entities/event.entity";
 import { UserRepository } from "./user.repository";
 import logger from "../../logger";
 import { RegistrationNotFoundError } from "../../domain/errors/registration.error";
+import {
+    DailyParticipantDto,
+    DailyPostDto,
+    EventRegistrationStatusCountDto,
+} from "../../application/dtos/stats";
 
 export class EventRepository implements IEventRepository {
     constructor(
@@ -760,6 +765,134 @@ export class EventRepository implements IEventRepository {
         }
 
         return register.status;
+    }
+
+    // =================== stats =========================
+    async getEventParticipationStats(eventId: string): Promise<EventRegistrationStatusCountDto> {
+        logger.debug(
+            { eventId, action: "getEventParticipationStats" },
+            "[EventRepository] Fetching registration status counts via groupBy"
+        );
+
+        const stats = await this.prisma.registrations.groupBy({
+            by: ["status"],
+            where: { event_id: eventId },
+            _count: {
+                status: true,
+            },
+        });
+
+        const result: EventRegistrationStatusCountDto = {
+            participatedCount: 0,
+            pendingCount: 0,
+            rejectCount: 0,
+        };
+
+        for (const row of stats) {
+            switch (row.status) {
+                case "approved":
+                    result.participatedCount = row._count.status;
+                    break;
+                case "pending":
+                    result.pendingCount = row._count.status;
+                    break;
+                case "rejected":
+                    result.rejectCount = row._count.status;
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    async getApprovedRegistrations(
+        eventId: string,
+        days: number = 14
+    ): Promise<DailyParticipantDto[]> {
+        logger.debug(
+            { eventId, days, action: "getApprovedRegistrations" },
+            "[EventRepository] Fetching daily approved registrations trend"
+        );
+        const fromDate = new Date();
+        fromDate.setHours(0, 0, 0, 0);
+        fromDate.setDate(fromDate.getDate() - (days - 1)); // include today
+
+        const rows = await this.prisma.$queryRaw<{ date: Date; count: number }[]>`
+        SELECT
+            DATE(updated_at) AS date,
+            COUNT(*)::int AS count
+        FROM registrations
+        WHERE
+            event_id = ${eventId}
+            AND status = 'approved'
+            AND updated_at >= ${fromDate}
+        GROUP BY DATE(updated_at)
+        ORDER BY date ASC;
+    `;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const map = new Map(rows.map((r) => [r.date.toISOString().slice(0, 10), r.count]));
+
+        const result: DailyParticipantDto[] = [];
+
+        for (let i = days - 1; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+
+            const key = d.toISOString().slice(0, 10);
+
+            result.push({
+                date: key,
+                participantCount: map.get(key) ?? 0,
+            });
+        }
+
+        return result;
+    }
+
+    async getPostsDays(eventId: string, days: number = 14): Promise<DailyPostDto[]> {
+        logger.debug(
+            { eventId, days, action: "getPostsDays" },
+            "[EventRepository] Fetching daily posts count trend"
+        );
+        const fromDate = new Date();
+        fromDate.setHours(0, 0, 0, 0);
+        fromDate.setDate(fromDate.getDate() - (days - 1)); // include today
+
+        const rows = await this.prisma.$queryRaw<{ date: Date; count: number }[]>`
+            SELECT
+                DATE(created_at) AS date,
+                COUNT(*)::int AS count
+            FROM posts
+            WHERE
+                event_id = ${eventId}
+                AND created_at >= ${fromDate}
+            GROUP BY DATE(created_at)
+            ORDER BY date ASC;
+        `;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const map = new Map(rows.map((r) => [r.date.toISOString().slice(0, 10), r.count]));
+
+        const result: DailyPostDto[] = [];
+
+        for (let i = days - 1; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+
+            const key = d.toISOString().slice(0, 10);
+
+            result.push({
+                date: key,
+                postCount: map.get(key) ?? 0,
+            });
+        }
+
+        return result;
     }
 
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {

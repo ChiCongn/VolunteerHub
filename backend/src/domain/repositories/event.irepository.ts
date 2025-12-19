@@ -11,6 +11,7 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 import { User } from "../entities/user.entity";
 import { PublicUserProfile } from "../../application/dtos/user.dto";
 import { RegistrationStatus } from "../entities/enums";
+import { DailyParticipantDto, DailyPostDto, EventRegistrationStatusCountDto } from "../../application/dtos/stats";
 
 export interface IEventRepository {
     // Core CRUD
@@ -53,4 +54,9 @@ export interface IEventRepository {
     findOwner(eventId: string): Promise<string>;
     findManagers(eventId: string): Promise<string[]>;
     getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus>;
+
+    // ============ stats ================
+    getEventParticipationStats(eventId: string): Promise<EventRegistrationStatusCountDto>;
+    getApprovedRegistrations(eventId: string, days: number): Promise<DailyParticipantDto[]>;
+    getPostsDays(eventId: string, days: number): Promise<DailyPostDto[]>;
 }
