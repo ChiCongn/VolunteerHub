@@ -12,6 +12,7 @@ export function useAuthState() {
     isAuthenticated,
     logout,
     login,
+    role: user?.role || "guest",
     accessToken,
     userName: user?.username || "Guest",
     userEmail: user?.email || "",
