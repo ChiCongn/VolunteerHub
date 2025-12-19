@@ -24,7 +24,7 @@ export function ProfileHeader(): React.ReactElement {
   const initials = (fullname.split(' ').map(s => s[0] || '').join('') || username.slice(0, 2)).toUpperCase()
 
   return (
-    <Card>
+    <Card className="bg-white">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row gap-6 md:items-center">
           <div className="relative">

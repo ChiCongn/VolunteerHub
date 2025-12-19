@@ -68,7 +68,7 @@ export function AccountSettings(): React.ReactElement {
   // }
 
   return (
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle>Account Settings</CardTitle>
           <CardDescription>Update your account information and email preferences.</CardDescription>
