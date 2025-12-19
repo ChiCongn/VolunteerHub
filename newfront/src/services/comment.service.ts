@@ -9,7 +9,7 @@ export interface Comment {
         _id: string; // Frontend dùng _id
         username: string;
         avatarUrl?: string;
-        role?: string;
+        role: string;
     };
     createdAt: string;
     parentId?: string;

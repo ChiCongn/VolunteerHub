@@ -1,15 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CommentView } from "@/types/comment.type";
+import { commentService, type Comment } from "@/services/comment.service";
 
-interface Props {
-  comment: CommentView;
-}
 
-export default function CommentItem({ comment }: Props) {
+
+export default function CommentItem({ comment }: { comment: Comment }) {
   return (
     <div className="flex gap-3">
       <Avatar className="h-8 w-8">
-        <AvatarImage src={comment.author.avatarUrl} />
+        <AvatarImage src={comment.author?.avatarUrl} />
         <AvatarFallback>
           {comment.author.username.charAt(0).toUpperCase()}
         </AvatarFallback>
@@ -22,7 +21,7 @@ export default function CommentItem({ comment }: Props) {
 
             {comment.author.role !== "volunteer" && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                {comment.author.role.replace("_", " ")}
+                {comment.author.role.replace("_", " ") || "Volunteer"}
               </span>
             )}
           </div>

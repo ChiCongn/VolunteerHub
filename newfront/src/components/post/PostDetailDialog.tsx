@@ -17,7 +17,12 @@ interface Props {
   onCommentClick?: (post: Post) => void;
 }
 
-export default function PostDetailDialog({ post, open, onClose, onCommentClick }: Props) {
+export default function PostDetailDialog({
+  post,
+  open,
+  onClose,
+  onCommentClick,
+}: Props) {
   if (!post) return null;
 
   return (
@@ -37,7 +42,7 @@ export default function PostDetailDialog({ post, open, onClose, onCommentClick }
             onCommentClick={() => onCommentClick?.(post)}
           />
           <div className="pt-4 sticky border-t">
-            <CommentSection />
+            <CommentSection postId={post.id} />
           </div>
         </div>
       </DialogContent>
