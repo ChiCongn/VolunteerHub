@@ -81,26 +81,23 @@ export class PostsController {
 
     // Get posts in an event
     getPostsByEvent = async (req: Request, res: Response) => {
+        const { eventId } = req.params;
+
+        const { page, size, sortBy, sortOrder } = req.query;
+        logger.info(
+            { eventId, page, size, sortBy, sortOrder, action: "getPostsByEvent" },
+            "[PostController] Fetching posts by event"
+        );
         try {
-            const { eventId } = req.params;
-
-            const { page, size, sortBy, sortOrder } = req.query;
-
-            const posts = await this.postService.getPostsByEvent(
-                eventId
-                // {
-                //     page: Number(page) || 1,
-                //     size: Number(size) || 10,
-                // },
-                // {
-                //     field: String(sortBy || "createdAt"),
-                //     order: (sortOrder as "asc" | "desc") || "desc",
-                // }
-            );
+            const posts = await this.postService.getPostsByEvent(eventId);
 
             return res.status(200).json(posts);
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
+        } catch (error) {
+            logger.error(
+                { eventId, error},
+                "[PostController] Failed to fetch posts"
+            );
+            return res.status(500).json({ message: "Failed to fetch posts" });
         }
     };
 
