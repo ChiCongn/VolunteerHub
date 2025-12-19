@@ -32,7 +32,7 @@ function App() {
 
           <Route element={<AppLayout />}>
             <Route path="/home" element={<Home />} />
-            <Route path="/dashboard" element={<Feed />} /> {/* Feed */}
+            <Route path="/feed" element={<Feed />} /> {/* Feed */}
             <Route path="/communities" element={<Community />} />
             <Route path="/events/:eventId" element={<CommunityEventPage />} />
             <Route path="/posts/:postId" element={<PostDetailPage />} />

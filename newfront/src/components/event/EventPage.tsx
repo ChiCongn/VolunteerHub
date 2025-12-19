@@ -124,7 +124,7 @@ export default function EventPage() {
             onClick={() =>
               setSelectedCategory(c.value as EventCategory | "all")
             }
-            className={`px-3 py-1.5 rounded-full text-sm border transition
+            className={`px-3 py-1.5 rounded-full text-sm border transition 
               ${
                 selectedCategory === c.value
                   ? "bg-primary text-primary-foreground"

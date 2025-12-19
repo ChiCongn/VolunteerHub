@@ -15,18 +15,28 @@ export default function PostActions({
 }: Props) {
   return (
     <div className="pt-2 border-t">
-      <div className="flex justify-between text-sm text-muted-foreground mb-2">
+      <div className="flex justify-between text-sm text-muted-foreground mb-2 px-2">
         <span>{likeCount} likes</span>
         <span>{commentCount} comments</span>
       </div>
 
-      <div className="flex justify-around">
-        <Button variant="ghost" size="sm">
+      {/* NÚT LIKE / COMMENT – MỖI NÚT 1/2 */}
+      <div className="flex divide-x">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex-1 justify-center rounded-none"
+        >
           <ThumbsUp className="w-4 h-4 mr-1" />
           Like
         </Button>
 
-        <Button variant="ghost" size="sm" onClick={onCommentClick}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex-1 justify-center rounded-none"
+          onClick={onCommentClick}
+        >
           <MessageCircle className="w-4 h-4 mr-1" />
           Comment
         </Button>
