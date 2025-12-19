@@ -71,6 +71,42 @@ export class RegistrationService {
         await this.registrationRepo.withdrawRegistration(registrationId);
     }
 
+    async updateRegistrationStatus(registrationId: string, isApprove: boolean) {
+        logger.debug(
+            { registrationId, isApprove, action: "updateRegistrationStatus" },
+            "[RegistrationService] Updating registration status"
+        );
+
+        const registration = await this.registrationRepo.findById(registrationId);
+        if (!registration) {
+            logger.warn({ registrationId }, "[RegistrationService] Registration not found");
+            throw new RegistrationNotFoundError(registrationId);
+        }
+
+        if (registration.status !== RegistrationStatus.Pending) {
+            logger.warn(
+                { registrationId, currentStatus: registration.status },
+                "[RegistrationService] Cannot update status of a non-pending registration"
+            );
+            throw new InvalidRegistrationStateError(registrationId, registration.status);
+        }
+
+        try {
+            await this.registrationRepo.updateRegistrationStatus(registrationId, isApprove);
+
+            logger.info(
+                { registrationId, status: isApprove ? "approved" : "rejected" },
+                "[RegistrationService] Registration status updated successfully"
+            );
+        } catch (err: any) {
+            logger.error(
+                { registrationId, error: err.message },
+                "[RegistrationService] Failed to update registration status"
+            );
+            throw err;
+        }
+    }
+
     async listRegistration(
         filters: RegistrationFilterDto,
         pagination?: Pagination,
