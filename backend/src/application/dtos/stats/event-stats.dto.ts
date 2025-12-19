@@ -25,25 +25,23 @@ export interface EventStatsDto {
     };
 }
 
-export interface EventProgressDTO {
-    eventId: string;
-    eventName: string;
+export interface EventRegistrationStatusCountDto {
     participatedCount: number;
     pendingCount: number;
+    rejectCount: number;
 }
 
-export interface DailyActivityDTO {
+export interface DailyParticipantDto {
     date: string;
     participantCount: number;
+}
+
+export interface DailyPostDto {
+    date: string;
     postCount: number;
 }
 
-export interface ActivityDashboardDTO {
-    timeRange: string; // Last 14 Days
-    data: DailyActivityDTO[];
-}
-
-export interface EventGoalComparisonDTO {
+export interface EventGoalComparisonDto {
     eventId: string;
     targetParticipants: number; // capacity
     actualParticipants: number; // registered count
