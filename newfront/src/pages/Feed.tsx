@@ -1,16 +1,34 @@
-import { useState } from "react";
-import type { PostFeedView } from "@/components/post/PostData";
-import { mockPosts } from "@/components/post/PostData";
+import { useEffect, useState } from "react";
 import PostCard from "@/components/post/PostCard";
 import PostDetailDialog from "@/components/post/PostDetailDialog";
+import type { Post } from "@/types/post.type";
+import { postService } from "@/services/post.service";
 
 export default function Feed() {
-  const [posts] = useState<PostFeedView[]>(mockPosts);
-  const [selectedPost, setSelectedPost] =
-    useState<PostFeedView | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleCommentClick = (post: PostFeedView) => {
+  // Fetch posts on mount
+  useEffect(() => {
+    const fetchFeed = async () => {
+      try {
+        setIsLoading(true);
+        const data = await postService.getFeedPosts();
+        console.log("feed post: ", data);
+        setPosts(data);
+      } catch (error) {
+        console.error("Error loading feed:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeed();
+  }, []);
+
+  const handleCommentClick = (post: Post) => {
     setSelectedPost(post);
     setOpen(true);
   };
@@ -36,22 +54,29 @@ export default function Feed() {
 
         {/* FEED */}
         <div className="w-full max-w-2xl space-y-4 px-4 pb-8">
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onCommentClick={handleCommentClick}
-            />
-          ))}
+          {isLoading ? (
+            <div className="text-center py-10 text-muted-foreground">
+              Loading feed...
+            </div>
+          ) : posts.length > 0 ? (
+            posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onCommentClick={handleCommentClick}
+              />
+            ))
+          ) : (
+            <div className="text-center py-10 text-muted-foreground">
+              No posts found in your feed. Join some events to see what's
+              happening!
+            </div>
+          )}
         </div>
       </div>
 
       {/* POST DETAIL */}
-      <PostDetailDialog
-        post={selectedPost}
-        open={open}
-        onClose={handleClose}
-      />
+      <PostDetailDialog post={selectedPost} open={open} onClose={handleClose} />
     </>
   );
 }
