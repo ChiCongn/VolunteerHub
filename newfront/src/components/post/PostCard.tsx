@@ -1,12 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { PostFeedView } from "./PostData";
 import PostHeader from "./PostHeader";
 import PostContent from "./PostContent";
 import PostActions from "./PostActions";
+import type { Post } from "@/types/post.type";
 
 interface PostCardProps {
-  post: PostFeedView;
-  onCommentClick?: (post: PostFeedView) => void;
+  post: Post;
+  onCommentClick?: (post: Post) => void;
 }
 
 export default function PostCard({ post, onCommentClick }: PostCardProps) {
@@ -16,7 +16,7 @@ export default function PostCard({ post, onCommentClick }: PostCardProps) {
         <PostHeader post={post} />
         <PostContent post={post} />
         <PostActions
-          likeCount={post.likeCount}
+          likeCount={post.reactionCount}
           commentCount={post.commentCount}
           onCommentClick={() => onCommentClick?.(post)}
         />

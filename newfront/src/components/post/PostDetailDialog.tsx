@@ -4,13 +4,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { PostFeedView } from "@/components/post/PostData";
+import type { Post } from "@/types/post.type";
 import PostHeader from "@/components/post/PostHeader";
 import PostContent from "@/components/post/PostContent";
 import CommentSection from "@/components/comment/CommentSection";
 
 interface Props {
-  post: PostFeedView | null;
+  post: Post | null;
   open: boolean;
   onClose: () => void;
 }
@@ -22,7 +22,7 @@ export default function PostDetailDialog({ post, open, onClose }: Props) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="!max-w-3xl !max-h-[90vh] overflow-y-auto p-0 m-5">
         <DialogHeader className="p-4 border-b">
-          <DialogTitle className="flex justify-center">{post.author.name}'s Post</DialogTitle>
+          <DialogTitle className="flex justify-center">{post.author.username}'s Post</DialogTitle>
         </DialogHeader>
 
         <div className="p-4 space-y-4">
