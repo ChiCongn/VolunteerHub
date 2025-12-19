@@ -17,7 +17,6 @@ export const CreateEventSchema = {
                 .array(z.nativeEnum(EventCategory))
                 .min(1, "At least one category is required")
                 .optional(),
-            ownerId: z.string().uuid("Invalid owner ID"),
         })
         .superRefine(({ startTime, endTime }, ctx) => {
             if (endTime && startTime >= endTime) {

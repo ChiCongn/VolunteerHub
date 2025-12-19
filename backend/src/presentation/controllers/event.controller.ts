@@ -14,6 +14,7 @@ import { eventRepo } from "../../infrastructure/repositories/index";
 
 import { Request, Response } from "express";
 import { EventFilterSchema } from "../validators/event/filetr-event.schema";
+import logger from "../../logger";
 
 export class EventController {
     constructor(private readonly eventRepository: IEventRepository) {
@@ -35,11 +36,27 @@ export class EventController {
 
     //core
     async createEvent(req: Request, res: Response): Promise<void> {
+        const userId = req.user?.sub;
+
+        logger.info(
+            { userId, body: req.body, action: "createEvent" },
+            "[EventController] Attempting to create a new event"
+        );
+
         try {
-            const eventData: CreateEventDto = req.body;
-            const newEvent = await this.eventRepository.create(eventData);
+            const validatedData = req.body;
+
+            const eventDto: CreateEventDto = {
+                ...validatedData,
+                ownerId: userId,
+            };
+            const newEvent = await this.eventRepository.create(eventDto);
             res.status(201).json(newEvent);
-        } catch (error) {
+        } catch (error: any) {
+            logger.error(
+                { error: error.message, userId, action: "createEvent.failed" },
+                "[EventController] Unexpected error during event creation"
+            );
             this.handleError(res, error);
         }
     }
