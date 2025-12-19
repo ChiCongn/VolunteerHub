@@ -1,6 +1,6 @@
+import { ListResult } from "../../application/dtos/list-result.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
-import { RegistrationFilterDto } from "../../application/dtos/registration.dto";
-import { Registration } from "../../application/dtos/registration/registration.dto";
+import { Registration, RegistrationFilterDto } from "../../application/dtos/registration.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 
 export interface IRegistrationRepository {
@@ -10,7 +10,7 @@ export interface IRegistrationRepository {
         filters: RegistrationFilterDto,
         pagination: Pagination,
         sortOption: SortOption
-    ): Promise<Registration[]>;
+    ): Promise<ListResult<Registration>>;
     checkExistsByUserAndEvent(userId: string, eventId: string): Promise<boolean>;
     exists(registrationId: string): Promise<boolean>;
 }
