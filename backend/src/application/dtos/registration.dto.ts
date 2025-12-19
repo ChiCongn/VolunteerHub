@@ -1,4 +1,5 @@
 import { RegistrationStatus } from "../../domain/entities/enums";
+import { PublicUserProfile } from "./user.dto";
 
 export interface CreateRegistrationDto {
     userId: string;
@@ -12,7 +13,14 @@ export interface RejectRegistrationDto {
 }
 
 export interface RegistrationFilterDto {
-    eventId?: string;
+    eventId: string;
     userId?: string;
     status?: RegistrationStatus;
+}
+
+export interface Registration {
+    regId: string;
+    user: PublicUserProfile;
+    status: RegistrationStatus;
+    createdAt: Date;
 }
