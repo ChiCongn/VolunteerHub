@@ -267,6 +267,7 @@ export class UserController {
     // =============== stats ==================
     trackUserLogin = async (req: Request, res: Response) => {
         const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
 
         logger.info(
             { userId, action: "trackUserLogin" },
@@ -296,6 +297,7 @@ export class UserController {
 
     getLoginStreak = async (req: Request, res: Response) => {
         const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
 
         // Use the schema to validate and set defaults
         const { year, month } = GetLoginStreakSchema.query.parse(req.query);
@@ -327,6 +329,7 @@ export class UserController {
 
     getMonthlyEventStats = async (req: Request, res: Response) => {
         const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
         const { year } = GetMonthlyStatsSchema.query.parse(req.query);
 
         try {
@@ -339,6 +342,7 @@ export class UserController {
 
     getWeeklySummary = async (req: Request, res: Response) => {
         const userId = req.user.sub;
+        //const userId = '50b49ca8-b786-43be-9706-78df41ac7f37';
 
         try {
             // Aggregating two related weekly stats for a cleaner dashboard response
