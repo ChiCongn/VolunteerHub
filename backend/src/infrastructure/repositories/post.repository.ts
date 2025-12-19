@@ -168,7 +168,7 @@ export class PostRepository implements IPostRepository {
             JOIN events e ON e.id = p.event_id
             JOIN users  u ON u.id = p.author_id
             LEFT JOIN reactions r ON r.post_id = p.id
-            LEFT JOIN comments  c ON c.post_id = p.id AND c.deleted_at IS NULL
+            LEFT JOIN comments  c ON c.post_id = p.id
             WHERE p.event_id = $1::uuid
                 AND p.deleted_at IS NULL
             GROUP BY p.id, e.id, u.id
