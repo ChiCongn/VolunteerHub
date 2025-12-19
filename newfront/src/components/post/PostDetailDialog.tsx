@@ -24,11 +24,9 @@ export default function PostDetailDialog({ post, open, onClose }: Props) {
         <DialogHeader className="p-4 border-b">
           <DialogTitle className="flex justify-center">{post.author.username}'s Post</DialogTitle>
         </DialogHeader>
-
         <div className="p-4 space-y-4">
           <PostHeader post={post} />
           <PostContent post={post} />
-
           <div className="pt-4 sticky border-t">
             <CommentSection />
           </div>

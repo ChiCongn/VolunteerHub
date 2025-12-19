@@ -44,11 +44,10 @@ export default function Feed() {
         {/* HEADER */}
         <div className="text-center py-8 space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
-            Discover Post That Make a Difference
+            See what people are sharing
           </h1>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            Explore opportunities to learn, connect, and make a positive impact
-            in your community.
+            Posts, moments, and updates from the community.
           </p>
         </div>
 
