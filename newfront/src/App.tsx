@@ -20,6 +20,7 @@ import OverviewPage from "./pages/admin/Overview";
 import { NotFound } from "./pages/NotFound";
 import Settings from "./pages/Setting";
 import Profile from "./pages/Profile";
+import CreateEventPage from "./components/event/EventCreate";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="/admin/overview" element={<OverviewPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/events" element={<EventManagementPage />} />
+            <Route path="/create-event" element={<CreateEventPage />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

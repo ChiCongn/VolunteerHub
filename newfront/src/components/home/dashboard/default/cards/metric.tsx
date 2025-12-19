@@ -103,7 +103,7 @@ export default function YearlyVolunteerActivityCard({
 
   return (
     <Card className={className}>
-      <CardHeader>
+      <CardHeader >
         <CardTitle className="text-base">
           Volunteer Activities ({currentYear})
         </CardTitle>
