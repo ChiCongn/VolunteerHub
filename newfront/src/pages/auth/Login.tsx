@@ -18,9 +18,12 @@ import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/stores/user.store";
 import { useAuth } from "@/components/context/AuthContext";
 import { userStartsService } from "@/services/user/user-stats.service";
+
+import { useAuthState } from "@/hooks/useAuthState";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function LoginPage() {
+  const user = useAuthState();
   const navigate = useNavigate();
   const { login: authContextLogin } = useAuth();
 
@@ -52,7 +55,13 @@ export default function LoginPage() {
       userStartsService.trackUserLogin();
 
       //toast.success("Welcome back to VolunteerHub!");
-      navigate("/home");
+      if (res.user?.role === "admin") {
+        navigate("/admin/overview");
+      } else if (res.user?.role === "volunteer") {
+        navigate("/home");
+      } else {
+        navigate("/event-manage");
+      }
     } catch (error: any) {
       console.log(error);
       //   toast.error(
