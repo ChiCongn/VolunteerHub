@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client";
-import type { Post } from "@/types";
+import type { Post } from "@/types/post.type";
 
 // Định nghĩa response type cho API list
 interface PostListResponse {
@@ -72,5 +72,11 @@ export const postService = {
         };
 
         return mappedPost as unknown as Post;
+    },
+
+    async getFeedPosts() {
+        const {data} = await apiClient.get<Post[]>("/posts/feed");
+        console.log(data);
+        return data;
     },
 };
