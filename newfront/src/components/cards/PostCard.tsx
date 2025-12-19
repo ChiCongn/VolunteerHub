@@ -2,16 +2,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  ArrowDown,
-  ArrowUp,
   MessageCircle,
-  MoreHorizontal,
-  Share2,
   Heart,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { Post } from "@/types";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import type { Post } from "@/types/post.type";
 
 interface PostCardProps {
   post: Post;
@@ -21,8 +17,8 @@ export const PostCard = ({ post }: PostCardProps) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // Điều hướng đến trang chi tiết, ví dụ: /posts/123
-    navigate(`/posts/${post._id}`);
+    // navigate to detailed post page like: /posts/123
+    navigate(`/posts/${post.id}`);
   };
 
   return (
@@ -74,7 +70,7 @@ export const PostCard = ({ post }: PostCardProps) => {
               className="flex items-center space-x-2 hover:text-red-500"
             >
               <Heart className="h-4 w-4" />
-              <span className="text-sm">{post.likes || 0}</span>
+              <span className="text-sm">{post.reactionCount || 0}</span>
             </Button>
 
             <Button
@@ -82,7 +78,7 @@ export const PostCard = ({ post }: PostCardProps) => {
               size="sm"
               className="flex items-center space-x-2 hover:text-green-500"
             >
-              <MessageCircle className="w-4 h-4" /> {post.commentsCount || 0}
+              <MessageCircle className="w-4 h-4" /> {post.commentCount || 0}
             </Button>
 
             {/* ... Share Button ... */}
