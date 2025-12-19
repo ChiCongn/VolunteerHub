@@ -74,6 +74,32 @@ export class RegistrationRepository implements IRegistrationRepository {
         await this.prisma.registrations.delete({ where: { id } });
     }
 
+    async updateRegistrationStatus(id: string, isApprove: boolean): Promise<void> {
+        const newStatus = isApprove ? "approved" : "rejected";
+
+        logger.debug(
+            {
+                registrationId: id,
+                status: newStatus,
+                action: "updateRegistrationStatus",
+            },
+            `[RegistrationRepository] Transitioning registration to ${newStatus}`
+        );
+
+        try {
+            await this.prisma.registrations.update({
+                where: { id },
+                data: { status: newStatus },
+            });
+        } catch (err: any) {
+            logger.error(
+                { registrationId: id, status: newStatus, error: err.message },
+                "[RegistrationRepository] Failed to update registration status"
+            );
+            throw err;
+        }
+    }
+
     async listRegistration(
         filters: RegistrationFilterDto,
         pagination: Pagination,
@@ -88,7 +114,7 @@ export class RegistrationRepository implements IRegistrationRepository {
         const params: any[] = [];
         let idx = 1;
 
-        conditions.push(`r.event_id = $${idx}`);
+        conditions.push(`r.event_id = $${idx}::uuid`);
         params.push(filters.eventId);
         idx++;
 
@@ -160,7 +186,7 @@ export class RegistrationRepository implements IRegistrationRepository {
         const params: any[] = [];
         let idx = 1;
 
-        conditions.push(`r.event_id = $${idx}`);
+        conditions.push(`r.event_id = $${idx}::uuid`);
         params.push(filters.eventId);
         idx++;
 

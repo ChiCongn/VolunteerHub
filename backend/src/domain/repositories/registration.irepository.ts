@@ -1,12 +1,17 @@
 import { ListResult } from "../../application/dtos/list-result.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
-import { Registration, RegistrationEntity, RegistrationFilterDto } from "../../application/dtos/registration.dto";
+import {
+    Registration,
+    RegistrationEntity,
+    RegistrationFilterDto,
+} from "../../application/dtos/registration.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 
 export interface IRegistrationRepository {
     findById(registrationId: string): Promise<RegistrationEntity>;
     register(userId: string, eventId: string): Promise<string>;
     withdrawRegistration(registrationId: string): Promise<void>;
+    updateRegistrationStatus(id: string, isApprove: boolean): Promise<void>;
     listRegistration(
         filters: RegistrationFilterDto,
         pagination: Pagination,
