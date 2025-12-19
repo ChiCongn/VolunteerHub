@@ -22,4 +22,6 @@ export interface PostView {
         id: string;
         name: string;
     };
+    reactionCount: number;
+    commentCount: number;
 }
