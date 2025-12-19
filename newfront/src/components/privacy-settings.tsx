@@ -1,14 +1,21 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
-import React from "react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import React from "react";
 
 export function PrivacySettings(): React.ReactElement {
   return (
-    <Card>
+    <Card className="bg-white">
       <CardHeader>
         <CardTitle>Privacy Settings</CardTitle>
         <CardDescription>Manage your privacy preferences.</CardDescription>
@@ -18,7 +25,9 @@ export function PrivacySettings(): React.ReactElement {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="profile-visibility">Profile Visibility</Label>
-              <div className="text-sm text-muted-foreground">Control who can see your profile.</div>
+              <div className="text-sm text-muted-foreground">
+                Control who can see your profile.
+              </div>
             </div>
             <Switch id="profile-visibility" defaultChecked />
           </div>
