@@ -140,6 +140,9 @@ export class PostRepository implements IPostRepository {
                 author_username: string;
                 author_avatar_url: string | null;
                 author_role: UserRole;
+
+                reaction_count: number;
+                comment_count: number;
             }[]
         >(
             `
@@ -155,12 +158,20 @@ export class PostRepository implements IPostRepository {
                 u.id            AS author_id,
                 u.username      AS author_username,
                 u.avatar_url    AS author_avatar_url,
-                u.role          AS author_role
+                u.role          AS author_role,
+
+                -- Count unique user_id/post_id pairs from reactions
+                COUNT(DISTINCT r.user_id)::int AS reaction_count,
+                -- Count unique comment IDs
+                COUNT(DISTINCT c.id)::int      AS comment_count
             FROM posts p
             JOIN events e ON e.id = p.event_id
             JOIN users  u ON u.id = p.author_id
+            LEFT JOIN reactions r ON r.post_id = p.id
+            LEFT JOIN comments  c ON c.post_id = p.id AND c.deleted_at IS NULL
             WHERE p.event_id = $1::uuid
                 AND p.deleted_at IS NULL
+            GROUP BY p.id, e.id, u.id
             ORDER BY ${orderBy}
             OFFSET ${offset}
             LIMIT ${pagination.limit};
@@ -173,6 +184,8 @@ export class PostRepository implements IPostRepository {
             content: r.post_content,
             imageUrl: r.post_image_url ?? "",
             createdAt: r.post_created_at,
+            reactionCount: r.reaction_count,
+            commentCount: r.comment_count,
 
             event: {
                 id: r.event_id,
@@ -207,35 +220,50 @@ export class PostRepository implements IPostRepository {
 
                 event_id: string;
                 event_name: string;
+
+                reaction_count: number;
+                comment_count: number;
             }[]
         >(
             `
-        SELECT
-            p.id,
-            p.content,
-            p.image_url,
-            p.created_at,
+            SELECT
+                p.id,
+                p.content,
+                p.image_url,
+                p.created_at,
 
-            u.id          AS author_id,
-            u.username,
-            u.avatar_url,
-            u.role,
+                u.id          AS author_id,
+                u.username,
+                u.avatar_url,
+                u.role,
 
-            e.id          AS event_id,
-            e.name        AS event_name
-        FROM posts p
-        JOIN events e
-            ON e.id = p.event_id
-        JOIN registrations r
-            ON r.event_id = p.event_id
-        JOIN users u
-            ON u.id = p.author_id
-        WHERE r.user_id = $1::uuid
-            AND r.status = 'approved'
-            AND p.deleted_at IS NULL
-        ORDER BY p.created_at DESC
-        LIMIT $2;
-        `,
+                e.id          AS event_id,
+                e.name        AS event_name,
+
+                -- Distinct counts to prevent multiplier effect from joins
+                COUNT(DISTINCT react.user_id)::int AS reaction_count,
+                COUNT(DISTINCT c.id)::int          AS comment_count
+            FROM posts p
+            JOIN events e 
+                ON e.id = p.event_id
+            JOIN registrations reg 
+                ON reg.event_id = p.event_id
+            JOIN users u 
+                ON u.id = p.author_id
+            LEFT JOIN reactions react 
+                ON react.post_id = p.id
+            LEFT JOIN comments c 
+                ON c.post_id = p.id
+            WHERE reg.user_id = $1::uuid
+                AND reg.status = 'approved'
+                AND p.deleted_at IS NULL
+            GROUP BY 
+                p.id, p.content, p.image_url, p.created_at,
+                u.id, u.username, u.avatar_url, u.role,
+                e.id, e.name
+            ORDER BY p.created_at DESC
+            LIMIT $2;
+            `,
             userId,
             limit
         );
@@ -245,6 +273,8 @@ export class PostRepository implements IPostRepository {
             content: row.content,
             imageUrl: row.image_url ?? "",
             createdAt: row.created_at,
+            reactionCount: row.reaction_count,
+            commentCount: row.comment_count,
             author: {
                 id: row.author_id,
                 username: row.username,
@@ -290,6 +320,9 @@ export class PostRepository implements IPostRepository {
                 author_username: string;
                 author_avatar_url: string | null;
                 author_role: UserRole;
+
+                reaction_count: number;
+                comment_count: number;
             }[]
         >(
             `
@@ -305,12 +338,18 @@ export class PostRepository implements IPostRepository {
                 u.id            AS author_id,
                 u.username      AS author_username,
                 u.avatar_url    AS author_avatar_url,
-                u.role          AS author_role
+                u.role          AS author_role,
+
+                COUNT(DISTINCT r.user_id)::int AS reaction_count,
+                COUNT(DISTINCT c.id)::int      AS comment_count
             FROM posts p
             JOIN events e ON e.id = p.event_id
             JOIN users  u ON u.id = p.author_id
+            LEFT JOIN reactions r ON r.post_id = p.id
+            LEFT JOIN comments  c ON c.post_id = p.id
             WHERE p.author_id = $1::uuid
                 AND p.deleted_at IS NULL
+            GROUP BY p.id, e.id, u.id
             ORDER BY ${orderBy}
             OFFSET ${offset}
             LIMIT ${pagination.limit};
@@ -323,6 +362,8 @@ export class PostRepository implements IPostRepository {
             content: r.post_content,
             imageUrl: r.post_image_url ?? "",
             createdAt: r.post_created_at,
+            reactionCount: r.reaction_count,
+            commentCount: r.comment_count,
 
             event: {
                 id: r.event_id,
@@ -380,6 +421,9 @@ export class PostRepository implements IPostRepository {
                 author_username: string;
                 author_avatar_url: string | null;
                 author_role: UserRole;
+
+                reaction_count: number;
+                comment_count: number;
             }[]
         >(
             `
@@ -395,18 +439,25 @@ export class PostRepository implements IPostRepository {
                 u.id            AS author_id,
                 u.username      AS author_username,
                 u.avatar_url    AS author_avatar_url,
-                u.role          AS author_role
+                u.role          AS author_role,
+
+                COUNT(DISTINCT r.user_id)::int AS reaction_count,
+                COUNT(DISTINCT c.id)::int      AS comment_count
             FROM posts p
             JOIN events e ON e.id = p.event_id
             JOIN users  u ON u.id = p.author_id
+            LEFT JOIN reactions r ON r.post_id = p.id
+            LEFT JOIN comments  c ON c.post_id = p.id
             WHERE p.event_id = $1::uuid
                 AND p.deleted_at IS NULL
-                AND p.content ILIKE '%' || ${keyword} || '%'
+                AND p.content ILIKE '%' || $2 || '%'
+            GROUP BY p.id, e.id, u.id
             ORDER BY ${orderBy}
             OFFSET ${offset}
             LIMIT ${pagination.limit};
             `,
-            eventId
+            eventId,
+            keyword
         );
 
         const items: PostView[] = itemsRaw.map((r) => ({
@@ -414,6 +465,9 @@ export class PostRepository implements IPostRepository {
             content: r.post_content,
             imageUrl: r.post_image_url ?? "",
             createdAt: r.post_created_at,
+
+            reactionCount: r.reaction_count,
+            commentCount: r.comment_count,
 
             event: {
                 id: r.event_id,
