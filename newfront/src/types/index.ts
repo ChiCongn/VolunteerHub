@@ -15,12 +15,15 @@ export interface Event {
 
 // Post Interface
 export interface Post {
-    event: any;
     _id: string;
-    content: string;
-    imageUrl?: string;
     author: UserProfile; // Backend cần populate field này
+    event: any;
+    content: string;
+
+    imageUrl?: string;
+
     createdAt: string;
-    likes: string[];
-    commentsCount?: number;
+    //likes: string[];
+    likeCount?: number;
+    commentCount?: number;
 }

@@ -1,5 +1,6 @@
 import { MessageCircle, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Post } from "@/types";
 
 interface Props {
   likeCount: number;

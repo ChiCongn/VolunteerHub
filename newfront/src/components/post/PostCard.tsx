@@ -3,10 +3,11 @@ import type { PostFeedView } from "./PostData";
 import PostHeader from "./PostHeader";
 import PostContent from "./PostContent";
 import PostActions from "./PostActions";
+import type { Post } from "@/types/index";
 
 interface PostCardProps {
-  post: PostFeedView;
-  onCommentClick?: (post: PostFeedView) => void;
+  post: Post;
+  onCommentClick?: (post: Post) => void;
 }
 
 export default function PostCard({ post, onCommentClick }: PostCardProps) {
@@ -16,8 +17,8 @@ export default function PostCard({ post, onCommentClick }: PostCardProps) {
         <PostHeader post={post} />
         <PostContent post={post} />
         <PostActions
-          likeCount={post.likeCount}
-          commentCount={post.commentCount}
+          likeCount={post.likeCount ?? 0}
+          commentCount={post.commentCount ?? 0}
           onCommentClick={() => onCommentClick?.(post)}
         />
       </CardContent>

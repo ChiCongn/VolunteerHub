@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 
 import { EventHeader } from "../components/EventHeader";
-import { PostCard } from "../components/cards/PostCard";
+//import { PostCard } from "../components/cards/PostCard";
+import PostCard from "../components/post/PostCard";
+
 import { CreatePostModal } from "../components/CreatePostModal";
 
 // Import Service & Types
@@ -24,6 +26,7 @@ import { useUserStore } from "@/stores/user.store";
 import { eventService } from "@/services/event.service";
 import { postService } from "@/services/post.service";
 import type { Event, Post } from "@/types";
+import PostDetailDialog from "@/components/post/PostDetailDialog";
 
 export const CommunityEventPage = () => {
   const { eventId } = useParams();
@@ -64,6 +67,18 @@ export const CommunityEventPage = () => {
   // Handle Open Modal
   const handleCreatePost = () => {
     setIsCreatePostOpen(true);
+  };
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const handleCommentClick = (post: Post) => {
+    setSelectedPost(post);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedPost(null);
   };
 
   // Handle Submit from Modal
@@ -148,13 +163,18 @@ export const CommunityEventPage = () => {
 
                   {/* Posts List */}
                   {posts.map((post) => (
-                    <PostCard key={post._id} post={post} />
+                    <PostCard
+                      key={post._id}
+                      post={post}
+                      onCommentClick={handleCommentClick}
+                    />
                   ))}
                   {posts.length === 0 && (
                     <div className="text-center py-10 text-zinc-500">
                       No posts yet. Be the first to start the conversation!
                     </div>
                   )}
+                  <PostDetailDialog post={selectedPost} open={open} onClose={handleClose} />
                 </div>
 
                 {/* RIGHT COLUMN: SIDEBAR */}
