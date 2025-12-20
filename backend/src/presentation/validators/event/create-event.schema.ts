@@ -11,12 +11,21 @@ export const CreateEventSchema = {
             }),
             endTime: z.coerce.date().nullable().optional(),
             description: z.string().min(1, "Description is required"),
-            imageUrl: z.string().url("Invalid image URL"),
-            capacity: z.number().int().positive("Capacity must be positive"),
-            categories: z
-                .array(z.nativeEnum(EventCategory))
-                .min(1, "At least one category is required")
-                .optional(),
+            imageUrl: z.string().url("Invalid image URL").optional(),
+            capacity: z.coerce.number().int().positive("Capacity must be positive"),
+            categories: z.preprocess(
+                (val) => {
+                    if (typeof val === "string") {
+                        try {
+                            return JSON.parse(val);
+                        } catch {
+                            return [];
+                        }
+                    }
+                    return val;
+                },
+                z.array(z.string()).min(1, "At least one category is required")
+            ),
         })
         .superRefine(({ startTime, endTime }, ctx) => {
             if (endTime && startTime >= endTime) {

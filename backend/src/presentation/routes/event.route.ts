@@ -10,6 +10,7 @@ import { postController } from "../controllers/posts.controller";
 import { registrationController } from "../controllers/registration.controller";
 import { CreateRegistrationSchema } from "../validators/registration/create-registration.schema";
 import { RegistrationFilterSchema } from "../validators/registration/filter-registration.schema";
+import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
 
 export const eventRouter = Router();
 
@@ -18,7 +19,13 @@ eventRouter.get("/", eventController.searchEvents);
 
 eventRouter.get("/:eventId", validate(GetEventSchema), eventController.fetchPublicEventView);
 
-eventRouter.post("/", authenticate, validate(CreateEventSchema), eventController.createEvent);
+eventRouter.post(
+    "/",
+    authenticate,
+    uploadLocal("events").single("image"),
+    validate(CreateEventSchema),
+    eventController.createEvent
+);
 
 eventRouter.patch(
     "/:eventId",

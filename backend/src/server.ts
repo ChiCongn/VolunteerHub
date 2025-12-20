@@ -8,6 +8,7 @@ import { commentRouter } from "./presentation/routes/comment.routes";
 import cors from "cors";
 import { statsRouter } from "./presentation/routes/stats.routes";
 import { registrationRouter } from "./presentation/routes/registration.routes";
+import path from "path";
 
 const app = express();
 const PORT = 8000;
@@ -26,7 +27,7 @@ app.use(
 app.get("/", (req, res) => {
     res.send("🚀 Server is running successfully!");
 });
-
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Mount event routes
 app.use("/api/v1/events", eventRouter);
 // API routes
