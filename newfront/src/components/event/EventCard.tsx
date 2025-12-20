@@ -4,6 +4,7 @@ import { Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import type { Event } from "@/types/event.type";
 import { Link } from "react-router-dom";
+import { getImageUrl } from "@/utils/imageUrl.utils";
 
 type EventCardProps = {
   event: Event;
@@ -15,7 +16,7 @@ export default function EventCard({ event }: EventCardProps) {
       <Card className="overflow-hidden rounded-xl hover:shadow-md transition bg-white h-full flex flex-col">
         <div className="relative h-48 flex-shrink-0">
           <img
-            src={event.imageUrl}
+            src={getImageUrl(event.imageUrl)}
             alt={event.name}
             className="h-full w-full object-cover"
           />
