@@ -32,6 +32,8 @@ import {
 import { useUserStore } from "@/stores/user.store";
 import { useAuth } from "@/components/context/AuthContext";
 import { notificationService } from "@/services/notification.service";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
   return (
@@ -98,42 +100,62 @@ const NotificationMenu = ({
   );
   const { user } = useUserStore();
   const [unreadCount, setUnreadCount] = React.useState(0);
+  const navigate = useNavigate();
+
+  const parseMessage = (msg: string) => {
+    const regex = /\*\*(.*?)\*\*\s*(.*)/;
+    const match = msg.match(regex);
+    if (match) {
+      return { name: match[1], action: match[2] };
+    }
+    return { name: "Hệ thống", action: msg };
+  };
 
   const fetchNotifications = async () => {
     if (!user?.id) return;
     try {
-      const result = await notificationService.getByUserId(user.id);
+      const data = await notificationService.getByUserId(user.id);
 
-      //map data
-      const mapped = result.data.map((n: any) => ({
-        id: n.id,
-        user: {
-          name: n.sender?.username || "Hệ thống",
-          avatar: n.sender?.avatarUrl || "/default-avatar.png",
-        },
-        action: n.message, // Backend gửi message chuỗi
-        time: new Date(n.createdAt).toLocaleString(),
-        type: n.type, // "comment", "like", v.v...
-        isUnread: !n.isRead,
-      }));
+      const mappedItems: NotificationItem[] = data.items.map((item) => {
+        const { name, action } = parseMessage(item._message);
+        return {
+          id: item._id,
+          user: {
+            name: name,
+            avatar: "",
+          },
+          action: action,
+          time: formatDistanceToNow(new Date(item._createdAt), {
+            addSuffix: true,
+            locale: vi,
+          }),
+          type: item._type,
+          isUnread: item._isRead === false || true,
+          redirectUrl: item._redirectUrl,
+        };
+      });
 
-      setNotifications(mapped);
-      setUnreadCount(mapped.filter((i: any) => i.isUnread).length);
+      setNotifications(mappedItems);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
     }
   };
 
-  const handleItemClick = async (id: string) => {
+  React.useEffect(() => {
+    fetchNotifications();
+  }, [user?.id]);
+
+  const handleItemClick = async (notification: NotificationItem) => {
     try {
-      await notificationService.markAsRead(id);
+      await notificationService.markAsRead(notification.id);
+
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
+        prev.map((n) =>
+          n.id === notification.id ? { ...n, isUnread: false } : n
+        )
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-      onItemClick?.(id);
     } catch (error) {
-      console.error("Error marking notification as read", error);
+      console.error("Error marking as read", error);
     }
   };
 
@@ -173,7 +195,7 @@ const NotificationMenu = ({
               <NotificationCard
                 key={item.id}
                 notification={item}
-                onClick={handleItemClick}
+                onClick={() => handleItemClick(item)}
               />
             ))
           ) : (

@@ -1,5 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Users, Heart, Bell } from "lucide-react";
+import {
+  MessageCircle,
+  Users,
+  Heart,
+  Bell,
+  Settings,
+  Calendar,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface NotificationItem {
@@ -11,8 +18,9 @@ export interface NotificationItem {
   action: string;
   target?: string;
   time: string;
-  type: "comment" | "group" | "like" | "system";
+  type: "event" | "user" | "system";
   isUnread: boolean;
+  redirectUrl?: string;
 }
 
 interface NotificationCardProps {
@@ -26,22 +34,22 @@ export const NotificationCard = ({
 }: NotificationCardProps) => {
   const renderTypeIcon = () => {
     switch (notification.type) {
-      case "comment":
+      case "event":
         return (
           <div className="bg-green-500 p-1 rounded-full border-2 border-white text-white">
-            <MessageCircle size={10} fill="currentColor" />
+            <Calendar size={10} fill="currentColor" />
           </div>
         );
-      case "group":
+      case "user":
         return (
           <div className="bg-blue-500 p-1 rounded-full border-2 border-white text-white">
             <Users size={10} fill="currentColor" />
           </div>
         );
-      case "like":
+      case "system":
         return (
-          <div className="bg-red-500 p-1 rounded-full border-2 border-white text-white">
-            <Heart size={10} fill="currentColor" />
+          <div className="bg-black p-1 rounded-full border-2 border-white text-white">
+            <Settings size={10} fill="currentColor" />
           </div>
         );
       default:

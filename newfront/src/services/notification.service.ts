@@ -1,19 +1,36 @@
+// newfront/src/services/notification.service.ts
 import apiClient from "@/lib/api-client";
-import { type NotificationItem } from "@/components/cards/NotificationCard";
+
+export interface ApiNotificationItem {
+    _id: string;
+    _userId: string;
+    _type: "event" | "user" | "system";
+    _message: string;
+    _redirectUrl: string;
+    _createdAt: string;
+    _isRead?: boolean; // Nếu backend có trả về trạng thái đọc
+}
+
+interface NotificationApiResponse {
+    items: ApiNotificationItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
 
 export const notificationService = {
-    // Endpoint backend: /api/v1/notifications/users/:userId
     getByUserId: async (userId: string) => {
-        const response = await apiClient.get(`/notifications/users/${userId}`);
-        return response.data; 
+        const response = await apiClient.get<NotificationApiResponse>(
+            `/notifications/users/${userId}`
+        );
+        return response.data;
     },
 
-    // Endpoint backend: /api/v1/notifications/:notificationId/read
     markAsRead: async (notificationId: string) => {
-        await apiClient.patch(`/notifications/${notificationId}/read`);
+        return await apiClient.patch(`/notifications/${notificationId}/read`);
     },
 
     markAllAsRead: async (userId: string) => {
-        await apiClient.patch(`/notifications/users/${userId}/read-all`);
+        return await apiClient.patch(`/notifications/users/${userId}/read-all`);
     },
 };
