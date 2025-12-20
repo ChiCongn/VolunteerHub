@@ -22,6 +22,12 @@ notificationRouter.post(
     notificationController.createNotification
 );
 
+notificationRouter.post(
+    "/subscribe",
+    authenticate,
+    notificationController.subscribe
+);
+
 notificationRouter.get(
     "/:notificationId",
     authenticate,

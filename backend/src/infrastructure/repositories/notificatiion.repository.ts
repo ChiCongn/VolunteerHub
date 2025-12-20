@@ -7,6 +7,8 @@ import logger from "../../logger";
 import {
     CreateNotificationDto,
     NotificationFilterDto,
+    PushSubscriptionResponse,
+    SavePushSubscriptionDto,
 } from "../../application/dtos/notification.dto";
 import { Notification } from "../../domain/entities/notification.entity";
 import { NotificationNotFoundError } from "../../domain/errors/notification.error";
@@ -14,6 +16,62 @@ import { UserNotFoundError } from "../../domain/errors/user.error";
 
 export class NotificationRepository implements INotificationRepository {
     constructor(private readonly prisma: PrismaClient) {}
+
+    // web push api
+    async saveSubscription(data: SavePushSubscriptionDto): Promise<PushSubscriptionResponse> {
+        const result = await this.prisma.push_subscription.upsert({
+            where: { endpoint: data.endpoint },
+            update: { user_id: data.userId },
+            create: {
+                user_id: data.userId,
+                endpoint: data.endpoint,
+                p256dh: data.p256dh,
+                auth: data.auth,
+            },
+            select: {
+                id: true,
+                user_id: true,
+                endpoint: true,
+                p256dh: true,
+                auth: true,
+            },
+        });
+
+        return {
+            id: result.id,
+            userId: result.user_id,
+            endpoint: result.endpoint,
+            p256dh: result.p256dh,
+            auth: result.auth,
+        };
+    }
+
+    async getSubscriptionsByUserId(userId: string): Promise<PushSubscriptionResponse[]> {
+        const subscriptions = await this.prisma.push_subscription.findMany({
+            where: { user_id: userId },
+            select: {
+                id: true,
+                user_id: true,
+                endpoint: true,
+                p256dh: true,
+                auth: true,
+            },
+        });
+
+        return subscriptions.map((sub) => ({
+            id: sub.id,
+            userId: userId,
+            endpoint: sub.endpoint,
+            p256dh: sub.p256dh,
+            auth: sub.auth,
+        }));
+    }
+
+    async deleteSubscription(endpoint: string): Promise<void> {
+        await this.prisma.push_subscription.delete({
+            where: { endpoint },
+        });
+    }
 
     async create(data: CreateNotificationDto): Promise<Notification> {
         logger.debug(
