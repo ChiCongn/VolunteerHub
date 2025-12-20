@@ -26,7 +26,7 @@ import { eventService } from "@/services/event.service";
 import { toast } from "sonner";
 import { getImageUrl } from "@/utils/imageUrl.utils";
 import { useNavigate } from "react-router-dom";
-import ConfirmDialog from "@/components/ConfirmDialong";
+import ConfirmDialog from "@/components/ConfirmDiaLog";
 
 const CATEGORIES: { label: string; value: EventCategory }[] = [
   { label: "📚 Education", value: "education" as EventCategory },
