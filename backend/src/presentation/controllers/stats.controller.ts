@@ -18,7 +18,6 @@ export class StatsController {
             const result = await this.statsService.getOverviewStats();
             return res.status(200).json(result);
         } catch (err) {
-            console.log(err);
             logger.error({ error: err }, "[StatsController] Failed to fetch overview stars");
             return res.status(500).json({ message: "Internal server error" });
         }

@@ -94,7 +94,6 @@ export class UserController {
                 return res.status(404).json({ message: "User not found" });
             }
 
-            console.log(err);
             logger.error(
                 { error: err, action: "fetchUserPublicProfile" },
                 "[UserController] fetch public profile failed"
@@ -128,7 +127,6 @@ export class UserController {
                 return res.status(403).json({ message: "Cannot lock root admin" });
             }
 
-            console.log(err);
             logger.error(
                 { error: err, action: "setUserLock" },
                 "[UserController] lock user failed"
@@ -156,7 +154,6 @@ export class UserController {
                 throw new UserNotFoundError(currentUserId);
             }
 
-            console.log(err);
             logger.error(
                 { userId: currentUserId, error: err, action: "getMeProfile" },
                 "[UserController] Failed to fetch current user profile"
@@ -262,7 +259,6 @@ export class UserController {
             const result = await this.userService.searchPublicProfilesByDisplayName(username);
             return res.status(200).json(result);
         } catch (err) {
-            console.log(err);
             logger.error(
                 { error: err, action: "searchUserByUsername" },
                 "[UserController] Failed to search user"

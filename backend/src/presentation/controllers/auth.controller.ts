@@ -46,7 +46,6 @@ export class AuthController {
                 { error: err, action: "register" },
                 "[AuthController] Registration failed unexpectedly"
             );
-            console.log(err);
             // Generic fallback for unexpected errors
             return res.status(500).json({ message: "Internal server error" });
         }
@@ -100,7 +99,6 @@ export class AuthController {
                 { error: err, email: req.body.email, action: "login" },
                 "[AuthController] Login failed"
             );
-            console.log(err);
             return res.status(401).json({ message: "Login failed" });
         }
     };
