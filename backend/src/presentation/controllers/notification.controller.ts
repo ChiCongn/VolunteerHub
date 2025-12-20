@@ -2,6 +2,7 @@ import { INotificationRepository } from "../../domain/repositories/notification.
 import {
     CreateNotificationDto,
     NotificationFilterDto,
+    SavePushSubscriptionDto,
 } from "../../application/dtos/notification.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
@@ -11,9 +12,17 @@ import { DomainError } from "../../domain/errors/domain.error";
 import { notificationRepo } from "../../infrastructure/repositories/index";
 
 import { Request, Response } from "express";
+import {
+    notificationService,
+    NotificationService,
+} from "../../application/services/notification.service";
+import logger from "../../logger";
 
 export class NotificationController {
-    constructor(private readonly notificationRepository: INotificationRepository) {
+    constructor(
+        private readonly notificationRepository: INotificationRepository,
+        private readonly notificationService: NotificationService
+    ) {
         this.createNotification = this.createNotification.bind(this);
         this.getNotificationById = this.getNotificationById.bind(this);
         this.getNotificationsByUserId = this.getNotificationsByUserId.bind(this);
@@ -21,7 +30,53 @@ export class NotificationController {
         this.markAllAsRead = this.markAllAsRead.bind(this);
         //this.deleteNotification = this.deleteNotification.bind(this);
     }
-    
+
+    subscribe = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
+        try {
+            logger.info(
+                { action: "subscribe", userId },
+                "[NotificationController] Subscribe push notification"
+            );
+            const { endpoint, keys } = req.body;
+
+            if (!endpoint || !keys?.p256dh || !keys?.auth) {
+                logger.warn(
+                    { userId, endpoint },
+                    "[NotificationController] Invalid push subscription data"
+                );
+
+                return res.status(400).json({ message: "Invalid subscription data" });
+            }
+
+            const subscriptionData: SavePushSubscriptionDto = {
+                userId,
+                endpoint,
+                p256dh: keys.p256dh,
+                auth: keys.auth,
+            };
+
+            logger.debug({ userId, endpoint }, "[NotificationController] Saving push subscription");
+
+            logger.info(
+                { userId, endpoint },
+                "[NotificationController] Push subscription saved successfully"
+            );
+
+            const result = await this.notificationService.subscribe(subscriptionData);
+            return res.status(201).json({
+                message: "Subscribed successfully",
+                data: result,
+            });
+        } catch (error: any) {
+            logger.error(
+                { userId, error },
+                "[NotificationController] Failed to subscribe push notification"
+            );
+            return res.status(400).json({ error: error.message });
+        }
+    };
+
     //core
     async createNotification(req: Request, res: Response): Promise<void> {
         try {
@@ -102,4 +157,7 @@ export class NotificationController {
     }
 }
 
-export const notificationController = new NotificationController(notificationRepo);
+export const notificationController = new NotificationController(
+    notificationRepo,
+    notificationService
+);

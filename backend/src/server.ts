@@ -12,6 +12,7 @@ import { notificationRouter } from "./presentation/routes/notification.route";
 
 import path from "path";
 import multer from 'multer';
+import { notificationRouter } from "./presentation/routes/notification.route";
 
 const app = express();
 const PORT = 8000;
@@ -40,7 +41,7 @@ app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/registrations", registrationRouter);
-app.use("/api/v1/notifications", notificationRouter);
+app.use("/api/v1/notifications", notificationRouter)
 
 // Global error handler (must be last)
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
