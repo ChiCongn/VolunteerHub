@@ -13,6 +13,7 @@ import logger from "../../logger";
 import { Pagination } from "../dtos/pagination.dto";
 import { RegistrationFilterDto } from "../dtos/registration.dto";
 import { SortOption } from "../dtos/sort-option.dto";
+import { notificationService } from "./notification.service";
 
 export class RegistrationService {
     constructor(
@@ -91,6 +92,8 @@ export class RegistrationService {
             throw new InvalidRegistrationStateError(registrationId, registration.status);
         }
 
+        await this.registrationRepo.updateRegistrationStatus(registrationId, isApprove);
+
         try {
             await this.registrationRepo.updateRegistrationStatus(registrationId, isApprove);
 
@@ -104,6 +107,21 @@ export class RegistrationService {
                 "[RegistrationService] Failed to update registration status"
             );
             throw err;
+        }
+
+        try {
+            const event = await eventRepo.findById(registration.eventId);
+            const statusText = isApprove ? "đã được phê duyệt" : "đã bị từ chối";
+            const message = `Đơn đăng ký tham gia sự kiện "${event?.title}" của bạn ${statusText}.`;
+
+            await notificationService.notifyEventUpdate(
+                registration.userId,
+                event?.title || "Sự kiện",
+                message,
+                registration.eventId
+            );
+        } catch (err) {
+            logger.error("[RegistrationService] Notification failed", err);
         }
     }
 

@@ -10,6 +10,7 @@ import { WeeklyEventParticipationDto } from "../dtos/users/weekly-event-particip
 import { LoginStreakDto } from "../dtos/users/login-streak.dto";
 import { MonthlyEventStatsDto } from "../dtos/users/monthly-event-stats.dto";
 import { UserDailyActivity } from "../dtos/users/user-daily-activity.dto";
+import { notificationService } from "./notification.service";
 
 export class UserService {
     constructor(private readonly userRepo: IUserRepository) {}
@@ -65,7 +66,18 @@ export class UserService {
 
     async setUserLock(userId: string, locked: boolean) {
         logger.info({ userId, locked, action: "setUserLock" }, "[UserService] Lock/unlock user");
-        return this.userRepo.setUserLock(userId, locked);
+        const result = await this.userRepo.setUserLock(userId, locked);
+        try {
+            const message = locked
+                ? "Tài khoản của bạn đã bị khóa do vi phạm chính sách hệ thống."
+                : "Tài khoản của bạn đã được mở khóa.";
+
+            await notificationService.notifySystemAlert(userId, message);
+        } catch (err) {
+            logger.error("[UserService] Lock notification failed", err);
+        }
+
+        return result;
     }
 
     // current user

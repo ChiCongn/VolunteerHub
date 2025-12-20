@@ -31,7 +31,7 @@ notificationRouter.get(
 
 notificationRouter.get(
     "/users/:userId",
-    authenticate,
+    //authenticate,
     validate(NotificationFilterSchema),
     notificationController.getNotificationsByUserId
 );
@@ -48,8 +48,6 @@ notificationRouter.patch(
     authenticate,
     notificationController.markAllAsRead
 );
-
-
 
 // notificationRouter.post(
 //     "/",

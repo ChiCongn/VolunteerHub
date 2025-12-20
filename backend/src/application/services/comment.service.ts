@@ -1,23 +1,41 @@
-import { Comment } from '../../domain/entities/comment.entity';
-import { 
-    CreateCommentDto, 
-    UpdateCommentDto, 
-    CommentView 
-} from '../dtos/comment.dto';
-import { Pagination } from '../dtos/pagination.dto';
-import { SortOption } from '../dtos/sort-option.dto';
-import { ListResult } from '../dtos/list-result.dto';
+import { Comment } from "../../domain/entities/comment.entity";
+import { CreateCommentDto, UpdateCommentDto, CommentView } from "../dtos/comment.dto";
+import { Pagination } from "../dtos/pagination.dto";
+import { SortOption } from "../dtos/sort-option.dto";
+import { ListResult } from "../dtos/list-result.dto";
 import { ICommentRepository } from "../../domain/repositories/comment.irepository";
 import { commentRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
+import { notificationService } from "./notification.service";
+import { postService } from "./post.service";
+import { userService } from "./user.service";
 
 export class CommentService {
     constructor(private readonly commentRepo: ICommentRepository) {}
 
     // ================= Core CRUD =================
     async createComment(data: CreateCommentDto): Promise<Comment> {
-        // Có thể thêm logic validate authorId hoặc postId tồn tại ở đây nếu cần thiết
-        return this.commentRepo.create(data);
+        const comment = await this.commentRepo.create(data);
+
+        (async () => {
+            try {
+                const postAuthorId = await postService.findAuthorId(data.postId);
+                const sender = await userService.fetchCurrentUser(data.authorId);
+
+                if (postAuthorId && postAuthorId !== data.authorId && sender) {
+                    await notificationService.notifyUserInteraction(
+                        postAuthorId,
+                        sender.username,
+                        "đã bình luận về bài viết của bạn",
+                        data.postId
+                    );
+                }
+            } catch (err) {
+                logger.error("[CommentService] Notification failed", err);
+            }
+        })();
+
+        return comment;
     }
 
     async getCommentById(id: string): Promise<Comment | null> {
