@@ -21,7 +21,7 @@ export default function PostCard({
         <PostHeader post={post} />
         <PostContent post={post} />
         <PostActions
-          postId={post.id} 
+          postId={post.id}
           likeCount={post.reactionCount}
           commentCount={post.commentCount}
           onCommentClick={() => onCommentClick?.(post)}

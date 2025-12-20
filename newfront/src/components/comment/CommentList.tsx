@@ -10,9 +10,6 @@ export default function CommentList({ comments }: { comments: Comment[] }) {
   const reversedComments = [...comments].reverse();
   return (
     <div className="space-y-4">
-      {/* {comments.map((comment) => (
-        <CommentItem key={comment.id} comment={comment} />
-      ))} */}
       {comments.length === 0 ? (
         <div className="text-center text-zinc-500 py-10 text-sm">
           No comments yet. Be the first to share your thoughts!

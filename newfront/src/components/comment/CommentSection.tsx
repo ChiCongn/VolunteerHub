@@ -26,8 +26,7 @@ export default function CommentSection({ postId }: { postId: string }) {
   }, [postId]);
 
   const handleCommentCreated = (newComment: Comment) => {
-    // Thêm vào đầu danh sách (giống Reddit/Facebook)
-    setComments((prev) => [newComment, ...prev]);
+    setComments((prev) => [...prev, newComment]);
   };
 
   return (

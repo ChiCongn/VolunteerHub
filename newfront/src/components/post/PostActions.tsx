@@ -71,14 +71,13 @@ export default function PostActions({
     // Cập nhật UI ngay lập tức
     setCurrentReaction(nextEmoji);
     setLikeCount((prev) =>
-      isRemoving ? prev - 1 : currentReaction ? prev : prev + 1
+      isRemoving ? Math.max(prev - 1, 0) : currentReaction ? prev : prev + 1
     );
 
     // LƯU TRẠNG THÁI VÀO LOCAL STORAGE
     saveToLocal(postId, nextEmoji);
 
     try {
-      // Vẫn gọi API để sync với DB (nếu bạn muốn bỏ qua DB hoàn toàn thì comment dòng này)
       await postService.toggleReaction(postId, emoji);
       fetchReactions();
     } catch (error) {
@@ -86,7 +85,6 @@ export default function PostActions({
     }
   };
 
-  // ... (giữ nguyên fetchReactions và useEffect fetch data)
   const fetchReactions = async () => {
     const data = await postService.getReactions(postId);
     setReactions(data.items || []);
@@ -114,6 +112,8 @@ export default function PostActions({
     );
   };
 
+  const activeEmoji = EMOJIS.find((e) => e.id === currentReaction);
+
   return (
     <div className="pt-2 border-t">
       <div className="flex justify-between text-sm text-muted-foreground mb-2 px-2">
@@ -121,6 +121,7 @@ export default function PostActions({
           onClick={() => setIsDialogOpen(true)}
           className="hover:underline"
         >
+          {activeEmoji && <span className="text-base">{activeEmoji.icon}</span>}
           {likeCount} người đã tương tác
         </button>
         <span>{commentCount} comments</span>
@@ -176,12 +177,6 @@ export default function PostActions({
           Comment
         </Button>
       </div>
-
-      <ReactionListDialog
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        reactions={reactions}
-      />
     </div>
   );
 }

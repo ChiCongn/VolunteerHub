@@ -81,8 +81,28 @@ export const CommunityEventPage = () => {
   const handleCreatePostSubmit = async (content: string, imageUrl?: string) => {
     if (!eventId) return;
 
+    const optimisticPost: Post = {
+      id: crypto.randomUUID(),
+      author: {
+        id: user?.id || crypto.randomUUID(),
+        username: user?.username || "Bạn",
+        avatarUrl: user?.avatarUrl || "https://github.com/shadcn.png",
+        role: user?.role || "volunteer",
+      },
+      content,
+      imageUrl: imageUrl || "",
+      createdAt: new Date(),
+      event: {
+        id: event?.id,
+        name: event!.name || "Event này",
+      },
+      reactionCount: 0,
+      commentCount: 0,
+    };
+
+    setPosts((prev) => [optimisticPost, ...prev]);
+
     try {
-      //TODO: remove author id
       const newPostData = await postService.createPost({
         eventId: eventId,
         content: content,
@@ -92,12 +112,14 @@ export const CommunityEventPage = () => {
 
       const newPost: Post = {
         ...newPostData.data,
-        createdAt: new Date().toISOString(), // convert Date to string to render
+        createdAt: new Date().toISOString(),
       };
 
-      setPosts((prev) => [newPost, ...prev]);
+      //setPosts((prev) => [newPost, ...prev]);
     } catch (error) {
       console.error("Failed to create post:", error);
+
+      setPosts((prev) => prev.filter((p) => p.id !== optimisticPost.id));
       alert("Failed to create post. Please try again.");
     }
   };
@@ -160,7 +182,6 @@ export const CommunityEventPage = () => {
 
                   {/* Posts List */}
                   {posts.map((post) => (
-
                     <PostCard
                       key={post.id}
                       post={post}
@@ -172,7 +193,11 @@ export const CommunityEventPage = () => {
                       No posts yet. Be the first to start the conversation!
                     </div>
                   )}
-                  <PostDetailDialog post={selectedPost} open={open} onClose={handleClose} />
+                  <PostDetailDialog
+                    post={selectedPost}
+                    open={open}
+                    onClose={handleClose}
+                  />
                 </div>
 
                 {/* RIGHT COLUMN: SIDEBAR */}
