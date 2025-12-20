@@ -4,7 +4,7 @@ import type { Post } from "@/types/post.type";
 
 export const postService = {
     // POST /api/v1/posts
-    // TODO: remove authorId 
+    // TODO: remove authorId
     createPost: async (data: {
         eventId: string;
         content: string;
@@ -114,8 +114,16 @@ export const postService = {
         return data;
     },
 
+    toggleReaction: async (postId: string, emoji: string) => {
+        const response = await apiClient.post(`/posts/${postId}/reactions`, {
+            postId,
+            emoji,
+        });
+        return response.data;
+    },
+
     getReactions: async (postId: string) => {
-    const response = await apiClient.get(`/posts/${postId}/reactions`);
-    return response.data; // Giả định trả về { items: Reaction[], total: number }
-  },
+        const response = await apiClient.get(`/posts/${postId}/reactions`);
+        return response.data; // Giả định trả về { items: Reaction[], total: number }
+    },
 };

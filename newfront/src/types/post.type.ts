@@ -10,6 +10,7 @@ export interface Post {
         id: string;
         name: string;
     };
+    reactions?: Reaction[];
     reactionCount: number;
     commentCount: number;
 }
