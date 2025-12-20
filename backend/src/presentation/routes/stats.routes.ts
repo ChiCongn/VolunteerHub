@@ -6,6 +6,10 @@ import { EventStatsFilterSchema } from "../validators/stats/event-stats.schema";
 import { GetEventSchema } from "../validators/event/get-event.schema";
 import { authorize } from "../../middlewares/authorize.middleware";
 import { StatsPolicy } from "../../application/policies/stats.policy";
+import {
+    getManagerMonthlyCompletedSchema,
+    getManagerTopParticipantsSchema,
+} from "../validators/stats/manager-event.schem";
 
 export const statsRouter = Router();
 
@@ -46,4 +50,20 @@ statsRouter.get(
     // authenticate,
     // authorize(StatsPolicy.eventManagersStats),
     statsController.getEventManagersStats
+);
+
+statsRouter.get("/managers/status-overview", authenticate, statsController.getManagerStatusOverview);
+
+statsRouter.get(
+    "/managers/monthly-completed",
+    authenticate,
+    validate(getManagerMonthlyCompletedSchema),
+    statsController.getManagerMonthlyCompleted
+);
+
+statsRouter.get(
+    "/managers/top-participants",
+    authenticate,
+    validate(getManagerTopParticipantsSchema),
+    statsController.getManagerTopParticipants
 );

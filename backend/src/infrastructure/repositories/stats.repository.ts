@@ -10,6 +10,11 @@ import {
     TimeSeriesDto,
     EventManagerStatsDto,
 } from "../../application/dtos/stats";
+import {
+    ManagerEventStatusOverviewDto,
+    ManagerMonthlyCompletedStatsDto,
+    ManagerTopParticipantsEventDto,
+} from "../../application/dtos/stats";
 import { EventNotFoundError } from "../../domain/errors/event.error";
 import { PrismaClient } from "../prisma/generated/client";
 import logger from "../../logger";
@@ -142,7 +147,7 @@ export class StatsRepository implements IStatsRepository {
         // Top events by registrations
         const topEventsByRegistration = await this.prisma.$queryRaw<
             Array<{ name: string; count: bigint }>
-            >`
+        >`
             SELECT e.name, COUNT(r.id) AS count
             FROM events e
             LEFT JOIN registrations r ON r.event_id = e.id
@@ -630,5 +635,81 @@ export class StatsRepository implements IStatsRepository {
                       : "Posts",
             data: filled,
         };
+    }
+
+    // Count of events grouped by status for a specific manager
+    async getManagerStatusOverview(userId: string): Promise<ManagerEventStatusOverviewDto[]> {
+        const raw = await this.prisma.events.groupBy({
+            by: ["status"],
+            where: {
+                OR: [
+                    { event_manager_ids: { has: userId } }, // manager
+                    { owner_id: userId }, // owner
+                ],
+            },
+            _count: { status: true },
+        });
+
+        // Map Prisma groupBy response to DTO
+        return raw.map((r) => ({
+            status: r.status,
+            count: r._count.status,
+        }));
+    }
+
+    // Number of completed events per month in a given year
+    async getManagerMonthlyCompleted(
+        userId: string,
+        year: number
+    ): Promise<ManagerMonthlyCompletedStatsDto[]> {
+        const raw: Array<{ month: string; count: number }> = await this.prisma.$queryRaw`
+        SELECT 
+            to_char(start_time, 'Month') as month,
+            CAST(COUNT(*) AS INTEGER) as count
+        FROM events
+        WHERE (event_manager_ids @> ARRAY[${userId}]::uuid[] OR owner_id = ${userId}::uuid)
+            AND status = 'completed'
+            AND extract(year from start_time) = ${year}
+        GROUP BY month
+        ORDER BY min(start_time)
+    `;
+
+        return raw.map((r) => ({
+            month: r.month.trim(), // remove padding spaces
+            count: r.count,
+        }));
+    }
+
+    // Top N events by participant count for a manager
+    async getManagerTopParticipants(
+        userId: string,
+        limit: number
+    ): Promise<ManagerTopParticipantsEventDto[]> {
+        const raw = await this.prisma.events.findMany({
+            where: {
+                OR: [
+                    { event_manager_ids: { has: userId } }, // manager
+                    { owner_id: userId }, // owner
+                ],
+            },
+            orderBy: {
+                register_count: "desc",
+            },
+            take: limit,
+            select: {
+                id: true,
+                name: true,
+                register_count: true,
+                capacity: true,
+            },
+        });
+
+        // Prisma already returns the correct shape, but map to enforce DTO
+        return raw.map((r) => ({
+            id: r.id,
+            name: r.name,
+            register_count: r.register_count,
+            capacity: r.capacity,
+        }));
     }
 }
