@@ -33,8 +33,7 @@ export const eventService = {
     },
 
     createEvent: async (data: CreateEvent) => {
-        // Note: The ownerId is often handled by the backend (req.user.sub),
-        // but if your DTO requires it, ensure it's passed here.
+        
         const response = await apiClient.post("/events", data);
         return response.data;
     },

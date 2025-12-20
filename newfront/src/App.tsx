@@ -21,6 +21,9 @@ import Settings from "./pages/Setting";
 import Profile from "./pages/Profile";
 import ManageEvent from "./pages/EventManage";
 import { Toaster } from "sonner";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { UserRole } from "./types/enum";
+import NotificationPage from "./pages/NotificationPage";
 
 function App() {
   return (
@@ -32,19 +35,105 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<SignupPage />} />
-
+            {/*default volunteer */}
             <Route element={<AppLayout />}>
-              <Route path="/home" element={<Home />} />
-              <Route path="/feed" element={<Feed />} /> {/* Feed */}
-              <Route path="/communities" element={<Community />} />
-              <Route path="/events/:eventId" element={<CommunityEventPage />} />
-              <Route path="/notifications" element={<div>Notifications</div>} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/admin/overview" element={<OverviewPage />} />
-              <Route path="/admin/users" element={<UserManagementPage />} />
-              <Route path="/admin/events" element={<EventManagementPage />} />
-              <Route path="/event-manage" element={<ManageEvent />} />
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/feed"
+                element={
+                  <ProtectedRoute>
+                    <Feed />
+                  </ProtectedRoute>
+                }
+              />{" "}
+              {/* Feed */}
+              <Route
+                path="/communities"
+                element={
+                  <ProtectedRoute>
+                    <Community />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events/:eventId"
+                element={
+                  <ProtectedRoute>
+                    <CommunityEventPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <NotificationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              {/*admin page */}
+              <Route
+                path="/admin/overview"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[UserRole.Admin, UserRole.RootAdmin]}
+                  >
+                    <OverviewPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[UserRole.Admin, UserRole.RootAdmin]}
+                  >
+                    <UserManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/events"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[UserRole.Admin, UserRole.RootAdmin]}
+                  >
+                    <EventManagementPage />
+                  </ProtectedRoute>
+                }
+              />
+              {/*event mananger */}
+              <Route
+                path="/event-manage"
+                element={
+                  <ProtectedRoute allowedRoles={[UserRole.EventManager]}>
+                    <ManageEvent />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
             <Route path="*" element={<NotFound />} />

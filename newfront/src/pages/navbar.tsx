@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useEffect, useState, useRef } from "react";
-// 1. Import hook điều hướng từ react-router-dom
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BellIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -134,8 +133,11 @@ const NotificationMenu = ({
           redirectUrl: item._redirectUrl,
         };
       });
-
+      const notificationcount = data.total;
       setNotifications(mappedItems);
+
+      const totalUnread = mappedItems.filter((n) => n.isUnread).length;
+      setUnreadCount(totalUnread);
     } catch (error) {
       console.error("Failed to fetch notifications", error);
     }
@@ -175,18 +177,20 @@ const NotificationMenu = ({
       <DropdownMenuContent align="end" className="w-[380px] p-2">
         <div className="flex items-center justify-between px-2 py-2">
           <h2 className="text-xl font-bold italic">Thông báo</h2>
-          <Button
-            variant="link"
-            className="text-blue-600 h-auto p-0"
-            onClick={async () => {
-              if (user?.id) {
-                await notificationService.markAllAsRead(user.id);
-                fetchNotifications();
-              }
-            }}
-          >
-            Xem tất cả
-          </Button>
+          <Link to="/notifications">
+            <Button
+              variant="link"
+              className="text-blue-600 h-auto p-0"
+              onClick={async () => {
+                if (user?.id) {
+                  await notificationService.markAllAsRead(user.id);
+                  fetchNotifications();
+                }
+              }}
+            >
+              Xem tất cả
+            </Button>
+          </Link>
         </div>
 
         <div className="max-h-[450px] overflow-y-auto space-y-1">
@@ -206,12 +210,14 @@ const NotificationMenu = ({
         </div>
 
         <div className="mt-2 border-t pt-2">
-          <Button
-            variant="secondary"
-            className="w-full font-semibold bg-gray-100 hover:bg-gray-200"
-          >
-            Xem thông báo trước đó
-          </Button>
+          <Link to="/notifications">
+            <Button
+              variant="secondary"
+              className="w-full font-semibold bg-gray-100 hover:bg-gray-200"
+            >
+              Xem thông báo trước đó
+            </Button>
+          </Link>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -423,10 +429,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <NotificationMenu
-                notificationCount={notificationCount}
-                onItemClick={onNotificationItemClick}
-              />
+              <NotificationMenu onItemClick={onNotificationItemClick} />
             </div>
             <UserMenu
               userName={displayUserName}

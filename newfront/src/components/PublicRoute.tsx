@@ -8,9 +8,8 @@ export default function PublicRoute({
 }) {
     const token = localStorage.getItem("token");
 
-    // Nếu đã login → không cho vào trang login/register nữa
     if (token) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/home" replace />;
     }
 
     return children;

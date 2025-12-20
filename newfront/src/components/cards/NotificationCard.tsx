@@ -19,7 +19,7 @@ export interface NotificationItem {
   target?: string;
   time: string;
   type: "event" | "user" | "system";
-  isUnread: boolean;
+  isUnread?: boolean;
   redirectUrl?: string;
 }
 

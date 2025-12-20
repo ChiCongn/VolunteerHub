@@ -112,7 +112,7 @@ export class RegistrationService {
         try {
             const event = await eventRepo.findById(registration.eventId);
             const statusText = isApprove ? "đã được phê duyệt" : "đã bị từ chối";
-            const message = `Đơn đăng ký tham gia sự kiện "${event?.title}" của bạn ${statusText}.`;
+            const message = `Đơn đăng ký tham gia sự kiện "${event?.name}" của bạn ${statusText}.`;
 
             await notificationService.notifyEventUpdate(
                 registration.userId,

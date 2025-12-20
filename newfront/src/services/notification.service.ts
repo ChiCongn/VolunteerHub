@@ -8,7 +8,7 @@ export interface ApiNotificationItem {
     _message: string;
     _redirectUrl: string;
     _createdAt: string;
-    _isRead?: boolean; // Nếu backend có trả về trạng thái đọc
+    _isRead?: boolean; 
 }
 
 interface NotificationApiResponse {

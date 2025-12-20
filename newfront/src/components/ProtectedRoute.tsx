@@ -1,16 +1,29 @@
-import { Navigate } from "react-router-dom";
-import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import { UserRole } from "@/types/enum";
 
-export default function ProtectedRoute({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    const token = localStorage.getItem("token");
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: UserRole[]; 
+}
 
-    if (!token) {
-        return <Navigate to="/login" replace />;
-    }
+export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const { user, isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
-    return children;
+  if (loading) {
+    return <div>Loading...</div>; 
+  }
+
+  // Nếu chưa đăng nhập, chuyển hướng về login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Nếu có yêu cầu role cụ thể mà user không có role đó
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
 }
