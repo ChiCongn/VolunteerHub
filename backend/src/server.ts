@@ -9,6 +9,7 @@ import cors from "cors";
 import { statsRouter } from "./presentation/routes/stats.routes";
 import { registrationRouter } from "./presentation/routes/registration.routes";
 import path from "path";
+import multer from 'multer';
 
 const app = express();
 const PORT = 8000;
@@ -40,6 +41,20 @@ app.use("/api/v1/registrations", registrationRouter);
 
 // Global error handler (must be last)
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    // Handle Multer/File Filter Errors
+    if (err instanceof multer.MulterError || err.message.includes("formats are allowed")) {
+        return res.status(400).json({
+            message: err.message,
+        });
+    }
+
+    // Handle Zod Validation Errors
+    if (err.name === "ZodError") {
+        return res.status(400).json({
+            message: "Bad Request! Validation failed",
+            errors: err.message,
+        });
+    }
     console.error("💥 Error:", err);
     return res.status(500).json({ message: "Internal server error" });
 });
