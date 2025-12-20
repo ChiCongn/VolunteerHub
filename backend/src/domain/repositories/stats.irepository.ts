@@ -9,6 +9,12 @@ import {
     EventManagerStatsDto,
 } from "../../application/dtos/stats";
 
+import {
+    ManagerEventStatusOverviewDto,
+    ManagerMonthlyCompletedStatsDto,
+    ManagerTopParticipantsEventDto,
+} from "../../application/dtos/stats";
+
 export interface IStatsRepository {
     /** Global dashboard numbers */
     getOverviewStats(): Promise<OverviewStatsDto>;
@@ -35,4 +41,15 @@ export interface IStatsRepository {
         metric: "users" | "registrations" | "posts",
         days: number
     ): Promise<TimeSeriesDto>;
+
+     /** Manager-specific event stats */
+    getManagerStatusOverview(userId: string): Promise<ManagerEventStatusOverviewDto[]>;
+    getManagerMonthlyCompleted(
+        userId: string,
+        year: number
+    ): Promise<ManagerMonthlyCompletedStatsDto[]>;
+    getManagerTopParticipants(
+        userId: string,
+        limit: number
+    ): Promise<ManagerTopParticipantsEventDto[]>;
 }

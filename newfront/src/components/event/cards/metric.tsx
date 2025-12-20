@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
@@ -18,25 +18,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  managerStatsService,
+  type ManagerMonthlyCompletedStats,
+} from "@/services/user/manager-stats.service";
+import { toast } from "sonner";
 
 /* ================= MOCK DATA ================= */
 
 const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 // Completed events per month (current year)
-const mockThisYear = [
-  2, 3, 4, 5, 6, 8,
-  10, 9, 7, 6, 5, 4,
-];
+const mockThisYear = [2, 3, 4, 5, 6, 8, 10, 9, 7, 6, 5, 4];
 
 // Completed events per month (last year)
-const mockLastYear = [
-  1, 2, 3, 4, 5, 6,
-  7, 6, 5, 4, 3, 2,
-];
+const mockLastYear = [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2];
 
 /* ============================================= */
 
@@ -46,23 +55,52 @@ export default function YearlyCompletedEventsCard({
   className?: string;
 }) {
   const currentYear = new Date().getFullYear();
+  const [thisYearData, setThisYearData] = useState<
+    ManagerMonthlyCompletedStats[]
+  >([]);
+  const [lastYearData, setLastYearData] = useState<
+    ManagerMonthlyCompletedStats[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch data for both years in parallel
+        const [thisYear, lastYear] = await Promise.all([
+          managerStatsService.getMonthlyCompleted(currentYear),
+          managerStatsService.getMonthlyCompleted(currentYear - 1),
+        ]);
+        setThisYearData(thisYear);
+        setLastYearData(lastYear);
+      } catch (error) {
+        toast.error("Failed to fetch yearly stats");
+        console.error("Failed to fetch yearly stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [currentYear]);
 
   // Map mock data → Recharts format
   const chartData = useMemo(() => {
-    return MONTH_NAMES.map((month, index) => ({
-      month,
-      completed: mockThisYear[index],
+    return thisYearData.map((item) => ({
+      month: item.month.substring(0, 3), // Shorten "January" to "Jan" for UI
+      completed: item.count,
     }));
-  }, []);
+  }, [thisYearData]);
 
   const totalThisYear = useMemo(
-    () => mockThisYear.reduce((sum, v) => sum + v, 0),
-    []
+    () => thisYearData.reduce((sum, v) => sum + v.count, 0),
+    [thisYearData]
   );
 
   const lastYearTotal = useMemo(
-    () => mockLastYear.reduce((sum, v) => sum + v, 0),
-    []
+    () => lastYearData.reduce((sum, v) => sum + v.count, 0),
+    [lastYearData]
   );
 
   const diff = totalThisYear - lastYearTotal;
@@ -70,15 +108,23 @@ export default function YearlyCompletedEventsCard({
     lastYearTotal > 0 ? Math.round((diff / lastYearTotal) * 100) : 100;
   const isIncrease = diff >= 0;
 
+  if (loading) {
+    return (
+      <Card className={className}>
+        <CardContent className="py-10 text-center">
+          Loading stats...
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <Card className={className}>
       <CardHeader>
         <CardTitle className="text-base">
           Completed Events ({currentYear})
         </CardTitle>
-        <CardDescription>
-          Number of completed events per month
-        </CardDescription>
+        <CardDescription>Number of completed events per month</CardDescription>
       </CardHeader>
 
       <CardContent className="pb-4">

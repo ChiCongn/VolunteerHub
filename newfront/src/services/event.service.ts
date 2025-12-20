@@ -1,5 +1,6 @@
 import apiClient from "@/lib/api-client";
-import type { Event } from "@/types";
+import type { EventCategory } from "@/types/enum";
+import type { Event } from "@/types/event.type";
 
 export interface PaginatedEvents {
     items: Event[];
@@ -24,4 +25,37 @@ export const eventService = {
         const response = await apiClient.get(`/events`, { params });
         return response.data;
     },
+
+    uploadEventImage(formData: FormData) {
+        return apiClient
+            .post<{ url: string }>("/events/upload-image", formData)
+            .then((res) => res.data);
+    },
+
+    createEvent: async (data: CreateEvent) => {
+        // Note: The ownerId is often handled by the backend (req.user.sub),
+        // but if your DTO requires it, ensure it's passed here.
+        const response = await apiClient.post("/events", data);
+        return response.data;
+    },
+
+    createEventWithImage: async (formData: FormData) => {
+        const response = await apiClient.post("/events", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data;
+    },
 };
+
+export interface CreateEvent {
+    name: string;
+    location: string;
+    startTime: Date;
+    endTime?: Date | null;
+    description: string;
+    imageUrl: string;
+    capacity: number;
+    categories: EventCategory[] | [];
+}

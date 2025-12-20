@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -11,7 +11,10 @@ import {
 } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import {
+  managerStatsService,
+  type ManagerTopParticipantsEvent,
+} from "@/services/user/manager-stats.service";
 
 const mockParticipantsPerEvent = [
   { name: "Community Cleanup", participants: 45 },
@@ -21,19 +24,50 @@ const mockParticipantsPerEvent = [
   { name: "Charity Run", participants: 80 },
 ];
 
-
 export default function ParticipantsPerEventCard() {
-  const chartData = useMemo(() => {
-    return mockParticipantsPerEvent;
+  const [data, setData] = useState<ManagerTopParticipantsEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopEvents = async () => {
+      setLoading(true);
+      try {
+        // Fetch top 5 events
+        const result = await managerStatsService.getTopParticipants(5);
+        setData(result);
+      } catch (error) {
+        console.error("Failed to fetch top participants stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopEvents();
   }, []);
+
+  const chartData = useMemo(() => {
+    return data.map((event) => ({
+      name: event.name,
+      participants: event.register_count, // Mapping backend count to chart value
+      capacity: event.capacity,
+    }));
+  }, [data]);
+
+  if (loading) {
+    return (
+      <Card className="bg-white">
+        <CardContent className="h-[240px] flex items-center justify-center text-sm text-muted-foreground">
+          Loading event data...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white">
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">
-            Participants per Event
-          </CardTitle>
+          <CardTitle className="text-base">Participants per Event</CardTitle>
         </div>
 
         <p className="text-xs mt-1 font-medium text-muted-foreground">
@@ -81,7 +115,11 @@ export default function ParticipantsPerEventCard() {
                 }}
               />
 
-              <Bar dataKey="participants" radius={[4, 4, 0, 0]} fill="currentColor">
+              <Bar
+                dataKey="participants"
+                radius={[4, 4, 0, 0]}
+                fill="currentColor"
+              >
                 <LabelList
                   dataKey="participants"
                   position="top"

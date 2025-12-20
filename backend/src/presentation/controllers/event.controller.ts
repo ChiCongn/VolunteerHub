@@ -14,6 +14,7 @@ import { eventRepo } from "../../infrastructure/repositories/index";
 
 import { Request, Response } from "express";
 import { EventFilterSchema } from "../validators/event/filetr-event.schema";
+import logger from "../../logger";
 
 export class EventController {
     constructor(private readonly eventRepository: IEventRepository) {
@@ -35,14 +36,56 @@ export class EventController {
 
     //core
     async createEvent(req: Request, res: Response): Promise<void> {
+        const userId = req.user?.sub;
+        const file = req.file as Express.Multer.File;
+
+        logger.info(
+            { userId, body: req.body, action: "createEvent" },
+            "[EventController] Attempting to create a new event"
+        );
+
         try {
-            const eventData: CreateEventDto = req.body;
-            const newEvent = await this.eventRepository.create(eventData);
+            const validatedData = req.body;
+
+            const eventDto: CreateEventDto = {
+                ...validatedData,
+                ownerId: userId,
+                imageUrl: file ? file.path : validatedData.imageUrl,
+            };
+            const newEvent = await this.eventRepository.create(eventDto);
             res.status(201).json(newEvent);
-        } catch (error) {
+        } catch (error: any) {
+            logger.error(
+                { error: error.message, userId, action: "createEvent.failed" },
+                "[EventController] Unexpected error during event creation"
+            );
             this.handleError(res, error);
         }
     }
+
+    uploadImage = async (req: Request, res: Response) => {
+        const userId = req.user?.sub;
+        logger.info(
+            { action: "uploadEventImage" },
+            "[EventController] Uploading image to Cloudinary"
+        );
+
+        try {
+            const file = (req as any).file;
+
+            if (!file) {
+                logger.warn({ userId }, "[EventController] Upload attempt without file");
+                return res.status(400).json({ message: "No file uploaded" });
+            }
+
+            const imageUrl = file.path;
+
+            return res.status(200).json({ url: imageUrl });
+        } catch (err: any) {
+            logger.error({ error: err.message }, "[EventController] Image upload failed");
+            return res.status(500).json({ message: "Upload failed" });
+        }
+    };
 
     async getEventById(req: Request, res: Response): Promise<void> {
         try {

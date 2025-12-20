@@ -47,3 +47,23 @@ export interface EventGoalComparisonDto {
     actualParticipants: number; // registered count
     completionRate: number;
 }
+
+// Status overview of events managed by a manager
+export interface ManagerEventStatusOverviewDto {
+    status: string;
+    count: number;
+}
+
+// Monthly completed events stats for a manager
+export interface ManagerMonthlyCompletedStatsDto {
+    month: string; // "January", "February", ...
+    count: number;
+}
+
+// Top events by participants for a manager
+export interface ManagerTopParticipantsEventDto {
+    id: string;
+    name: string;
+    register_count: number;
+    capacity: number;
+}

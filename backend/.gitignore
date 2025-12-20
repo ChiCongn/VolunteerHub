@@ -30,3 +30,4 @@ dist-ssr/
 
 # Prisma
 src/infrastructure/prisma/generated/
+uploads/
