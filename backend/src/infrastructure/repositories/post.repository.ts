@@ -29,19 +29,45 @@ export class PostRepository implements IPostRepository {
     ) {}
 
     // Core CRUD
-    async create(post: CreatePostDto): Promise<Post> {
+    async create(post: CreatePostDto): Promise<PostView> {
         logger.debug(
-            {
-                authorId: post.authorId,
-                eventId: post.eventId,
-                action: "create post",
-            },
+            { authorId: post.authorId, eventId: post.eventId, action: "create post" },
             "[PostRepository] Creating new post on event"
         );
 
-        const postId = await this.insert(post);
-        return this.findById(postId);
+        const newPost = await this.prisma.posts.create({
+            data: {
+                author_id: post.authorId,
+                event_id: post.eventId,
+                content: post.content,
+                image_url: post.imageUrl,
+            },
+            include: {
+                users: true,
+                events: true,
+            },
+        });
+
+        return {
+            id: newPost.id,
+            content: newPost.content,
+            imageUrl: newPost.image_url || "",
+            createdAt: newPost.created_at,
+            author: {
+                id: newPost.users.id,
+                username: newPost.users.username,
+                avatarUrl: newPost.users.avatar_url || "",
+                role: newPost.users.role,
+            },
+            event: {
+                id: newPost.events.id,
+                name: newPost.events.name,
+            },
+            reactionCount: 0,
+            commentCount: 0,
+        };
     }
+
     async findById(id: string): Promise<Post> {
         logger.debug(
             {
