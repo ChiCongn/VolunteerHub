@@ -91,14 +91,14 @@ export default function NotificationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen pb-10">
       <div className="max-w-4xl mx-auto pt-8 px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Thông báo</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
             <p className="text-muted-foreground">
-              Quản lý tất cả các hoạt động và cập nhật của bạn
+              Manage all your activity and notifications
             </p>
           </div>
           <Button
@@ -107,14 +107,14 @@ export default function NotificationPage() {
             onClick={handleMarkAllRead}
           >
             <CheckCheck className="h-4 w-4" />
-            Đánh dấu tất cả đã đọc
+            Mark all as read
           </Button>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
           {loading ? (
             <div className="p-20 text-center text-muted-foreground">
-              Đang tải thông báo...
+              Loading notification...
             </div>
           ) : notifications.length > 0 ? (
             <div className="divide-y divide-gray-100">
@@ -132,7 +132,7 @@ export default function NotificationPage() {
                 <Bell className="h-8 w-8 text-gray-400" />
               </div>
               <p className="text-gray-500 font-medium">
-                Bạn chưa có thông báo nào
+                You don't have any notification!
               </p>
             </div>
           )}

@@ -176,7 +176,7 @@ const NotificationMenu = ({
 
       <DropdownMenuContent align="end" className="w-[380px] p-2">
         <div className="flex items-center justify-between px-2 py-2">
-          <h2 className="text-xl font-bold italic">Thông báo</h2>
+          <h2 className="text-xl font-bold italic">Notifications</h2>
           <Link to="/notifications">
             <Button
               variant="link"
@@ -188,7 +188,7 @@ const NotificationMenu = ({
                 }
               }}
             >
-              Xem tất cả
+              Mark all as read
             </Button>
           </Link>
         </div>
@@ -204,7 +204,7 @@ const NotificationMenu = ({
             ))
           ) : (
             <div className="p-8 text-center text-muted-foreground">
-              Không có thông báo nào
+              You don't have any notification
             </div>
           )}
         </div>
@@ -215,7 +215,7 @@ const NotificationMenu = ({
               variant="secondary"
               className="w-full font-semibold bg-gray-100 hover:bg-gray-200"
             >
-              Xem thông báo trước đó
+              See previous notifications
             </Button>
           </Link>
         </div>
