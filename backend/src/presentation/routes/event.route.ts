@@ -13,6 +13,8 @@ import { RegistrationFilterSchema } from "../validators/registration/filter-regi
 import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
 import { authorize } from "../../middlewares/authorize.middleware";
 import { EventPolicy } from "../../application/policies/event.policy";
+import { CreatePostSchema } from "../validators/post/create-post.schema";
+import { PostPolicy } from "../../application/policies/post.policy";
 
 export const eventRouter = Router();
 
@@ -27,6 +29,14 @@ eventRouter.post(
     validate(RegistrationFilterSchema),
     authorize(EventPolicy.register),
     registrationController.register
+);
+
+eventRouter.post(
+    "/:eventId/posts",
+    authenticate,
+    validate(CreatePostSchema),
+    authorize(PostPolicy.participant, (req) => [req.params.eventId]),
+    postController.createPost
 );
 
 eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);
@@ -46,7 +56,7 @@ eventRouter.patch(
     "/:eventId",
     authenticate,
     validate(UpdateEventSchema),
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.updateEvent
 );
 
@@ -54,7 +64,7 @@ eventRouter.get(
     "/:eventId",
     authenticate,
     validate(GetEventSchema),
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.viewPublic),
     eventController.getEventById
 );
 
@@ -62,7 +72,7 @@ eventRouter.delete(
     "/:eventId",
     authenticate,
     validate(GetEventSchema),
-    authorize(EventPolicy.ownerEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.deleteEvent
 );
 
@@ -70,14 +80,14 @@ eventRouter.post(
     "/:eventId/cancel",
     authenticate,
     validate(CancelEventSchema),
-    authorize(EventPolicy.ownerEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.cancelEvent
 );
 
 eventRouter.patch(
     "/:eventId/complete",
     authenticate,
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.completeEvent
 );
 
@@ -86,7 +96,7 @@ eventRouter.get(
     "/:eventId/registrations",
     authenticate,
     validate(CreateRegistrationSchema),
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     registrationController.listRegistration
 );
 
@@ -94,7 +104,7 @@ eventRouter.get(
     "/:eventId/participants",
     authenticate,
     validate(GetEventSchema),
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.getParticipantsByEventId
 );
 
@@ -102,7 +112,7 @@ eventRouter.get(
     "/:eventId/registered-users",
     authenticate,
     validate(GetEventSchema),
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.getRegisteredUsersByEventId
 );
 
@@ -110,7 +120,7 @@ eventRouter.get(
     "/:eventId/managers",
     authenticate,
     validate(GetEventSchema),
-    authorize(EventPolicy.manageEvent),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.getEventManagersByEventId
 );
 

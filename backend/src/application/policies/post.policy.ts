@@ -5,6 +5,8 @@ import {
     requireAuthorPost,
     requireManagerEvent,
     requireOwnerEvent,
+    requirePartcipantEvent,
+    requirePostEditPermission,
     requireRole,
 } from "./helpers";
 
@@ -14,17 +16,19 @@ export const PostPolicy = {
      * If posting to an event: Must be Manager/Owner of that event.
      * If general post: Authenticated.
      */
-    create: async (authUser: AuthContext, eventId: string) => {
-        
+    participant: async (authUser: AuthContext, eventId: string) => {
+        console.log("eventId", eventId);
+        requirePartcipantEvent(authUser.id, eventId);
     },
 
     /**
      * Update, Delete, or Restore a post
      * STRICTLY: Only the author (owner) of the post
      */
-    owner: async (authUser: AuthContext, postId: string) => {
-        // Admins can moderate/delete any post
-        requireAuthorPost(authUser.id, postId);
+    editor: async (authUser: AuthContext, postId: string) => {
+        // Event manager of the event contains this post
+        // can moderate/delete any post
+        requirePostEditPermission(authUser.id, postId);
     },
 
     /**

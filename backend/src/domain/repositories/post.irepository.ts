@@ -1,5 +1,5 @@
 import { Post } from "../entities/post.entity";
-import { CreatePostDto, UpdatePostDto, PostView } from "../../application/dtos/post.dto";
+import { CreatePostDto, UpdatePostDto, PostView, PostAuthInfoDto } from "../../application/dtos/post.dto";
 
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
@@ -43,4 +43,5 @@ export interface IPostRepository {
     // utils
     findEventIdByPostId(postId: string): Promise<string>;
     findAuthorId(postId: string): Promise<string>;
+    getPostAuthInfo(postId: string): Promise<PostAuthInfoDto>
 }

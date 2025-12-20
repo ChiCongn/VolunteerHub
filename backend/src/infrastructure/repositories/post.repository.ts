@@ -1,7 +1,12 @@
 import { IPostRepository } from "../../domain/repositories/post.irepository";
 import { PrismaClient, posts as PrismaPost } from "../prisma/generated/client";
 import { Post } from "../../domain/entities/post.entity";
-import { CreatePostDto, UpdatePostDto, PostView } from "../../application/dtos/post.dto";
+import {
+    CreatePostDto,
+    UpdatePostDto,
+    PostView,
+    PostAuthInfoDto,
+} from "../../application/dtos/post.dto";
 import {
     PostNotFoundError,
     NotPostAuthorError,
@@ -635,6 +640,35 @@ export class PostRepository implements IPostRepository {
             );
             throw new ReactionAlreadyExistsError(postId, userId);
         }
+    }
+
+    async getPostAuthInfo(postId: string): Promise<PostAuthInfoDto> {
+        logger.warn(
+            { postId, action: "getPostAuthInfo" },
+            "[PostRepository] Fetching post auth info"
+        );
+        const post = await this.prisma.posts.findUnique({
+            where: { id: postId },
+            select: {
+                author_id: true,
+                events: {
+                    select: {
+                        owner_id: true,
+                        event_manager_ids: true,
+                    },
+                },
+            },
+        });
+
+        if (!post) {
+            throw new PostNotFoundError(postId);
+        }
+
+        return {
+            authorId: post.author_id,
+            eventOwnerId: post.events.owner_id,
+            eventManagerIds: post.events.event_manager_ids,
+        };
     }
 
     private toDomain(postPrisma: PrismaPost): Post {

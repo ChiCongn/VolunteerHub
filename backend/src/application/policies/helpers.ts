@@ -104,7 +104,16 @@ export const requireManagerEvent = async (userId: string, eventId: string) => {
 
 // Checks if a user is allowed to view or interact with an event
 // Used for read operations and as a foundation for post/comment access
-export const canAccessEvent = (userId: string, eventId: string) => {};
+export const requirePartcipantEvent = async (userId: string, eventId: string) => {
+    const isParticipant = await eventService.isParticipant(userId, eventId);
+    if (!isParticipant) {
+        logger.error(
+            { userId, action: "requirePartcipantEvent" },
+            `[Authorization] User with ID: ${userId} does not participate event with ID: ${eventId}`
+        );
+        throw new ForbiddenError();
+    }
+};
 
 // 4. Post Permissions
 export const requireAuthorPost = async (userId: string, postId: string) => {
@@ -120,6 +129,23 @@ export const requireAuthorPost = async (userId: string, postId: string) => {
             `[Authorization] User with ID: ${userId} is not author of post ${postId}`
         );
         throw new ForbiddenError();
+    }
+};
+
+/**
+ * Post Permissions for Editing/Deleting
+ * Allows: Author, Event Managers (if post is in an event), or Admins
+ */
+export const requirePostEditPermission = async (userId: string, postId: string) => {
+    logger.debug(
+        { action: "requirePostEditPermission", userId, postId },
+        `[Authorization] Checking edit rights for post ${postId}`
+    );
+
+    const allowedIds = await postService.getEditPermissionIds(postId);
+
+    if (!allowedIds.includes(userId)) {
+        throw new ForbiddenError("Only the author or event managers can edit this post");
     }
 };
 

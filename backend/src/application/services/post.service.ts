@@ -7,6 +7,8 @@ import { ListResult } from "../dtos/list-result.dto";
 import { eventRepo, postRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
 import { IEventRepository } from "../../domain/repositories/event.irepository";
+import { PostNotFoundError } from "../../domain/errors/post.error";
+import { ForbiddenError } from "../../domain/errors/user.error";
 
 export class PostService {
     constructor(
@@ -138,6 +140,26 @@ export class PostService {
             "[PostService] Fetching event id that this post belong to"
         );
         return this.postRepo.findEventIdByPostId(postId);
+    }
+
+    async getEditPermissionIds(postId: string): Promise<string[]> {
+        logger.debug(
+            { action: "requireEditPermission", postId },
+            `[Authorization] Checking edit rights for post ${postId}`
+        );
+
+        const postAuthInfo = await this.postRepo.getPostAuthInfo(postId);
+
+        if (!postAuthInfo) {
+            throw new PostNotFoundError(postId);
+        }
+
+        const { authorId, eventOwnerId, eventManagerIds } = postAuthInfo;
+
+        const permissionIds = [authorId, eventOwnerId, ...(eventManagerIds || [])];
+
+        // Deduplicate in case author === owner or manager
+        return Array.from(new Set(permissionIds));
     }
 }
 
