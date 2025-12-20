@@ -41,7 +41,6 @@ export default function VolunteerProgressCard() {
   // Map the array of 7 numbers from backend to Recharts format
   const chartData = useMemo(() => {
     if (!stats) return [];
-    console.log(stats.currentWeek);
 
     return stats.currentWeek.dailyHours.map((hours, index) => ({
       day: DAY_LABELS[index],

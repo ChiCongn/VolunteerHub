@@ -8,7 +8,6 @@ export const managerStatsService = {
         const { data } = await apiClient.get<ManagerEventStatusOverview[]>(
             `/stats/managers/status-overview`
         );
-        console.log("get stats overview", data);
         return data;
     },
 

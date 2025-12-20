@@ -20,6 +20,7 @@ import { useAuth } from "@/components/context/AuthContext";
 import { userStartsService } from "@/services/user/user-stats.service";
 
 import { useAuthState } from "@/hooks/useAuthState";
+import { toast } from "sonner";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function LoginPage() {
@@ -43,7 +44,6 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const res = await authService.login(data.email, data.password);
-      console.log(res);
       const store = useUserStore.getState();
       store.setTokens(res.accessToken, res.refreshToken);
       store.setUser(res.user);
@@ -54,7 +54,7 @@ export default function LoginPage() {
       // track user after loging in
       userStartsService.trackUserLogin();
 
-      //toast.success("Welcome back to VolunteerHub!");
+      toast.success("Welcome back to VolunteerHub!");
       if (res.user?.role === "admin") {
         navigate("/admin/overview");
       } else if (res.user?.role === "volunteer") {
@@ -63,11 +63,10 @@ export default function LoginPage() {
         navigate("/event-manage");
       }
     } catch (error: any) {
-      console.log(error);
-      //   toast.error(
-      //     error?.response?.data?.message ||
-      //       "Login failed. Please check your credentials."
-      //   );
+        toast.error(
+          error?.response?.data?.message ||
+            "Login failed. Please check your credentials."
+        );
     } finally {
       setIsLoading(false);
     }

@@ -274,7 +274,6 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
     const { logout: authContextLogout, user: authUser } = useAuth();
 
     const displayUser = authUser || user;
-    console.log("Display user:", displayUser);
 
     const displayUserName = displayUser?.username || userName || "Guest";
     const displayUserEmail = displayUser?.email || userEmail || "";

@@ -68,7 +68,6 @@ export const postService = {
     // to avoid loading all posts at once.
     async getFeedPosts() {
         const { data } = await apiClient.get<Post[]>("/posts/feed");
-        console.log(data);
         return data;
     },
 

@@ -127,7 +127,6 @@ export function EventManagementPage() {
         console.error("Fetch stats failed", error);
       }
     };
-    console.log("fetch stats");
     fetchStats();
   }, [
     selectedCategoryStats,
@@ -137,7 +136,6 @@ export function EventManagementPage() {
   ]);
 
   const handleCategoryStatsChange = (category: EventCategory | "all") => {
-    console.log(stats);
     setSelectedCategoryStats(category);
   };
 

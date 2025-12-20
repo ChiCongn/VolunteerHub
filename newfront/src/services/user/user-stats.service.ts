@@ -12,7 +12,6 @@ export const userStartsService = {
         const { data } = await apiClient.get<WeeklyOnlineStats>(
             `/users/me/stats/weekly-online`
         );
-        console.log("weekly online", data);
         return data;
     },
 
