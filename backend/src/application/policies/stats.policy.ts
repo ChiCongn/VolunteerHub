@@ -37,7 +37,7 @@ export const StatsPolicy = {
      * Note: Both checks are independent → one passing is enough
      */
     eventStats: async (authUser: AuthContext, eventId: string) => {
-        requireManagerEvent(authUser.id, eventId);
+        await requireManagerEvent(authUser.id, eventId);
     },
 
     /**

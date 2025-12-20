@@ -17,8 +17,7 @@ export const PostPolicy = {
      * If general post: Authenticated.
      */
     participant: async (authUser: AuthContext, eventId: string) => {
-        console.log("eventId", eventId);
-        requirePartcipantEvent(authUser.id, eventId);
+        await requirePartcipantEvent(authUser.id, eventId);
     },
 
     /**
@@ -28,7 +27,7 @@ export const PostPolicy = {
     editor: async (authUser: AuthContext, postId: string) => {
         // Event manager of the event contains this post
         // can moderate/delete any post
-        requirePostEditPermission(authUser.id, postId);
+        await requirePostEditPermission(authUser.id, postId);
     },
 
     /**

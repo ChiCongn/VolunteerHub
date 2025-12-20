@@ -16,7 +16,7 @@ export const EventPolicy = {
     },
 
     participant: async (authUser: AuthContext, eventId: string) => {
-        requirePartcipantEvent(authUser.id, eventId);
+        await requirePartcipantEvent(authUser.id, eventId);
     },
 
     /**
