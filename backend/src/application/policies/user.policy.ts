@@ -1,6 +1,5 @@
-import { UserRole, UserStatus } from "../../domain/entities/enums";
-import { ForbiddenError } from "../../domain/errors/user.error";
-import { AuthContext, requireActiveStatus, requireRole } from "./helpers";
+import { UserRole } from "../../domain/entities/enums";
+import { AuthContext, requireRole } from "./helpers";
 
 /**
  * UserPolicy contains authorization logic for user-related actions.
@@ -11,7 +10,8 @@ import { AuthContext, requireActiveStatus, requireRole } from "./helpers";
  */
 export const UserPolicy = {
     /**
-     * Only admins (RootAdmin/Admin) can list or filter users.
+     * List all users with filters
+     * Only RootAdmin & Admin
      */
     list: async (authUser: AuthContext) => {
         const permittedRoles = [UserRole.RootAdmin, UserRole.Admin];
@@ -19,35 +19,66 @@ export const UserPolicy = {
     },
 
     /**
-     * No policy required; JWT ensures this is the authenticated user.
-     * Endpoint operates on the user's own profile.
+     * Get the logged-in user's own profile
+     * Allowed for any authenticated user (Self)
      */
-    getCurrentUserProfile: async () => {},
+    getCurrentUserProfile: async (authUser: AuthContext) => {
+        // Naturally allowed if authenticated
+        return;
+    },
 
     /**
-     * No policy required; JWT ensures this is the authenticated user.
-     * Endpoint updates the user's own profile.
+     * Update own profile / soft delete account
+     * Allowed for any authenticated user (Self)
      */
-    updateProfile: async () => {},
+    updateProfile: async (authUser: AuthContext) => {
+        // Authenticate middleware already ensures user is 'me'
+        return;
+    },
 
     /**
-     * No policy required; JWT ensures this is the authenticated user.
-     * Endpoint soft-deletes the user's own account.
+     * Soft delete own account
      */
-    softDelete: async (authUser: AuthContext, targetUserId: string) => {},
+    softDelete: async (authUser: AuthContext) => {
+        return;
+    },
 
     /**
-     * Any active user can search for other users by username.
+     * Tracking and Heartbeat (Login streak, Online time)
+     * Allowed for any authenticated user (Self)
      */
-    searchByUsername: async (authUser: AuthContext) => {},
+    trackActivity: async (authUser: AuthContext) => {
+        return;
+    },
 
     /**
-     * Anyone can fetch a user's public profile.
+     * Personal Statistics Dashboards
+     * (Streak, Weekly Online, Monthly Events)
      */
-    fetchPublicProfile: async (authUser: AuthContext) => {},
+    viewPersonalStats: async (authUser: AuthContext) => {
+        // Accessing personal stats is allowed for the owner
+        return;
+    },
 
     /**
-     * Only admins (RootAdmin/Admin) can lock or unlock user accounts.
+     * Search users by username
+     * Typically allowed for all authenticated users to find friends/managers
+     */
+    searchByUsername: async (authUser: AuthContext) => {
+        return;
+    },
+
+    /**
+     * Fetch public profile of another user
+     * Allowed for all authenticated users
+     */
+    fetchPublicProfile: async (authUser: AuthContext) => {
+        return;
+    },
+
+    /**
+     * Lock or unlock a user account
+     * Strict: Only RootAdmin & Admin
      */
     setUserLock: async (authUser: AuthContext) => {
         const permittedRoles = [UserRole.RootAdmin, UserRole.Admin];

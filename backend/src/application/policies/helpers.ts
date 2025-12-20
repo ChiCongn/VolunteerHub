@@ -7,6 +7,7 @@ import { eventService } from "../services/event.service";
 import { postService } from "../services/post.service";
 import { commentService } from "../services/comment.service";
 import { notificationService } from "../services/notification.service";
+import { registrationService } from "../services/registration.service";
 
 export interface AuthContext {
     id: string;
@@ -184,6 +185,47 @@ export const requireOwnerNotification = async (userId: string, notificationId: s
         logger.error(
             { action: "requireOwnerNotification", userId, notiId: notificationId, ownerId },
             `[Authorization] User ${userId} does not own notification ${notificationId}`
+        );
+        throw new ForbiddenError();
+    }
+};
+
+// 8. Registration Permissions
+export const requireRegistrationOwner = async (userId: string, registrationId: string) => {
+    logger.debug(
+        { action: "requireRegistrationOwner", userId, registrationId },
+        `[Authorization] Checking registration ownership for user ${userId}`
+    );
+
+    // Assuming your registrationService has a method to find the owner of a registration
+    const ownerId = await registrationService.findOwnerId(registrationId);
+
+    if (userId !== ownerId) {
+        logger.error(
+            { userId, action: "requireRegistrationOwner" },
+            `[Authorization] User with ID: ${userId} is not owner of registration ${registrationId}`
+        );
+        throw new ForbiddenError();
+    }
+};
+
+/**
+ * Check if user is a manager or owner of the event associated with a registration
+ */
+export const requireManagerByRegistration = async (userId: string, registrationId: string) => {
+    logger.debug(
+        { action: "requireManagerByRegistration", userId, registrationId },
+        `[Authorization] Checking manager rights for registration ${registrationId}`
+    );
+
+    // Fetch the manager/owner IDs associated with the event of this registration
+    const authorizedIds =
+        await registrationService.findAuthorizedManagersByRegistration(registrationId);
+
+    if (!authorizedIds.includes(userId)) {
+        logger.error(
+            { userId, action: "requireManagerByRegistration" },
+            `[Authorization] User ${userId} is not authorized to manage registration ${registrationId}`
         );
         throw new ForbiddenError();
     }
