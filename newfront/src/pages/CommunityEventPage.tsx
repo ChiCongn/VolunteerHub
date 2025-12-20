@@ -23,6 +23,7 @@ import type { Post } from "@/types/post.type";
 import type { Event } from "@/types/event.type";
 
 import PostDetailDialog from "@/components/post/PostDetailDialog";
+import { toast } from "sonner";
 
 export const CommunityEventPage = () => {
   const { eventId } = useParams();
@@ -53,6 +54,7 @@ export const CommunityEventPage = () => {
         setPosts(postsData.items);
       } catch (error) {
         console.error("Error fetching data:", error);
+        toast.error("No post found");
       } finally {
         setLoading(false);
       }
@@ -96,9 +98,10 @@ export const CommunityEventPage = () => {
       };
 
       setPosts((prev) => [newPost, ...prev]);
+      toast.success("Created post successfully!");
     } catch (error) {
       console.error("Failed to create post:", error);
-      alert("Failed to create post. Please try again.");
+      toast.error("You must enroll this event to create a post!");
     }
   };
 
@@ -160,7 +163,6 @@ export const CommunityEventPage = () => {
 
                   {/* Posts List */}
                   {posts.map((post) => (
-
                     <PostCard
                       key={post.id}
                       post={post}
@@ -172,7 +174,11 @@ export const CommunityEventPage = () => {
                       No posts yet. Be the first to start the conversation!
                     </div>
                   )}
-                  <PostDetailDialog post={selectedPost} open={open} onClose={handleClose} />
+                  <PostDetailDialog
+                    post={selectedPost}
+                    open={open}
+                    onClose={handleClose}
+                  />
                 </div>
 
                 {/* RIGHT COLUMN: SIDEBAR */}
