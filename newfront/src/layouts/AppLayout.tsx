@@ -27,7 +27,6 @@ const HeartbeatProcessor = () => {
         // Update lastPulse ONLY after a successful API call
         lastPulse = now;
 
-        console.log(`[Heartbeat] Recorded ${secondsPassed}s of activity.`);
       } catch (err) {
         console.error("Heartbeat failed", err);
         // We don't update lastPulse here so that the next successful

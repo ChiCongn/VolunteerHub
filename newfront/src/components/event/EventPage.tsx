@@ -15,7 +15,6 @@ export default function EventPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // state cho sort
   const [selectedCategory, setSelectedCategory] = useState<
     EventCategory | "all"
   >("all");
@@ -51,18 +50,6 @@ export default function EventPage() {
     fetchEvents();
   }, []);
 
-  //   const filteredEvents = useMemo(() => {
-  //     return events.filter((event) => {
-  //       const matchCategory =
-  //         selectedCategory === "all" ||
-  //         event.categories.includes(selectedCategory);
-
-  //       const matchStatus =
-  //         selectedStatus === "all" || event.status === selectedStatus;
-
-  //       return matchCategory && matchStatus;
-  //     });
-  //   }, [events, selectedCategory, selectedStatus]);
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
@@ -77,7 +64,6 @@ export default function EventPage() {
     });
   }, [events, selectedCategory, selectedStatus]);
 
-  //giao dien load
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -88,7 +74,6 @@ export default function EventPage() {
       </div>
     );
   }
-  // if error
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-destructive space-y-2">

@@ -19,4 +19,5 @@ export interface IRegistrationRepository {
     ): Promise<ListResult<Registration>>;
     checkExistsByUserAndEvent(userId: string, eventId: string): Promise<boolean>;
     exists(registrationId: string): Promise<boolean>;
+    findAuthorizedManagerIds(registrationId: string): Promise<string[]>
 }

@@ -29,8 +29,6 @@ export const authorize =
 
             next();
         } catch (err) {
-            console.log(err);
-            console.log(req.user);
             logger.warn(
                 {
                     reason: "Unauthorized access",

@@ -23,6 +23,7 @@ import type { Post } from "@/types/post.type";
 import type { Event } from "@/types/event.type";
 
 import PostDetailDialog from "@/components/post/PostDetailDialog";
+import { toast } from "sonner";
 
 export const CommunityEventPage = () => {
   const { eventId } = useParams();
@@ -53,6 +54,7 @@ export const CommunityEventPage = () => {
         setPosts(postsData.items);
       } catch (error) {
         console.error("Error fetching data:", error);
+        toast.error("No post found");
       } finally {
         setLoading(false);
       }
@@ -93,7 +95,7 @@ export const CommunityEventPage = () => {
       imageUrl: imageUrl || "",
       createdAt: new Date(),
       event: {
-        id: event?.id,
+        id: event?.id || "",
         name: event!.name || "Event này",
       },
       reactionCount: 0,
@@ -115,12 +117,11 @@ export const CommunityEventPage = () => {
         createdAt: new Date().toISOString(),
       };
 
-      //setPosts((prev) => [newPost, ...prev]);
+      setPosts((prev) => [newPost, ...prev]);
+      toast.success("Created post successfully!");
     } catch (error) {
       console.error("Failed to create post:", error);
-
-      setPosts((prev) => prev.filter((p) => p.id !== optimisticPost.id));
-      alert("Failed to create post. Please try again.");
+      toast.error("You must enroll this event to create a post!");
     }
   };
 
@@ -143,7 +144,8 @@ export const CommunityEventPage = () => {
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
         onSubmit={handleCreatePostSubmit}
-        userAvatar="https://github.com/shadcn.png"
+        userAvatar={user?.avatarUrl}
+        userName={user?.username || "Me"}
       />
 
       <div className="flex w-full justify-center">

@@ -11,7 +11,9 @@ export const postService = {
         imageUrl?: string;
         authorId: string;
     }) => {
-        const response = await apiClient.post("/posts", data);
+        console.log("data", data);
+        const response = await apiClient.post(`/events/${data.eventId}/posts`, data);
+        console.log(response.data);
         return response.data;
     },
 
@@ -64,7 +66,6 @@ export const postService = {
     // to avoid loading all posts at once.
     async getFeedPosts() {
         const { data } = await apiClient.get<Post[]>("/posts/feed");
-        console.log(data);
         return data;
     },
 

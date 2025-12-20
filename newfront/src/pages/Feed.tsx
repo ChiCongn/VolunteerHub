@@ -16,7 +16,6 @@ export default function Feed() {
       try {
         setIsLoading(true);
         const data = await postService.getFeedPosts();
-        console.log("feed post: ", data);
         setPosts(data);
       } catch (error) {
         console.error("Error loading feed:", error);

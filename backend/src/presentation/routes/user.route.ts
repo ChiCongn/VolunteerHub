@@ -18,8 +18,14 @@ import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
 
 export const userRouter = Router();
 
-userRouter.get("/", validate(ListUserFilterSchema), userController.listUsers);
-//userRouter.get("/", authenticate, validate(ListUserFilterSchema), authorize(UserPolicy.list), userController.listUsers);
+//userRouter.get("/", validate(ListUserFilterSchema), userController.listUsers);
+userRouter.get(
+    "/",
+    authenticate,
+    validate(ListUserFilterSchema),
+    authorize(UserPolicy.list),
+    userController.listUsers
+);
 userRouter.get(
     "/me",
     authenticate,
@@ -31,6 +37,7 @@ userRouter.patch(
     authenticate,
     uploadLocal("avatars").single("image"),
     validate(UpdateUserSchema),
+    authorize(UserPolicy.updateProfile),
     userController.updateProfile
 );
 userRouter.delete("/me", authenticate, authorize(UserPolicy.softDelete), userController.softDelete);
@@ -39,18 +46,45 @@ userRouter.post(
     "/me/heartbeat",
     authenticate,
     validate(UpdateOnlineTimeSchema),
+    authorize(UserPolicy.trackActivity),
     userController.updateOnlineTime
 );
 
-userRouter.post("/me/track-login", authenticate, userController.trackUserLogin);
+userRouter.post(
+    "/me/track-login",
+    authenticate,
+    authorize(UserPolicy.trackActivity),
+    userController.trackUserLogin
+);
 
 // Statistics & Dashboards
-userRouter.get("/me/stats/streak", authenticate, userController.getLoginStreak);
+userRouter.get(
+    "/me/stats/streak",
+    authenticate,
+    authorize(UserPolicy.viewPersonalStats),
+    userController.getLoginStreak
+);
 
-userRouter.get("/me/stats/monthly-events", authenticate, userController.getMonthlyEventStats);
+userRouter.get(
+    "/me/stats/monthly-events",
+    authenticate,
+    authorize(UserPolicy.viewPersonalStats),
+    userController.getMonthlyEventStats
+);
 
-userRouter.get("/me/stats/weekly-online", authenticate, userController.getWeeklyOnline);
-userRouter.get("/me/stats/weekly-events", authenticate, userController.getWeeklyEventParticipation);
+userRouter.get(
+    "/me/stats/weekly-online",
+    authenticate,
+    authorize(UserPolicy.viewPersonalStats),
+    userController.getWeeklyOnline
+);
+
+userRouter.get(
+    "/me/stats/weekly-events",
+    authenticate,
+    authorize(UserPolicy.viewPersonalStats),
+    userController.getWeeklyEventParticipation
+);
 
 userRouter.get(
     "/search",
@@ -68,8 +102,8 @@ userRouter.get(
 );
 userRouter.patch(
     "/:userId/lock",
-    //authenticate,
+    authenticate,
     validate(LockUserSchema),
-    //authorize(UserPolicy.setUserLock),
+    authorize(UserPolicy.setUserLock), // Policy: Only RootAdmin & Admin
     userController.setUserLock
 );

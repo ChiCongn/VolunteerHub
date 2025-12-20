@@ -13,13 +13,30 @@ export class PostsController {
 
     // Create Post
     createPost = async (req: Request, res: Response) => {
+        const { eventId } = req.params;
+        const { content, imageUrl } = req.body;
+        const authorId = req.user.sub;
+
+        logger.info(
+            { authorId, eventId, action: "createPost" },
+            `[PostController] Creating new post for event: ${eventId}`
+        );
         try {
-            const result = await this.postService.createPost(req.body);
+            const result = await this.postService.createPost({
+                eventId,
+                content,
+                imageUrl,
+                authorId,
+            });
             return res.status(201).json({
                 message: "Post created successfully",
                 data: result,
             });
         } catch (error: any) {
+            logger.error(
+                { authorId, eventId, error: error.message, action: "createPost_error" },
+                `[PostController] Failed to create post: ${error.message}`
+            );
             return res.status(400).json({ error: error.message });
         }
     };

@@ -15,15 +15,15 @@ export const statsRouter = Router();
 
 statsRouter.get(
     "/",
-    //authenticate,
-    //authorize(StatsPolicy.overview),
+    authenticate,
+    authorize(StatsPolicy.overview),
     statsController.getOverviewStats
 );
 statsRouter.get(
     "/events",
-    // authenticate,
+    authenticate,
     validate(EventStatsFilterSchema),
-    // authorize(StatsPolicy.allEventsStats),
+    authorize(StatsPolicy.allEventsStats),
     statsController.getEventsStats
 );
 statsRouter.get(
@@ -41,23 +41,29 @@ statsRouter.get(
 );
 statsRouter.get(
     "/volunteers",
-    // authenticate,
-    // authorize(StatsPolicy.volunteerStats),
+    authenticate,
+    authorize(StatsPolicy.volunteerStats),
     statsController.getVolunteerStats
 );
 statsRouter.get(
     "/managers",
-    // authenticate,
-    // authorize(StatsPolicy.eventManagersStats),
+    authenticate,
+    authorize(StatsPolicy.eventManagersStats),
     statsController.getEventManagersStats
 );
 
-statsRouter.get("/managers/status-overview", authenticate, statsController.getManagerStatusOverview);
+statsRouter.get(
+    "/managers/status-overview",
+    authenticate,
+    authorize(StatsPolicy.managerDashboard),
+    statsController.getManagerStatusOverview
+);
 
 statsRouter.get(
     "/managers/monthly-completed",
     authenticate,
     validate(getManagerMonthlyCompletedSchema),
+    authorize(StatsPolicy.managerDashboard),
     statsController.getManagerMonthlyCompleted
 );
 
@@ -65,5 +71,6 @@ statsRouter.get(
     "/managers/top-participants",
     authenticate,
     validate(getManagerTopParticipantsSchema),
+    authorize(StatsPolicy.managerDashboard),
     statsController.getManagerTopParticipants
 );

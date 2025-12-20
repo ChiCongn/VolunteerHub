@@ -26,7 +26,6 @@ export const eventManagementService = {
     },
 
     async getEventsStats(filters: EventsStatsFilter): Promise<EventsStats> {
-        console.log("filters: ", filters);
         const { data } = await apiClient.get<EventsStats>("/stats/events", {
             params: {
                 // time range
@@ -52,6 +51,7 @@ export const eventManagementService = {
         return data;
     },
 
+    // TOD: add reason why reject
     async rejectEvent(eventId: string) {
         const { data } = await apiClient.patch<{ message: string }>(
             `/events/${eventId}/reject`

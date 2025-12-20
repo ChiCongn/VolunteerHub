@@ -25,3 +25,9 @@ export interface PostView {
     reactionCount: number;
     commentCount: number;
 }
+
+export interface PostAuthInfoDto {
+    authorId: string;
+    eventOwnerId: string;
+    eventManagerIds: string[];
+}

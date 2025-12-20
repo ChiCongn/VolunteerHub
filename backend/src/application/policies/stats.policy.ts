@@ -1,9 +1,7 @@
 import { UserRole } from "../../domain/entities/enums";
 import {
     AuthContext,
-    requireActiveStatus,
     requireManagerEvent,
-    requireOwnerEvent,
     requireRole,
 } from "./helpers";
 
@@ -39,7 +37,7 @@ export const StatsPolicy = {
      * Note: Both checks are independent → one passing is enough
      */
     eventStats: async (authUser: AuthContext, eventId: string) => {
-        requireManagerEvent(authUser.id, eventId);
+        await requireManagerEvent(authUser.id, eventId);
     },
 
     /**
@@ -66,6 +64,17 @@ export const StatsPolicy = {
      */
     eventManagersStats: async (authUser: AuthContext) => {
         const permittedRoles = [UserRole.RootAdmin, UserRole.Admin];
+        requireRole(authUser.role, permittedRoles);
+    },
+
+    /**
+     * General Manager Dashboard Stats
+     * (Status Overview, Monthly Completed, Top Participants) about event that manager manage
+     */
+    managerDashboard: async (authUser: AuthContext) => {
+        const permittedRoles = [
+            UserRole.EventManager
+        ];
         requireRole(authUser.role, permittedRoles);
     },
 };

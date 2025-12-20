@@ -22,6 +22,7 @@ import { getPasswordStrength } from "@/utils/password.utils";
 import { useUserStore } from "@/stores/user.store";
 import { useAuth } from "@/components/context/AuthContext";
 import { userStartsService } from "@/services/user/user-stats.service";
+import { toast } from "sonner";
 // import Logo from "@/assets/logo.svg?react"
 
 export default function SignupPage() {
@@ -58,25 +59,23 @@ export default function SignupPage() {
         data.email,
         data.password
       );
-      console.log(res);
       const store = useUserStore.getState();
-      
+
       store.setTokens(res.accessToken, res.refreshToken);
       store.setUser(res.user);
 
       authContextLogin(res.user, res.accessToken, res.refreshToken);
       userStartsService.trackUserLogin();
-      
+
       // setPendingEmail(payload.email);
       // setStep(2);
-      //toast.success("Account created successfully! Welcome!");
-      navigate("/dashboard");
+      toast.success("Account created successfully! Welcome!");
+      navigate("/home");
     } catch (error: any) {
-        console.log(error);
-      //   toast.error(
-      //     error?.response?.data?.message ||
-      //       "Registration failed. Please try again."
-      //   );
+      toast.error(
+        error?.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }

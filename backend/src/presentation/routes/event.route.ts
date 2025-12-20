@@ -11,19 +11,44 @@ import { registrationController } from "../controllers/registration.controller";
 import { CreateRegistrationSchema } from "../validators/registration/create-registration.schema";
 import { RegistrationFilterSchema } from "../validators/registration/filter-registration.schema";
 import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
+import { authorize } from "../../middlewares/authorize.middleware";
+import { EventPolicy } from "../../application/policies/event.policy";
+import { CreatePostSchema } from "../validators/post/create-post.schema";
+import { PostPolicy } from "../../application/policies/post.policy";
 
 export const eventRouter = Router();
 
-// Search events - validation happens in controller
+// Public routes
 eventRouter.get("/", eventController.searchEvents);
-
 eventRouter.get("/:eventId", validate(GetEventSchema), eventController.fetchPublicEventView);
 
+// AUTHENTICATED ROUTES (Volunteers/All)
+eventRouter.post(
+    "/:eventId/registrations",
+    authenticate,
+    validate(RegistrationFilterSchema),
+    authorize(EventPolicy.register),
+    registrationController.register
+);
+
+eventRouter.post(
+    "/:eventId/posts",
+    authenticate,
+    validate(CreatePostSchema),
+    authorize(PostPolicy.participant, (req) => [req.params.eventId]),
+    postController.createPost
+);
+
+eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);
+eventRouter.get("/:eventId/search", authenticate, postController.searchPosts);
+
+// MANAGER ROUTES (Ownership/Management required)
 eventRouter.post(
     "/",
     authenticate,
     uploadLocal("events").single("image"),
     validate(CreateEventSchema),
+    authorize(EventPolicy.create),
     eventController.createEvent
 );
 
@@ -31,39 +56,55 @@ eventRouter.patch(
     "/:eventId",
     authenticate,
     validate(UpdateEventSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.updateEvent
 );
 
-eventRouter.get("/:eventId", authenticate, validate(GetEventSchema), eventController.getEventById);
-
-eventRouter.post("/:eventId", authenticate, validate(GetEventSchema), eventController.deleteEvent);
-eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);
-eventRouter.get("/:eventId/search", authenticate, postController.searchPosts);
-eventRouter.post(
-    "/:eventId/registrations",
+eventRouter.get(
+    "/:eventId",
     authenticate,
-    validate(RegistrationFilterSchema),
-    registrationController.register
+    validate(GetEventSchema),
+    authorize(EventPolicy.viewPublic),
+    eventController.getEventById
 );
 
-eventRouter.get(
-    "/:eventId/registrations",
+eventRouter.delete(
+    "/:eventId",
     authenticate,
-    validate(CreateRegistrationSchema),
-    registrationController.listRegistration
+    validate(GetEventSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
+    eventController.deleteEvent
 );
 
 eventRouter.post(
     "/:eventId/cancel",
     authenticate,
     validate(CancelEventSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.cancelEvent
+);
+
+eventRouter.patch(
+    "/:eventId/complete",
+    authenticate,
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
+    eventController.completeEvent
+);
+
+// Participant/Management Listing
+eventRouter.get(
+    "/:eventId/registrations",
+    authenticate,
+    validate(CreateRegistrationSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
+    registrationController.listRegistration
 );
 
 eventRouter.get(
     "/:eventId/participants",
     authenticate,
     validate(GetEventSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.getParticipantsByEventId
 );
 
@@ -71,6 +112,7 @@ eventRouter.get(
     "/:eventId/registered-users",
     authenticate,
     validate(GetEventSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.getRegisteredUsersByEventId
 );
 
@@ -78,13 +120,28 @@ eventRouter.get(
     "/:eventId/managers",
     authenticate,
     validate(GetEventSchema),
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
     eventController.getEventManagersByEventId
 );
 
-eventRouter.get("/admin/pending", authenticate, eventController.listEvents);
+// ADMIN ROUTES (Moderation)
+eventRouter.get(
+    "/admin/pending",
+    authenticate,
+    authorize(EventPolicy.review),
+    eventController.listEvents
+);
 
-eventRouter.patch("/:eventId/approve", eventController.approveEvent);
+eventRouter.patch(
+    "/:eventId/approve",
+    authenticate,
+    authorize(EventPolicy.review),
+    eventController.approveEvent
+);
 
-eventRouter.patch("/:eventId/reject", eventController.rejectEvent);
-
-eventRouter.patch("/:eventId/complete", authenticate, eventController.completeEvent);
+eventRouter.patch(
+    "/:eventId/reject",
+    authenticate,
+    authorize(EventPolicy.review),
+    eventController.rejectEvent
+);

@@ -265,7 +265,6 @@ export class EventRepository implements IEventRepository {
         } else {
             orderBy = "start_time DESC";
         }
-        console.log(orderBy);
 
         // Pagination
         const page = pagination?.page ?? 1;
