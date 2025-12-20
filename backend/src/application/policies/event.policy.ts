@@ -3,6 +3,7 @@ import {
     AuthContext,
     requireManagerEvent,
     requireOwnerEvent,
+    requirePartcipantEvent,
     requireRole,
 } from "./helpers";
 
@@ -12,6 +13,10 @@ export const EventPolicy = {
      */
     viewPublic: async (_authUser: AuthContext) => {
         return; // Open to everyone
+    },
+
+    participant: async (authUser: AuthContext, eventId: string) => {
+        requirePartcipantEvent(authUser.id, eventId);
     },
 
     /**

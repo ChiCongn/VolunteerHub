@@ -34,19 +34,19 @@ postRouter.put(
     "/:id",
     authenticate,
     validate(UpdatePostSchema),
-    authorize(PostPolicy.editor),
+    authorize(PostPolicy.editor, (req) => [req.params.id]),
     postController.updatePost.bind(postController)
 );
 postRouter.delete(
     "/:id",
     authenticate,
-    authorize(PostPolicy.editor),
+    authorize(PostPolicy.editor, (req) => [req.params.id]),
     postController.deletePost.bind(postController)
 );
 postRouter.patch(
     "/:id/restore",
     authenticate,
-    authorize(PostPolicy.editor),
+    authorize(PostPolicy.editor, (req) => [req.params.id]),
     postController.restorePost.bind(postController)
 );
 
@@ -57,6 +57,7 @@ postRouter.post(
     "/:postId/reactions",
     authenticate,
     validate(AddReactionSchema),
+    authorize(PostPolicy.interact, (req) => [req.params.postId]),
     reactionController.handleToggleReaction
 );
 
