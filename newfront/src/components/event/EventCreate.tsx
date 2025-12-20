@@ -79,6 +79,18 @@ export default function CreateEventPage() {
     });
   };
 
+  const resetForm = () => {
+    setName("");
+    setLocation("");
+    setDescription("");
+    setCapacity(1);
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setCategories([EventCategory.Other]);
+  };
+
   const handleCreateEvent = async () => {
     console.log("click");
     if (!name || !location || !startDate || !capacity) {
@@ -107,6 +119,7 @@ export default function CreateEventPage() {
       }
 
       await eventService.createEventWithImage(formData);
+      resetForm();
       toast.success("Event created successfully! Wait approved!");
       // handle success
     } catch (err: any) {
