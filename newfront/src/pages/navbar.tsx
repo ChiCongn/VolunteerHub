@@ -31,6 +31,7 @@ import {
 
 import { useUserStore } from "@/stores/user.store";
 import { useAuth } from "@/components/context/AuthContext";
+import { notificationService } from "@/services/notification.service";
 
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
   return (
@@ -88,41 +89,62 @@ const HamburgerIcon = ({
 );
 
 const NotificationMenu = ({
-  notificationCount = 0,
   onItemClick,
 }: {
-  notificationCount?: number;
   onItemClick?: (id: string) => void;
 }) => {
-  const [notifications, setNotifications] = React.useState<NotificationItem[]>([
-    {
-      id: "1",
-      user: { name: "Việt Vũ", avatar: "https://github.com/shadcn.png" },
-      action: "đã nhắc đến bạn trong một bình luận tại",
-      target: "Chan đê",
-      time: "3 ngày trước",
-      type: "comment",
-      isUnread: true,
-    },
-    {
-      id: "2",
-      user: { name: "Công chim", avatar: "https://github.com/shadcn.png" },
-      action: "đã nhắc đến bạn trong một bình luận tại",
-      target: "ncc fan club",
-      time: "3 ngày trước",
-      type: "comment",
-      isUnread: true,
-    },
-  ]);
+  const [notifications, setNotifications] = React.useState<NotificationItem[]>(
+    []
+  );
+  const { user } = useUserStore();
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  const fetchNotifications = async () => {
+    if (!user?.id) return;
+    try {
+      const result = await notificationService.getByUserId(user.id);
+
+      //map data
+      const mapped = result.data.map((n: any) => ({
+        id: n.id,
+        user: {
+          name: n.sender?.username || "Hệ thống",
+          avatar: n.sender?.avatarUrl || "/default-avatar.png",
+        },
+        action: n.message, // Backend gửi message chuỗi
+        time: new Date(n.createdAt).toLocaleString(),
+        type: n.type, // "comment", "like", v.v...
+        isUnread: !n.isRead,
+      }));
+
+      setNotifications(mapped);
+      setUnreadCount(mapped.filter((i: any) => i.isUnread).length);
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    }
+  };
+
+  const handleItemClick = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      onItemClick?.(id);
+    } catch (error) {
+      console.error("Error marking notification as read", error);
+    }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9 relative">
           <BellIcon className="h-4 w-4" />
-          {notificationCount > 0 && (
+          {unreadCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 border-2 border-white">
-              {notificationCount > 9 ? "9+" : notificationCount}
+              {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
         </Button>
@@ -131,7 +153,16 @@ const NotificationMenu = ({
       <DropdownMenuContent align="end" className="w-[380px] p-2">
         <div className="flex items-center justify-between px-2 py-2">
           <h2 className="text-xl font-bold italic">Thông báo</h2>
-          <Button variant="link" className="text-blue-600 h-auto p-0">
+          <Button
+            variant="link"
+            className="text-blue-600 h-auto p-0"
+            onClick={async () => {
+              if (user?.id) {
+                await notificationService.markAllAsRead(user.id);
+                fetchNotifications();
+              }
+            }}
+          >
             Xem tất cả
           </Button>
         </div>
@@ -142,14 +173,7 @@ const NotificationMenu = ({
               <NotificationCard
                 key={item.id}
                 notification={item}
-                onClick={(id) => {
-                  setNotifications((prev) =>
-                    prev.map((n) =>
-                      n.id === id ? { ...n, isUnread: false } : n
-                    )
-                  );
-                  onItemClick?.(id);
-                }}
+                onClick={handleItemClick}
               />
             ))
           ) : (
@@ -257,7 +281,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
       userName,
       userEmail,
       userAvatar,
-      notificationCount = 3,
+      notificationCount = 1,
       onNavItemClick,
       onInfoItemClick,
       onNotificationItemClick,
@@ -386,7 +410,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
               userName={displayUserName}
               userEmail={displayUserEmail}
               userAvatar={displayUserAvatar}
-              onItemClick={handleUserMenuClick} // Truyền handler xử lý logout
+              onItemClick={handleUserMenuClick}
             />
           </div>
         </div>
