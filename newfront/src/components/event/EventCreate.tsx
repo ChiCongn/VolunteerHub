@@ -26,6 +26,7 @@ import { eventService } from "@/services/event.service";
 import { toast } from "sonner";
 import { getImageUrl } from "@/utils/imageUrl.utils";
 import { useNavigate } from "react-router-dom";
+import ConfirmDialog from "@/components/ConfirmDialong";
 
 const CATEGORIES: { label: string; value: EventCategory }[] = [
   { label: "📚 Education", value: "education" as EventCategory },
@@ -51,6 +52,10 @@ export default function CreateEventPage() {
   const [categories, setCategories] = useState<EventCategory[]>([
     EventCategory.Other,
   ]);
+
+  const [openConfirm, setOpenConfirm] = useState(false);
+
+  const navigate = useNavigate();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -140,7 +145,7 @@ export default function CreateEventPage() {
               <img
                 src={previewUrl}
                 alt="Preview"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : imageUrl ? (
               <img
@@ -321,13 +326,28 @@ export default function CreateEventPage() {
 
           <Button
             className="w-full"
-            onClick={handleCreateEvent}
+            onClick={() => setOpenConfirm(true)}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Creating..." : "Create Event"}
           </Button>
         </CardContent>
       </Card>
+        <ConfirmDialog
+        open={openConfirm}
+        title="Confirm Event Creation"
+        description="Are you sure you want to create this event?"
+        confirmText="Yes, Create"
+        cancelText="Cancel"
+        onConfirm={() => {
+          setOpenConfirm(false);
+          handleCreateEvent();
+          navigate("/communities");
+        }}
+        onCancel={() => {
+            setOpenConfirm(false);
+        }}
+      />
     </div>
   );
 }
