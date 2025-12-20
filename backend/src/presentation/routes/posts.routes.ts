@@ -5,10 +5,18 @@ import { authenticate } from "../../middlewares/authenticate.middleware";
 import { reactionController } from "../controllers/reaction.controller";
 import { validate } from "../../middlewares/validation.middleware";
 import { AddReactionSchema } from "../validators/reaction/add-reaction.schema";
+import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
+
 export const postRouter = Router();
 
 postRouter.post("/", postController.createPost.bind(postController));
 postRouter.get("/feed", authenticate, postController.findFeed);
+postRouter.post(
+    "/upload-image",
+    authenticate,
+    uploadLocal("posts").single("image"),
+    postController.uploadPostImage
+);
 postRouter.get("/:id", postController.getPostById.bind(postController));
 postRouter.put("/:id", postController.updatePost.bind(postController));
 postRouter.delete("/:id", postController.deletePost.bind(postController));

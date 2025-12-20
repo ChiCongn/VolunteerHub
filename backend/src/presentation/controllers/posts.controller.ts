@@ -24,6 +24,29 @@ export class PostsController {
         }
     };
 
+    uploadPostImage = async (req: Request, res: Response) => {
+        const userId = req.user?.sub;
+        const file = req.file as Express.Multer.File;
+
+        logger.info({ userId, action: "uploadPostImage" }, "[PostController] Uploading post image");
+
+        try {
+            if (!file) {
+                return res.status(400).json({ message: "No file uploaded" });
+            }
+
+            return res.status(200).json({
+                url: file.path,
+            });
+        } catch (err: any) {
+            logger.error(
+                { userId, error: err.message },
+                "[PostController] Post image upload failed"
+            );
+            return res.status(500).json({ message: "Upload failed" });
+        }
+    };
+
     // Get post by ID
     getPostById = async (req: Request, res: Response) => {
         try {
@@ -93,10 +116,7 @@ export class PostsController {
 
             return res.status(200).json(posts);
         } catch (error) {
-            logger.error(
-                { eventId, error},
-                "[PostController] Failed to fetch posts"
-            );
+            logger.error({ eventId, error }, "[PostController] Failed to fetch posts");
             return res.status(500).json({ message: "Failed to fetch posts" });
         }
     };
@@ -125,8 +145,6 @@ export class PostsController {
             return res.status(400).json({ error: error.message });
         }
     };
-
-    
 }
 
 export const postController = new PostsController(postService);
