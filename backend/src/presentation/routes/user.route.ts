@@ -14,6 +14,7 @@ import {
     GetMonthlyStatsSchema,
     UpdateOnlineTimeSchema,
 } from "../validators/stats/user-activity.schema";
+import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
 
 export const userRouter = Router();
 
@@ -25,7 +26,13 @@ userRouter.get(
     authorize(UserPolicy.getCurrentUserProfile),
     userController.getCurrentUserProfile
 );
-userRouter.patch("/me", authenticate, validate(UpdateUserSchema), userController.updateProfile);
+userRouter.patch(
+    "/me",
+    authenticate,
+    uploadLocal("avatars").single("image"),
+    validate(UpdateUserSchema),
+    userController.updateProfile
+);
 userRouter.delete("/me", authenticate, authorize(UserPolicy.softDelete), userController.softDelete);
 // Heartbeat & Activity Tracking
 userRouter.post(

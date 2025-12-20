@@ -173,11 +173,19 @@ export class UserController {
         try {
             const { username, password, avatarUrl } = req.body;
 
-            const updated = await this.userService.updateProfile(userId, {
-                username,
-                password,
-                avatarUrl,
-            });
+            const file = req.file as Express.Multer.File;
+
+            const updateData: any = {};
+            if (username) updateData.username = username;
+            if (password) updateData.password = password;
+
+            if (file) {
+                updateData.avatarUrl = file.path;
+            } else if (avatarUrl) {
+                updateData.avatarUrl = avatarUrl;
+            }
+
+            const updated = await this.userService.updateProfile(userId, updateData);
 
             return res.status(200).json(updated);
         } catch (err) {
@@ -354,7 +362,7 @@ export class UserController {
 
     getWeeklyOnline = async (req: Request, res: Response) => {
         const userId = req.user.sub;
-        
+
         logger.info(
             { userId, action: "getWeeklyOnline" },
             "[UserController] Fetching weekly online summary"

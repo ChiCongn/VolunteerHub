@@ -153,6 +153,49 @@ export function UserManagementPage() {
     // navigate
   };
 
+  // ============ export data ================
+  const exportUsersToCSV = () => {
+    if (!filterUsers.length) return;
+
+    // Build CSV content
+    const headers = ["ID", "Username", "Email", "Role", "Status"];
+    const rows = filterUsers.map((user) => [
+      user.id,
+      user.username,
+      user.email,
+      user.role,
+      user.status,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    // Create a temporary link and trigger download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "users.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportUsersToJSON = () => {
+    if (!filterUsers.length) return;
+
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(filterUsers, null, 2));
+
+    const link = document.createElement("a");
+    link.setAttribute("href", dataStr);
+    link.setAttribute("download", "users.json");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const visiblePages = Array.from(
     { length: totalPages },
     (_, i) => i + 1
@@ -160,9 +203,7 @@ export function UserManagementPage() {
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
-
       <div className="flex w-full justify-center">
-
         <div className="flex flex-1 justify-center min-w-0">
           <div className="space-y-6 w-full max-w-6xl p-6">
             <div>
@@ -230,6 +271,8 @@ export function UserManagementPage() {
                 </p>
                 <p className="text-xs text-[#FFC107]">Top 15% of volunteers</p>
               </div>
+              <Button onClick={exportUsersToCSV}>Export Users</Button>
+              <Button onClick={exportUsersToJSON}>Export Users (JSON)</Button>
 
               {/* <div className="bg-card border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">

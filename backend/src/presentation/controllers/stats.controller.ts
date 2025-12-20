@@ -154,6 +154,80 @@ export class StatsController {
             return res.status(500).json({ message: "Internal server error" });
         }
     };
+
+    /**
+     * GET /api/v1/stats/manager/status-overview
+     * Get counts of events grouped by status for the logged-in manager
+     */
+    getManagerStatusOverview = async (req: Request, res: Response) => {
+        const managerId = req.user?.sub; // Assuming managerId comes from JWT payload
+
+        logger.debug(
+            { action: "getManagerStatusOverview", managerId },
+            "[StatsController] Fetching status overview for manager"
+        );
+
+        try {
+            const result = await this.statsService.getManagerEventStatusOverview(managerId);
+            return res.status(200).json(result);
+        } catch (err) {
+            logger.error(
+                { error: err instanceof Error ? err.message : err, managerId },
+                "[StatsController] Failed to fetch manager status overview"
+            );
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    /**
+     * GET /api/v1/stats/manager/monthly-completed?year=2025
+     * Get number of completed events per month for a manager
+     */
+    getManagerMonthlyCompleted = async (req: Request, res: Response) => {
+        const managerId = req.user?.sub;
+        const { year } = req.query as any;
+
+        logger.debug(
+            { action: "getManagerMonthlyCompleted", managerId, year },
+            "[StatsController] Fetching monthly completed events"
+        );
+
+        try {
+            const result = await this.statsService.getManagerMonthlyCompleted(managerId, year);
+            return res.status(200).json(result);
+        } catch (err) {
+            logger.error(
+                { error: err instanceof Error ? err.message : err, managerId },
+                "[StatsController] Failed to fetch monthly completed stats"
+            );
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    /**
+     * GET /api/v1/stats/manager/top-participants?limit=5
+     * Get top events by participant count managed by this user
+     */
+    getManagerTopParticipants = async (req: Request, res: Response) => {
+        const managerId = req.user?.sub;
+        const { limit } = req.query as any;
+
+        logger.debug(
+            { action: "getManagerTopParticipants", managerId, limit },
+            "[StatsController] Fetching top participant events"
+        );
+
+        try {
+            const result = await this.statsService.getManagerTopParticipants(managerId, limit);
+            return res.status(200).json(result);
+        } catch (err) {
+            logger.error(
+                { error: err instanceof Error ? err.message : err, managerId },
+                "[StatsController] Failed to fetch top participant stats"
+            );
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
 }
 
 // Singleton instance (recommended for dependency injection)

@@ -51,6 +51,73 @@ export class StatsService {
         );
         return this.statsRepo.getEventManagersStats();
     }
+
+    /** Manager-specific event stats */
+    async getManagerEventStatusOverview(managerId: string) {
+        logger.debug(
+            { action: "getManagerEventStatusOverview", managerId },
+            "[StatsService] Fetching manager event status overview"
+        );
+
+        const rawData = await this.statsRepo.getManagerStatusOverview(managerId);
+
+        const allStatuses = ["pending", "approved", "completed", "rejected"];
+
+        // fill with 0 if missing in rawData
+        const normalizedData = allStatuses.map((status) => {
+            const found = rawData.find((item) => item.status === status);
+            return {
+                status: status,
+                count: found ? Number(found.count) : 0,
+            };
+        });
+
+        return normalizedData;
+    }
+
+    // Number of completed events per month in a given year
+    async getManagerMonthlyCompleted(managerId: string, year?: number) {
+        // Use the provided year or default to the current year
+        const targetYear = year || new Date().getFullYear();
+
+        const rawData = await this.statsRepo.getManagerMonthlyCompleted(managerId, targetYear);
+
+        // Prepare an array of all 12 months to ensure missing months are filled with count = 0
+        const allMonths = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
+
+        return allMonths.map((month) => {
+            const found = rawData.find((d) => d.month === month);
+            return {
+                month,
+                count: found ? Number(found.count) : 0,
+            };
+        });
+    }
+
+    async getManagerTopParticipants(managerId: string, limit?: number) {
+        // Default to top 5 events if limit is not provided
+        const finalLimit = limit || 5;
+
+        logger.debug(
+            { action: "getManagerTopParticipants", managerId, limit: finalLimit },
+            "[StatsService] Fetching top participant events for manager"
+        );
+
+        return this.statsRepo.getManagerTopParticipants(managerId, finalLimit);
+    }
 }
 
 export const statsService = new StatsService(statsRepo);

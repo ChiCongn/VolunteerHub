@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { format, startOfDay } from "date-fns";
 import {
   CalendarIcon,
@@ -14,45 +18,163 @@ import {
   MapPin,
   AlignLeft,
   Users,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { EventCategory } from "@/types/enum";
+import { EventCategory } from "@/types/enum";
+import { eventService } from "@/services/event.service";
+import { toast } from "sonner";
+import { getImageUrl } from "@/utils/imageUrl.utils";
+import { useNavigate } from "react-router-dom";
 
 const CATEGORIES: { label: string; value: EventCategory }[] = [
   { label: "📚 Education", value: "education" as EventCategory },
   { label: "💬 Social", value: "social" as EventCategory },
-  { label: "🤝 Community Service", value: "community_service" as EventCategory },
+  {
+    label: "🤝 Community Service",
+    value: "community_service" as EventCategory,
+  },
   { label: "❤️ Health & Wellness", value: "health_wellness" as EventCategory },
   { label: "💻 Technology & STEM", value: "technology_stem" as EventCategory },
   { label: "✨ Other", value: "other" as EventCategory },
 ];
 
 export default function CreateEventPage() {
+  // States for the form fields
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [capacity, setCapacity] = useState(1);
+  const [imageUrl, setImageUrl] = useState(""); // Placeholder for now
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [categories, setCategories] = useState<EventCategory[]>([]);
+  const [categories, setCategories] = useState<EventCategory[]>([
+    EventCategory.Other,
+  ]);
 
-  // 👉 hôm nay (00:00) để so sánh
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSelectImage = () => fileInputRef.current?.click();
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const today = startOfDay(new Date());
 
   const toggleCategory = (value: EventCategory) => {
-    setCategories((prev) =>
-      prev.includes(value)
-        ? prev.filter((c) => c !== value)
-        : [...prev, value]
-    );
+    setCategories((prev) => {
+      if (prev.includes(value)) {
+        if (prev.length === 1) return prev;
+        return prev.filter((c) => c !== value);
+      }
+      return [...prev, value];
+    });
+  };
+
+  const resetForm = () => {
+    setName("");
+    setLocation("");
+    setDescription("");
+    setCapacity(1);
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setCategories([EventCategory.Other]);
+  };
+
+  const handleCreateEvent = async () => {
+    console.log("click");
+    if (!name || !location || !startDate || !capacity) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (endDate && endDate < startDate) {
+      toast.error("End date cannot be before start date");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("location", location);
+      formData.append("startTime", startDate.toISOString());
+      if (endDate) formData.append("endTime", endDate.toISOString());
+      formData.append("description", description);
+      formData.append("capacity", String(capacity));
+      formData.append("categories", JSON.stringify(categories));
+
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+      }
+
+      await eventService.createEventWithImage(formData);
+      resetForm();
+      toast.success("Event created successfully! Wait approved!");
+      // handle success
+    } catch (err: any) {
+      console.error("Failed to create event:", err);
+      toast.error(err.response?.data?.message || "Failed to create event");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-<div className="w-full max-w-none p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="w-full max-w-none p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Image */}
       <Card className="md:col-span-1">
         <CardContent className="flex flex-col items-center justify-center h-full gap-4">
-          <div className="w-full aspect-square border rounded-xl flex items-center justify-center bg-muted">
-            <ImageIcon className="h-10 w-10 text-muted-foreground" />
+          <div className="w-full aspect-square border rounded-xl flex items-center justify-center bg-muted overflow-hidden relative">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : imageUrl ? (
+              <img
+                src={getImageUrl(imageUrl)}
+                alt="Event"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <ImageIcon className="h-10 w-10 text-muted-foreground" />
+            )}
+
+            {isSubmitting && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <Loader2 className="animate-spin h-8 w-8 text-white" />
+              </div>
+            )}
           </div>
-          <Button variant="outline" size="sm">
-            Upload Image
+
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={onFileChange}
+          />
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSelectImage}
+            disabled={isSubmitting}
+          >
+            {previewUrl ? "Change Image" : "Select Image"}
           </Button>
         </CardContent>
       </Card>
@@ -67,7 +189,11 @@ export default function CreateEventPage() {
           {/* Event name */}
           <div className="space-y-2">
             <Label>Event Name</Label>
-            <Input placeholder="Enter event name" />
+            <Input
+              placeholder="Enter event name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
 
           {/* Event Time */}
@@ -127,6 +253,7 @@ export default function CreateEventPage() {
                       mode="single"
                       selected={endDate}
                       onSelect={setEndDate}
+                      disabled={(date) => date < today} // 🚫 không cho quá khứ
                     />
                   </PopoverContent>
                 </Popover>
@@ -140,7 +267,11 @@ export default function CreateEventPage() {
               <MapPin className="h-4 w-4" />
               <span>Location</span>
             </div>
-            <Input placeholder="Offline location or virtual link" />
+            <Input
+              placeholder="Offline location or virtual link"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
           </div>
 
           {/* Description */}
@@ -149,7 +280,12 @@ export default function CreateEventPage() {
               <AlignLeft className="h-4 w-4" />
               <span>Description</span>
             </div>
-            <Textarea placeholder="Describe your event" rows={4} />
+            <Textarea
+              placeholder="Describe your event"
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
 
           {/* Capacity */}
@@ -158,7 +294,13 @@ export default function CreateEventPage() {
               <Users className="h-4 w-4" />
               <span>Capacity</span>
             </div>
-            <Input type="number" min={1} placeholder="Number of participants" />
+            <Input
+              type="number"
+              min={1}
+              value={capacity}
+              onChange={(e) => setCapacity(Number(e.target.value))}
+              placeholder="Number of participants"
+            />
           </div>
 
           {/* Categories */}
@@ -177,7 +319,13 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          <Button className="w-full">Create Event</Button>
+          <Button
+            className="w-full"
+            onClick={handleCreateEvent}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating..." : "Create Event"}
+          </Button>
         </CardContent>
       </Card>
     </div>

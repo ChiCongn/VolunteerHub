@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -11,39 +11,57 @@ import {
 } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-
-const mockEventStatusStats = {
-  approved: 12,
-  pending: 5,
-  completed: 18,
-  rejected: 3,
-};
-
+import { managerStatsService, type ManagerEventStatusOverview } from "@/services/user/manager-stats.service";
 
 export default function EventStatusOverviewCard() {
-  const chartData = useMemo(() => {
-    return [
-      { status: "Approved", value: mockEventStatusStats.approved },
-      { status: "Pending", value: mockEventStatusStats.pending },
-      { status: "Completed", value: mockEventStatusStats.completed },
-      { status: "Rejected", value: mockEventStatusStats.rejected },
-    ];
+  const [data, setData] = useState<ManagerEventStatusOverview[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStatusOverview = async () => {
+      setLoading(true);
+      try {
+        const result = await managerStatsService.getStatusOverview();
+        setData(result);
+      } catch (error) {
+        console.error("Failed to fetch status overview:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatusOverview();
   }, []);
 
-  const totalEvents =
-    mockEventStatusStats.approved +
-    mockEventStatusStats.pending +
-    mockEventStatusStats.completed +
-    mockEventStatusStats.rejected;
+  // Transform backend array into Chart-friendly format
+  const chartData = useMemo(() => {
+    // Capitalize status names for better UI (e.g., 'pending' -> 'Pending')
+    return data.map((item) => ({
+      status: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+      value: item.count,
+    }));
+  }, [data]);
+
+  const totalEvents = useMemo(
+    () => data.reduce((sum, item) => sum + item.count, 0),
+    [data]
+  );
+
+  if (loading) {
+    return (
+      <Card className="bg-white">
+        <CardContent className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+          Loading overview...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white">
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">
-            Event Status Overview
-          </CardTitle>
+          <CardTitle className="text-base">Event Status Overview</CardTitle>
 
           <div className="text-3xl font-bold leading-none">
             {totalEvents}
