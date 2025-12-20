@@ -124,7 +124,8 @@ export const CommunityEventPage = () => {
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
         onSubmit={handleCreatePostSubmit}
-        userAvatar="https://github.com/shadcn.png"
+        userAvatar={user?.avatarUrl}
+        userName={user?.username || "Me"}
       />
 
       <div className="flex w-full justify-center">

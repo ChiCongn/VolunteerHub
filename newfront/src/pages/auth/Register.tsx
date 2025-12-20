@@ -60,22 +60,22 @@ export default function SignupPage() {
         data.password
       );
       const store = useUserStore.getState();
-      
+
       store.setTokens(res.accessToken, res.refreshToken);
       store.setUser(res.user);
 
       authContextLogin(res.user, res.accessToken, res.refreshToken);
       userStartsService.trackUserLogin();
-      
+
       // setPendingEmail(payload.email);
       // setStep(2);
       toast.success("Account created successfully! Welcome!");
-      navigate("/dashboard");
+      navigate("/home");
     } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message ||
-            "Registration failed. Please try again."
-        );
+      toast.error(
+        error?.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
