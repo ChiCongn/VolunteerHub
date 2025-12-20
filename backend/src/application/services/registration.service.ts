@@ -131,6 +131,18 @@ export class RegistrationService {
             normalizedSort
         );
     }
+
+    async findOwnerId(registrationId: string): Promise<string | null> {
+        const registration = await this.registrationRepo.findById(registrationId);
+        if (!registration) {
+            throw new RegistrationNotFoundError(registrationId);
+        }
+        return registration.userId;
+    }
+
+    async findAuthorizedManagersByRegistration(registrationId: string): Promise<string[]> {
+        return await this.registrationRepo.findAuthorizedManagerIds(registrationId);
+    }
 }
 
 export const registrationService = new RegistrationService(registrationRepo, eventRepo);

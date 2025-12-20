@@ -9,7 +9,6 @@ import { StatsRepository } from "./stats.repository";
 import { UserRepository } from "./user.repository";
 import { ReactionRepository } from "./reaction.repository";
 
-console.log("export all repo");
 export const userRepo = new UserRepository(prisma);
 export const eventRepo = new EventRepository(prisma, userRepo);
 export const postRepo = new PostRepository(prisma, eventRepo, userRepo);

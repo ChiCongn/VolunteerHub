@@ -247,4 +247,29 @@ export class RegistrationRepository implements IRegistrationRepository {
         });
         return !!exists;
     }
+
+    async findAuthorizedManagerIds(registrationId: string): Promise<string[]> {
+        const data = await this.prisma.registrations.findUnique({
+            where: { id: registrationId },
+            select: {
+                events: {
+                    select: {
+                        owner_id: true,
+                        event_manager_ids: true,
+                    },
+                },
+            },
+        });
+
+        // If no registration or event found, return empty array (policy will then throw Forbidden/NotFound)
+        if (!data || !data.events) {
+            return [];
+        }
+
+        // Combine owner_id and the array of manager_ids into a single flat array
+        const { owner_id, event_manager_ids } = data.events;
+
+        // Using Set ensures the ID is unique even if the owner is also listed as a manager
+        return Array.from(new Set([owner_id, ...event_manager_ids]));
+    }
 }

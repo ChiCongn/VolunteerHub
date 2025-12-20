@@ -86,7 +86,6 @@ export class NotificationRepository implements INotificationRepository {
         } else {
             orderBy = "created_at DESC";
         }
-        console.log(orderBy);
 
         // Pagination
         const page = pagination?.page ?? 1;
