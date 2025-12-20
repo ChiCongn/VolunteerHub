@@ -16,6 +16,7 @@ import {
     notificationService,
     NotificationService,
 } from "../../application/services/notification.service";
+import logger from "../../logger";
 
 export class NotificationController {
     constructor(
@@ -31,11 +32,20 @@ export class NotificationController {
     }
 
     subscribe = async (req: Request, res: Response) => {
+        const userId = req.user.sub;
         try {
-            const userId = req.user.id;
+            logger.info(
+                { action: "subscribe", userId },
+                "[NotificationController] Subscribe push notification"
+            );
             const { endpoint, keys } = req.body;
 
             if (!endpoint || !keys?.p256dh || !keys?.auth) {
+                logger.warn(
+                    { userId, endpoint },
+                    "[NotificationController] Invalid push subscription data"
+                );
+
                 return res.status(400).json({ message: "Invalid subscription data" });
             }
 
@@ -46,12 +56,23 @@ export class NotificationController {
                 auth: keys.auth,
             };
 
+            logger.debug({ userId, endpoint }, "[NotificationController] Saving push subscription");
+
+            logger.info(
+                { userId, endpoint },
+                "[NotificationController] Push subscription saved successfully"
+            );
+
             const result = await this.notificationService.subscribe(subscriptionData);
             return res.status(201).json({
                 message: "Subscribed successfully",
                 data: result,
             });
         } catch (error: any) {
+            logger.error(
+                { userId, error },
+                "[NotificationController] Failed to subscribe push notification"
+            );
             return res.status(400).json({ error: error.message });
         }
     };
