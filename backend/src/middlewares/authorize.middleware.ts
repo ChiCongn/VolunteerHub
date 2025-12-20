@@ -18,11 +18,20 @@ export const authorize =
             // Build auth context from JWT
             const authUser = await buildAuthContext(req);
 
-            // Active user is required for all actions
-            requireActiveStatus(authUser.status);
-
             // Extract extra params (like targetUserId, postId, etc.)
             const params = getParams ? getParams(req) : [];
+            logger.info(
+                { 
+                    userId: authUser.id, 
+                    role: authUser.role, 
+                    policy: policyFn.name || "anonymous", 
+                    params 
+                },
+                `[Authorize] Evaluating policy for user ${authUser.id}`
+            );
+
+            // Active user is required for all actions
+            requireActiveStatus(authUser.status);
 
             // Call policy function
             await policyFn(authUser, ...params);
