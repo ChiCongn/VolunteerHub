@@ -188,6 +188,61 @@ export function EventManagementPage() {
     }
   };
 
+  // =========== export data =====================
+  const exportEventsToCSV = () => {
+    if (!events.length) return;
+
+    // Build CSV headers
+    const headers = [
+      "ID",
+      "Name",
+      "Location",
+      "Status",
+      "Capacity",
+      "Start Time",
+      "End Time",
+      "Categories",
+    ];
+
+    const rows = events.map((e) => [
+      e.id,
+      e.name,
+      e.location,
+      e.status,
+      e.capacity,
+      e.startTime ? new Date(e.startTime).toLocaleString() : "",
+      e.endTime ? new Date(e.endTime).toLocaleString() : "",
+      e.categories?.join(", ") || "",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((r) => r.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "events.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportEventsToJSON = () => {
+    if (!events.length) return;
+
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(events, null, 2));
+
+    const link = document.createElement("a");
+    link.setAttribute("href", dataStr);
+    link.setAttribute("download", "events.json");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const visiblePages = Array.from(
     { length: totalPages },
     (_, i) => i + 1
@@ -195,9 +250,7 @@ export function EventManagementPage() {
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
-
       <div className="flex w-full justify-center">
-
         <div className="flex flex-1 justify-center min-w-0">
           <div className="space-y-6 w-full max-w-6xl p-6">
             <div>
@@ -301,6 +354,8 @@ export function EventManagementPage() {
                   </div>
                 </div>
               </div>
+              <Button onClick={exportEventsToCSV}>Export Events</Button>
+              <Button onClick={exportEventsToJSON}>Export Events (JSON)</Button>
             </div>
 
             <FilterEventBar
