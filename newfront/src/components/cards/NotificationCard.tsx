@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle, Users, Heart, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Định nghĩa kiểu dữ liệu cho Notification để dùng chung
 export interface NotificationItem {
   id: string;
   user: {
@@ -25,7 +24,6 @@ export const NotificationCard = ({
   notification,
   onClick,
 }: NotificationCardProps) => {
-  // Hàm render icon nhỏ đè lên Avatar dựa vào type
   const renderTypeIcon = () => {
     switch (notification.type) {
       case "comment":

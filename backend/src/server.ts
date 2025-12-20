@@ -8,6 +8,8 @@ import { commentRouter } from "./presentation/routes/comment.routes";
 import cors from "cors";
 import { statsRouter } from "./presentation/routes/stats.routes";
 import { registrationRouter } from "./presentation/routes/registration.routes";
+import { notificationRouter } from "./presentation/routes/notification.route";
+
 import path from "path";
 import multer from 'multer';
 import { notificationRouter } from "./presentation/routes/notification.route";
