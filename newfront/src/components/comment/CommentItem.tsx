@@ -30,7 +30,6 @@ export default function CommentItem({ comment }: { comment: Comment }) {
         </div>
 
         <div className="text-xs text-muted-foreground mt-1">
-          {/*comment.createdAt.toLocaleString()*/}
           {comment.createdAt
             ? formatDistanceToNow(new Date(comment.createdAt), {
                 addSuffix: true,

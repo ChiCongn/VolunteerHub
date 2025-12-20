@@ -83,8 +83,28 @@ export const CommunityEventPage = () => {
   const handleCreatePostSubmit = async (content: string, imageUrl?: string) => {
     if (!eventId) return;
 
+    const optimisticPost: Post = {
+      id: crypto.randomUUID(),
+      author: {
+        id: user?.id || crypto.randomUUID(),
+        username: user?.username || "Bạn",
+        avatarUrl: user?.avatarUrl || "https://github.com/shadcn.png",
+        role: user?.role || "volunteer",
+      },
+      content,
+      imageUrl: imageUrl || "",
+      createdAt: new Date(),
+      event: {
+        id: event?.id || "",
+        name: event!.name || "Event này",
+      },
+      reactionCount: 0,
+      commentCount: 0,
+    };
+
+    setPosts((prev) => [optimisticPost, ...prev]);
+
     try {
-      //TODO: remove author id
       const newPostData = await postService.createPost({
         eventId: eventId,
         content: content,
@@ -94,7 +114,7 @@ export const CommunityEventPage = () => {
 
       const newPost: Post = {
         ...newPostData.data,
-        createdAt: new Date().toISOString(), // convert Date to string to render
+        createdAt: new Date().toISOString(),
       };
 
       setPosts((prev) => [newPost, ...prev]);

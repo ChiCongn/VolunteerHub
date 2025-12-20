@@ -4,7 +4,7 @@ import type { Post } from "@/types/post.type";
 
 export const postService = {
     // POST /api/v1/posts
-    // TODO: remove authorId 
+    // TODO: remove authorId
     createPost: async (data: {
         eventId: string;
         content: string;
@@ -21,18 +21,14 @@ export const postService = {
     getPostById: async (id: string) => {
         const response = await apiClient.get(`/posts/${id}`);
 
-        // 1. Lấy đúng object từ lớp vỏ "data"
         const rawData = response.data.data;
 
-        // 2. Map dữ liệu thủ công (Mapping)
         const mappedPost = {
             _id: rawData.id,
 
             content: rawData._content,
             imageUrl: rawData._imageUrl,
             createdAt: rawData._createdAt,
-
-            // Map Likes (Nếu backend chưa có thì gán mặc định 0)
             likes: [],
             commentsCount: 0,
 
@@ -117,5 +113,18 @@ export const postService = {
             ...(newImageUrl !== undefined && { imageUrl: newImageUrl }),
         });
         return data;
+    },
+
+    toggleReaction: async (postId: string, emoji: string) => {
+        const response = await apiClient.post(`/posts/${postId}/reactions`, {
+            postId,
+            emoji,
+        });
+        return response.data;
+    },
+
+    getReactions: async (postId: string) => {
+        const response = await apiClient.get(`/posts/${postId}/reactions`);
+        return response.data; // Giả định trả về { items: Reaction[], total: number }
     },
 };

@@ -16,13 +16,6 @@ export default function CommentInput({ postId, onCommentCreated }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, isAuthenticated } = useAuthState();
 
-  //   const handleSubmit = () => {
-  //     if (content.trim()) {
-  //       onSubmit?.(content);
-  //       setContent("");
-  //     }
-  //   };
-
   const handleSubmit = async () => {
     if (!content.trim()) {
       alert("content chua trim");
@@ -35,6 +28,22 @@ export default function CommentInput({ postId, onCommentCreated }: Props) {
       return;
     }
 
+    const optimisticComment: Comment = {
+      _id: crypto.randomUUID(),
+      postId,
+      content: content.trim(),
+      createdAt: new Date().toISOString(),
+      author: {
+        _id: user!.id,
+        username: user!.username,
+        avatarUrl: user!.avatarUrl,
+        role: user!.role,
+      },
+    };
+
+    onCommentCreated(optimisticComment);
+    setContent("");
+
     try {
       setIsSubmitting(true);
       const newComment = await commentService.createComment({
@@ -43,8 +52,8 @@ export default function CommentInput({ postId, onCommentCreated }: Props) {
         authorId: user?.id || "c1053a85-e0a0-46f8-87bf-261b98a5c5bc",
       });
 
-      onCommentCreated(newComment);
-      setContent("");
+      //   onCommentCreated(newComment);
+      //   setContent("");
     } catch (error) {
       console.error("Failed to post comment:", error);
       alert("Không thể gửi bình luận. Vui lòng thử lại.");

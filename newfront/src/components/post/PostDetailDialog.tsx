@@ -15,6 +15,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCommentClick?: (post: Post) => void;
+  onLikeClick?: (post: Post) => void;
 }
 
 export default function PostDetailDialog({
@@ -22,9 +23,9 @@ export default function PostDetailDialog({
   open,
   onClose,
   onCommentClick,
+  onLikeClick,
 }: Props) {
   if (!post) return null;
-
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -38,6 +39,7 @@ export default function PostDetailDialog({
           <PostHeader post={post} />
           <PostContent post={post} />
           <PostActions
+            postId={post.id}
             likeCount={post.reactionCount}
             commentCount={post.commentCount}
             onCommentClick={() => onCommentClick?.(post)}
