@@ -9,11 +9,8 @@ export const postService = {
         eventId: string;
         content: string;
         imageUrl?: string;
-        authorId: string;
     }) => {
-        console.log("data", data);
         const response = await apiClient.post(`/events/${data.eventId}/posts`, data);
-        console.log(response.data);
         return response.data;
     },
 

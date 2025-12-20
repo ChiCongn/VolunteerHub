@@ -17,7 +17,7 @@ export class PostService {
     ) {}
 
     // ================= Core CRUD =================
-    async createPost(data: CreatePostDto): Promise<Post> {
+    async createPost(data: CreatePostDto): Promise<PostView> {
         return this.postRepo.create(data);
     }
 

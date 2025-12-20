@@ -7,7 +7,7 @@ import { ListResult } from "../../application/dtos/list-result.dto";
 
 export interface IPostRepository {
     // Core CRUD
-    create(post: CreatePostDto): Promise<Post>;
+    create(post: CreatePostDto): Promise<PostView>;
     findById(id: string): Promise<Post>;
     update(id: string, changes: UpdatePostDto): Promise<Post>;
     softDelete(id: string): Promise<void>;
