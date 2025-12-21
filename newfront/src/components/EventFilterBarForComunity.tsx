@@ -24,7 +24,7 @@ export function FilterEventBarForComunity({
   onCategoryChange,
   onStatusChange,
   selectedCategory = "all",
-  selectedStatus = "all",
+  selectedStatus = EventStatus.Approved,
   selectedLimit = 20,
   onLimitChange,
 }: FilterBarProps) {
@@ -39,7 +39,6 @@ export function FilterEventBarForComunity({
   ];
 
   const eventStatuses = [
-    { value: "all", label: "All Status" },
     { value: EventStatus.Approved, label: "✅ Approved" },
     { value: EventStatus.Ongoing, label: "🚀 Ongoing" },
     { value: EventStatus.Completed, label: "🏁 Completed" },
