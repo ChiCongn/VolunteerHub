@@ -76,7 +76,7 @@ eventRouter.delete(
     eventController.deleteEvent
 );
 
-eventRouter.post(
+eventRouter.patch(
     "/:eventId/cancel",
     authenticate,
     validate(CancelEventSchema),

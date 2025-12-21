@@ -172,10 +172,14 @@ export class EventRepository implements IEventRepository {
             { eventId: id, action: "fetch public view" },
             "[EventRepository] Fetching public view for event"
         );
-        await this.checkExistedAndApprovedEvent(id);
 
         const event = await this.prisma.events.findUnique({
-            where: { id, status: EventStatus.Approved },
+            where: { 
+                id, 
+                status: {
+                    in: [EventStatus.Approved, EventStatus.Completed, EventStatus.Ongoing]
+                }
+            },
             select: {
                 id: true,
                 name: true,

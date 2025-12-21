@@ -53,12 +53,12 @@ export const eventService = {
 
     // soft delete
     deleteEvent: async (eventId: string) => {
-        const response = await apiClient.post(`/events/${eventId}/cancel`);
+        const response = await apiClient.patch(`/events/${eventId}/cancel`);
         return response.data;
     },
 
     completeEvent: async (eventId: string) => {
-        const response = await apiClient.post(`/events/${eventId}/complete`);
+        const response = await apiClient.patch(`/events/${eventId}/complete`);
         return response.data;
     },
 };

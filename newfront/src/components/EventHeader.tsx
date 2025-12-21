@@ -40,7 +40,6 @@ export const EventHeader = ({
   const [openEdit, setOpenEdit] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(initialEvent);
   const [openConfirmComplete, setOpenConfirmComplete] = useState(false);
-  const [isPending, setIsPending] = useState(false);
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
 
   const handleEditEvent = () => {
@@ -60,22 +59,17 @@ export const EventHeader = ({
 
   const handleDeleteEvent = async () => {
     try {
-      setIsPending(true);
       await eventService.deleteEvent(currentEvent.id);
 
       toast.success("Event has been canceled and removed.");
-
       navigate("/communities");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to cancel event");
-    } finally {
-      setIsPending(false);
     }
   };
 
   const handleMarkCompleted = async () => {
     try {
-      setIsPending(true);
       await eventService.completeEvent(currentEvent.id);
 
       setCurrentEvent((prev) => ({
@@ -84,11 +78,8 @@ export const EventHeader = ({
       }));
 
       toast.success("Congratulations! Event completed.");
-      setOpenConfirmComplete(false);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to complete event");
-    } finally {
-      setIsPending(false);
     }
   };
 
@@ -147,7 +138,11 @@ export const EventHeader = ({
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full"
+                    >
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -156,24 +151,36 @@ export const EventHeader = ({
                     <DropdownMenuItem
                       className="flex items-center gap-2"
                       onClick={handleEditEvent}
+                      disabled={currentEvent.status === EventStatus.Completed}
                     >
                       <Pencil className="w-4 h-4" />
-                      Edit Your Event
+                      <span>Edit Your Event</span>
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
                       className="flex items-center gap-2"
                       onClick={() => setOpenConfirmComplete(true)}
+                      disabled={currentEvent.status === EventStatus.Completed}
                     >
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      Mark as completed
+                      <CheckCircle
+                        className={`w-4 h-4 ${
+                          currentEvent.status === EventStatus.Completed
+                            ? "text-zinc-400"
+                            : "text-green-600"
+                        }`}
+                      />
+                      <span>
+                        {currentEvent.status === EventStatus.Completed
+                          ? "Already Completed"
+                          : "Mark as completed"}
+                      </span>
                     </DropdownMenuItem>
-
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem
                       className="flex items-center gap-2 text-destructive"
-                      onClick={() => setOpenConfirmDelete(true)} // ✅ CHANGE
+                      onClick={() => setOpenConfirmDelete(true)}
+                      disabled={currentEvent.status === EventStatus.Completed}
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete event
