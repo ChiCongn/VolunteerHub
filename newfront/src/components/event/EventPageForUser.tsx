@@ -111,7 +111,7 @@ export default function EventPageForUser() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+      <div className="bg-white border border-border rounded-lg p-4 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
           <div className="flex-1 relative">
@@ -168,7 +168,7 @@ export default function EventPageForUser() {
       </div>
 
       {/* Table */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
+      <div className="bg-white border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

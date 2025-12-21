@@ -17,6 +17,8 @@ interface FilterBarProps {
   onStatusChange?: (status: UserStatus) => void;
   selectedRole?: UserRole;
   selectedStatus?: UserStatus;
+  selectedLimit?: number;
+  onLimitChange?: (limit: number) => void;
 }
 
 export function FilterUserBar({
@@ -25,6 +27,8 @@ export function FilterUserBar({
   onStatusChange,
   selectedRole = UserRole.Volunteer,
   selectedStatus = UserStatus.Active,
+  selectedLimit = 10,
+  onLimitChange,
 }: FilterBarProps) {
   const userRoles = [
     { value: UserRole.Admin, label: "🛡️ Admin" },
@@ -40,7 +44,7 @@ export function FilterUserBar({
   ];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+    <div className="bg-white border border-border rounded-lg p-4 space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -82,6 +86,26 @@ export function FilterUserBar({
                   {status.label}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          {/* Limit */}
+          <Select
+            value={String(selectedLimit)}
+            onValueChange={(v) => {
+              onLimitChange?.(Number(v));
+            }}
+          >
+            <SelectTrigger className="w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="50">50</SelectItem>
             </SelectContent>
           </Select>
         </div>

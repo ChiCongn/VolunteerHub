@@ -40,11 +40,7 @@ eventRouter.post(
     postController.createPost
 );
 
-eventRouter.get(
-    "/:eventId/auth-info",
-    authenticate,     
-    eventController.getEventAuthInfo
-);
+eventRouter.get("/:eventId/auth-info", authenticate, eventController.getEventAuthInfo);
 
 eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);
 eventRouter.get("/:eventId/search", authenticate, postController.searchPosts);

@@ -110,7 +110,7 @@ export const CommunityEventPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
+    <div className="min-h-screen bg-card dark:bg-black">
       {/* Create Post Modal */}
       <CreatePostModal
         isOpen={isCreatePostOpen}
@@ -140,19 +140,7 @@ export const CommunityEventPage = () => {
                       variant="ghost"
                       className="font-bold text-zinc-700 bg-zinc-200 rounded-full hover:bg-zinc-300"
                     >
-                      Best
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="font-bold text-zinc-500 hover:bg-zinc-200 rounded-full"
-                    >
-                      Hot
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="font-bold text-zinc-500 hover:bg-zinc-200 rounded-full"
-                    >
-                      New
+                        All Posts Here, Discover What's New!
                     </Button>
                   </div>
 
@@ -185,7 +173,7 @@ export const CommunityEventPage = () => {
 
                   {/* ABOUT COMMUNITY */}
                   <Card className="shadow-sm border border-zinc-200">
-                    <CardHeader className="bg-blue-50 dark:bg-blue-900/20 py-3 px-4 flex flex-row justify-between items-center rounded-t-lg">
+                    <CardHeader className="bg-white py-3 px-4 flex flex-row justify-between items-center rounded-t-lg">
                       <span className="font-bold text-sm text-zinc-900">
                         About Community
                       </span>
