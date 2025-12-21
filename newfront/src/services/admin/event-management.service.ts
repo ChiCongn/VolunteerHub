@@ -13,6 +13,10 @@ export const eventManagementService = {
                 location: filters.location,
                 ownerId: filters.ownerId,
 
+                // pagination
+                page: filters.page,
+                limit: filters.limit,
+
                 // array → backend should handle as repeated params or array
                 categories: filters.categories,
 
@@ -67,6 +71,8 @@ export interface EventFilter {
     categories?: EventCategory[];
     dateRange?: [Date, Date];
     ownerId?: string;
+    page?: number;
+    limit?: number;
 }
 
 export interface EventsStats {
