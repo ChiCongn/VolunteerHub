@@ -159,6 +159,38 @@ CREATE TABLE comment_reports (
 --     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 -- );
 
+CREATE TABLE push_subscription (
+    id           UUID PRIMARY KEY,
+    user_id      UUID NOT NULL,
+    endpoint     TEXT NOT NULL UNIQUE,
+    p256dh       TEXT NOT NULL,
+    auth         TEXT NOT NULL,
+    created_at   TIMESTAMPTZ DEFAULT now(),
+
+    CONSTRAINT fk_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE user_daily_activity (
+    user_id UUID NOT NULL,
+    activity_date DATE NOT NULL,
+
+    online_seconds INT NOT NULL DEFAULT 0,
+    login_count INT NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (user_id, activity_date),
+
+    CONSTRAINT fk_user_daily_activity_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_online_seconds_non_negative
+        CHECK (online_seconds >= 0)
+);
+
 -- -----------------------
 -- Table: audit_logs
 -- -----------------------
@@ -246,12 +278,12 @@ BEFORE UPDATE ON events
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
--- event_forms
-DROP TRIGGER IF EXISTS event_forms_updated_at ON event_forms;
-CREATE TRIGGER event_forms_updated_at
-BEFORE UPDATE ON event_forms
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+-- -- event_forms
+-- DROP TRIGGER IF EXISTS event_forms_updated_at ON event_forms;
+-- CREATE TRIGGER event_forms_updated_at
+-- BEFORE UPDATE ON event_forms
+-- FOR EACH ROW
+-- EXECUTE FUNCTION update_updated_at_column();
 
 -- registrations
 DROP TRIGGER IF EXISTS registrations_updated_at ON registrations;
