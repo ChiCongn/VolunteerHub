@@ -6,24 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { MoreHorizontal, Link as LinkIcon, Calendar } from "lucide-react";
+import { MoreHorizontal, Calendar } from "lucide-react";
 
 import { EventHeader } from "../components/EventHeader";
-//import { PostCard } from "../components/cards/PostCard";
 import PostCard from "../components/post/PostCard";
-
 import { CreatePostModal } from "../components/CreatePostModal";
 
-// Import Service & Types
+// Services & Store
 import { useUserStore } from "@/stores/user.store";
 import { eventService } from "@/services/event.service";
 import { postService } from "@/services/post.service";
 
+// Types
 import type { Post } from "@/types/post.type";
 import type { Event } from "@/types/event.type";
 
 import PostDetailDialog from "@/components/post/PostDetailDialog";
 import { toast } from "sonner";
+import EventOverviewCard from "@/components/EventOverviewCard";
 
 export const CommunityEventPage = () => {
   const { eventId } = useParams();
@@ -35,11 +35,8 @@ export const CommunityEventPage = () => {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
   const user = useUserStore((s) => s.user);
-  useEffect(() => {
-    console.log("USER AFTER HYDRATE:", user);
-  }, [user]);
 
-  // Fetch Data
+  // Fetch event & posts
   useEffect(() => {
     const fetchData = async () => {
       if (!eventId) return;
@@ -54,7 +51,7 @@ export const CommunityEventPage = () => {
         setPosts(postsData.items);
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("No post found");
+        toast.error("Failed to load event");
       } finally {
         setLoading(false);
       }
@@ -62,39 +59,35 @@ export const CommunityEventPage = () => {
     fetchData();
   }, [eventId]);
 
-  // Handle Open Modal
-  const handleCreatePost = () => {
-    setIsCreatePostOpen(true);
-  };
+  // Post detail dialog
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [open, setOpen] = useState(false);
+  const [openPostDetail, setOpenPostDetail] = useState(false);
 
   const handleCommentClick = (post: Post) => {
     setSelectedPost(post);
-    setOpen(true);
+    setOpenPostDetail(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleClosePostDetail = () => {
+    setOpenPostDetail(false);
     setSelectedPost(null);
   };
 
-  // Handle Submit from Modal
-  const handleCreatePostSubmit = async (content: string, imageUrl?: string) => {
+  // Create post
+  const handleCreatePostSubmit = async (
+    content: string,
+    imageUrl?: string
+  ) => {
     if (!eventId) return;
 
     try {
       const newPostData = await postService.createPost({
-        eventId: eventId,
-        content: content,
-        imageUrl: imageUrl,
+        eventId,
+        content,
+        imageUrl,
       });
 
-      const newPost: Post = {
-        ...newPostData.data,
-      };
-
-      setPosts((prev) => [newPost, ...prev]);
+      setPosts((prev) => [newPostData.data, ...prev]);
       toast.success("Created post successfully!");
     } catch (error) {
       console.error("Failed to create post:", error);
@@ -102,21 +95,25 @@ export const CommunityEventPage = () => {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-[#dae0e6]">
         Loading...
       </div>
     );
-  if (!event)
+  }
+
+  if (!event) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-[#dae0e6]">
         Event not found
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
+      {/* Create Post Modal */}
       <CreatePostModal
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
@@ -126,18 +123,20 @@ export const CommunityEventPage = () => {
       />
 
       <div className="flex w-full justify-center">
-        {/* 2. MAIN CONTENT AREA */}
         <div className="flex flex-1 justify-center min-w-0">
           <div className="w-full">
-            {/* --- HEADER --- */}
-            <EventHeader event={event} onCreatePost={handleCreatePost} />
+            {/* HEADER */}
+            <EventHeader
+              event={event}
+              onCreatePost={() => setIsCreatePostOpen(true)}
+            />
 
-            {/* --- GRID CONTENT --- */}
+            {/* CONTENT */}
             <div className="container mx-auto px-4 max-w-5xl py-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* LEFT COLUMN: FEED */}
+                {/* ================= LEFT COLUMN: FEED ================= */}
                 <div className="md:col-span-2 space-y-4">
-                  {/* Filter Bar */}
+                  {/* Filter */}
                   <div className="flex items-center gap-2 mb-2">
                     <Button
                       variant="ghost"
@@ -159,7 +158,7 @@ export const CommunityEventPage = () => {
                     </Button>
                   </div>
 
-                  {/* Posts List */}
+                  {/* Posts */}
                   {posts.map((post) => (
                     <PostCard
                       key={post.id}
@@ -167,20 +166,26 @@ export const CommunityEventPage = () => {
                       onCommentClick={handleCommentClick}
                     />
                   ))}
+
                   {posts.length === 0 && (
                     <div className="text-center py-10 text-zinc-500">
                       No posts yet. Be the first to start the conversation!
                     </div>
                   )}
+
                   <PostDetailDialog
                     post={selectedPost}
-                    open={open}
-                    onClose={handleClose}
+                    open={openPostDetail}
+                    onClose={handleClosePostDetail}
                   />
                 </div>
 
-                {/* RIGHT COLUMN: SIDEBAR */}
+                {/* ================= RIGHT COLUMN ================= */}
                 <div className="hidden md:block space-y-4">
+                  {/* EVENT OVERVIEW */}
+                  <EventOverviewCard />
+
+                  {/* ABOUT COMMUNITY */}
                   <Card className="shadow-sm border border-zinc-200">
                     <CardHeader className="bg-blue-50 dark:bg-blue-900/20 py-3 px-4 flex flex-row justify-between items-center rounded-t-lg">
                       <span className="font-bold text-sm text-zinc-900">
@@ -188,23 +193,27 @@ export const CommunityEventPage = () => {
                       </span>
                       <MoreHorizontal className="w-4 h-4 text-zinc-500 cursor-pointer" />
                     </CardHeader>
+
                     <div className="p-3 space-y-3 bg-white">
                       <div className="flex items-center gap-2">
                         <Avatar className="w-12 h-12">
                           <AvatarImage
                             src={
-                              event.imageUrl || "https://github.com/shadcn.png"
+                              event.imageUrl ||
+                              "https://github.com/shadcn.png"
                             }
                           />
-                          <AvatarFallback>FA</AvatarFallback>
+                          <AvatarFallback>EV</AvatarFallback>
                         </Avatar>
                         <span className="font-medium text-sm">
                           r/{event.name}
                         </span>
                       </div>
+
                       <p className="text-sm text-zinc-600 leading-snug">
                         {event.description}
                       </p>
+
                       <div className="flex items-center gap-2 text-zinc-500 text-xs">
                         <Calendar className="w-4 h-4" />
                         <span>
@@ -212,7 +221,9 @@ export const CommunityEventPage = () => {
                           {new Date(event.startTime).toLocaleDateString()}
                         </span>
                       </div>
+
                       <Separator />
+
                       <div className="flex justify-between text-sm">
                         <div>
                           <div className="font-bold text-zinc-900">
@@ -225,13 +236,15 @@ export const CommunityEventPage = () => {
                             <span className="w-2 h-2 bg-green-500 rounded-full inline-block" />
                             {event.capacity}
                           </div>
-                          <div className="text-xs text-zinc-500">Online</div>
+                          <div className="text-xs text-zinc-500">Capacity</div>
                         </div>
                       </div>
+
                       <Separator />
+
                       <Button
                         className="w-full rounded-full font-bold"
-                        onClick={handleCreatePost}
+                        onClick={() => setIsCreatePostOpen(true)}
                       >
                         Create Post
                       </Button>

@@ -26,7 +26,7 @@ import { eventService } from "@/services/event.service";
 import { toast } from "sonner";
 import { getImageUrl } from "@/utils/imageUrl.utils";
 import { useNavigate } from "react-router-dom";
-import ConfirmDialog from "@/components/ConfirmDiaLog";
+import ConfirmDiaLog from "@/components/ConfirmDiaLog";
 
 const CATEGORIES: { label: string; value: EventCategory }[] = [
   { label: "📚 Education", value: "education" as EventCategory },
@@ -333,7 +333,7 @@ export default function CreateEventPage() {
           </Button>
         </CardContent>
       </Card>
-        <ConfirmDialog
+      <ConfirmDiaLog
         open={openConfirm}
         title="Confirm Event Creation"
         description="Are you sure you want to create this event?"
@@ -345,7 +345,7 @@ export default function CreateEventPage() {
           navigate("/communities");
         }}
         onCancel={() => {
-            setOpenConfirm(false);
+          setOpenConfirm(false);
         }}
       />
     </div>

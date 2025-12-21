@@ -20,7 +20,7 @@ type ConfirmDialogProps = {
   onCancel: () => void;
 };
 
-export default function ConfirmDialog({
+export default function ConfirmDiaLog({
   open,
   title = "Confirm action",
   description,
@@ -30,7 +30,12 @@ export default function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onCancel}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onCancel(); 
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -43,9 +48,7 @@ export default function ConfirmDialog({
           <Button variant="outline" onClick={onCancel}>
             {cancelText}
           </Button>
-          <Button onClick={onConfirm}>
-            {confirmText}
-          </Button>
+          <Button onClick={onConfirm}>{confirmText}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
