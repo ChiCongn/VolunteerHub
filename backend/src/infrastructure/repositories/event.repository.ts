@@ -327,23 +327,6 @@ export class EventRepository implements IEventRepository {
     // Event manager
     async approveEvent(id: string) {
         logger.debug({ eventId: id, action: "approve event" }, "[EventRepository] Approving event");
-        const event = await this.prisma.events.findUnique({ where: { id } });
-        if (!event) {
-            logger.warn(
-                { eventId: id, action: "approve event" },
-                "[EventRepository] Event not found"
-            );
-            throw new EventNotFoundError(id);
-        }
-
-        if (event.status === EventStatus.Approved) {
-            logger.warn(
-                { eventId: id, action: "approve event" },
-                "[EventRepository] Event already approved"
-            );
-            throw new EventAlreadyApprovedError(id);
-        }
-
         await this.prisma.events.update({
             where: { id },
             data: { status: EventStatus.Approved },
@@ -355,15 +338,6 @@ export class EventRepository implements IEventRepository {
             { eventId: id, reason, action: "reject event" },
             "[EventRepository] Rejecting event"
         );
-        const event = await this.prisma.events.findUnique({ where: { id } });
-        if (!event) {
-            logger.warn(
-                { eventId: id, action: "reject event" },
-                "[EventRepository] Event not found"
-            );
-            throw new EventNotFoundError(id);
-        }
-
         await this.prisma.events.update({
             where: { id },
             data: { status: EventStatus.Rejected },

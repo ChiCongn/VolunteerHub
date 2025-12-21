@@ -13,12 +13,13 @@ import logger from "../../logger";
 import { Pagination } from "../dtos/pagination.dto";
 import { RegistrationFilterDto } from "../dtos/registration.dto";
 import { SortOption } from "../dtos/sort-option.dto";
-import { notificationService } from "./notification.service";
+import { NotificationService, notificationService } from "./notification.service";
 
 export class RegistrationService {
     constructor(
         private readonly registrationRepo: IRegistrationRepository,
-        private readonly eventRepo: IEventRepository
+        private readonly eventRepo: IEventRepository,
+        private readonly notificationService: NotificationService
     ) {}
 
     async register(userId: string, eventId: string) {
@@ -68,7 +69,7 @@ export class RegistrationService {
             throw new RegistrationClosedError(registration.eventId);
         }
 
-        // 4. Withdraw (soft update)
+        // 4. Withdraw (hard detele)
         await this.registrationRepo.withdrawRegistration(registrationId);
     }
 
@@ -78,6 +79,7 @@ export class RegistrationService {
             "[RegistrationService] Updating registration status"
         );
 
+        // validate
         const registration = await this.registrationRepo.findById(registrationId);
         if (!registration) {
             logger.warn({ registrationId }, "[RegistrationService] Registration not found");
@@ -92,8 +94,7 @@ export class RegistrationService {
             throw new InvalidRegistrationStateError(registrationId, registration.status);
         }
 
-        await this.registrationRepo.updateRegistrationStatus(registrationId, isApprove);
-
+        // approve /reject registration
         try {
             await this.registrationRepo.updateRegistrationStatus(registrationId, isApprove);
 
@@ -110,18 +111,27 @@ export class RegistrationService {
         }
 
         try {
+            // event always exists
             const event = await eventRepo.findById(registration.eventId);
             const statusText = isApprove ? "đã được phê duyệt" : "đã bị từ chối";
-            const message = `Đơn đăng ký tham gia sự kiện "${event?.name}" của bạn ${statusText}.`;
+            const message = `Đơn đăng ký tham gia sự kiện "${event.name}" của bạn ${statusText}.`;
 
             await notificationService.notifyEventUpdate(
                 registration.userId,
-                event?.title || "Sự kiện",
+                event.name || "Sự kiện",
+                message,
+                registration.eventId
+            );
+
+            // web push api if user allow
+            await notificationService.sendNotification(
+                registration.userId,
+                event.name,
                 message,
                 registration.eventId
             );
         } catch (err) {
-            logger.error("[RegistrationService] Notification failed", err);
+            logger.error({ error: err }, "[RegistrationService] Notification failed");
         }
     }
 
@@ -163,4 +173,8 @@ export class RegistrationService {
     }
 }
 
-export const registrationService = new RegistrationService(registrationRepo, eventRepo);
+export const registrationService = new RegistrationService(
+    registrationRepo,
+    eventRepo,
+    notificationService
+);
