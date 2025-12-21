@@ -22,6 +22,8 @@ export interface IEventRepository {
     create(data: CreateEventDto): Promise<IEvent>;
     findById(id: string): Promise<IEvent>;
     update(id: string, data: UpdateEventDto): Promise<IEvent>;
+    incrementRegisterCount(eventId: string): Promise<void>;
+    decrementRegisterCount(eventId: string): Promise<void>
     softDelete(id: string): Promise<void>;
 
     // Public view

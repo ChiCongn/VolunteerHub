@@ -146,6 +146,22 @@ export class EventRepository implements IEventRepository {
         return this.findById(id);
     }
 
+    async incrementRegisterCount(eventId: string): Promise<void> {
+        logger.debug({ eventId }, "[EventRepository] Incrementing register count");
+        await this.prisma.events.update({
+            where: { id: eventId },
+            data: { register_count: { increment: 1 } },
+        });
+    }
+
+    async decrementRegisterCount(eventId: string): Promise<void> {
+        logger.debug({ eventId }, "[EventRepository] Decrementing register count");
+        await this.prisma.events.update({
+            where: { id: eventId },
+            data: { register_count: { decrement: 1 } },
+        });
+    }
+
     async softDelete(id: string) {
         logger.debug(
             { eventId: id, action: "soft delete event" },

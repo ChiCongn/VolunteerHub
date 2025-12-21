@@ -61,19 +61,26 @@ export class RegistrationService {
             throw new RegistrationNotFoundError(registrationId);
         }
 
-        // 2. Check status
         if (registration.status === RegistrationStatus.Rejected) {
             throw new InvalidRegistrationStateError(registrationId, registration.status);
         }
 
-        // 3. Check event time (no withdraw after start)
+        // check event time (no withdraw after start)
         const startTime = await this.eventRepo.getEventStartTime(registration.eventId);
 
         if (new Date() >= startTime) {
             throw new RegistrationClosedError(registration.eventId);
         }
 
-        // 4. Withdraw (hard detele)
+        if (registration.status === RegistrationStatus.Approved) {
+            await this.eventRepo.decrementRegisterCount(registration.eventId);
+            logger.info(
+                { eventId: registration.eventId },
+                "[RegistrationService] Decreased registerCount"
+            );
+        }
+
+        // Withdraw (hard detele)
         await this.registrationRepo.withdrawRegistration(registrationId);
     }
 
@@ -101,11 +108,13 @@ export class RegistrationService {
         // approve /reject registration
         try {
             await this.registrationRepo.updateRegistrationStatus(registrationId, isApprove);
-
-            logger.info(
-                { registrationId, status: isApprove ? "approved" : "rejected" },
-                "[RegistrationService] Registration status updated successfully"
-            );
+            if (isApprove) {
+                await this.eventRepo.incrementRegisterCount(registration.eventId);
+                logger.info(
+                    { eventId: registration.eventId },
+                    "[RegistrationService] Incremented registerCount"
+                );
+            }
         } catch (err: any) {
             logger.error(
                 { registrationId, error: err.message },
@@ -120,7 +129,7 @@ export class RegistrationService {
             const statusText = isApprove ? "đã được phê duyệt" : "đã bị từ chối";
             const message = `Đơn đăng ký tham gia sự kiện "${event.name}" của bạn ${statusText}.`;
 
-            await notificationService.notifyEventUpdate(
+            await this.notificationService.notifyEventUpdate(
                 registration.userId,
                 event.name || "Sự kiện",
                 message,
@@ -128,7 +137,7 @@ export class RegistrationService {
             );
 
             // web push api if user allow
-            await notificationService.sendNotification(
+            await this.notificationService.sendNotification(
                 registration.userId,
                 event.name,
                 message,
@@ -175,7 +184,7 @@ export class RegistrationService {
     async findOwnerId(registrationId: string): Promise<string | null> {
         try {
             logger.info(
-                { registrationId},
+                { registrationId },
                 "[RegistrationService] Retrieved owner ID for registration"
             );
             const registration = await this.registrationRepo.findById(registrationId);
