@@ -5,9 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, X, Loader2 } from "lucide-react";
-import { RegistrationStatus } from "@/types/enum"; // Giả định có: Pending, Approved, Rejected
+import {
+  Check,
+  X,
+  Loader2,
+  FileJson,
+  FileSpreadsheet,
+  Download,
+} from "lucide-react";
+import { RegistrationStatus } from "@/types/enum";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 interface Registration {
   regId: string;
@@ -138,6 +151,52 @@ export const RegistrationManagement = ({ eventId }: { eventId: string }) => {
     );
   };
 
+  const exportToCSV = () => {
+    if (!registrations.length) return;
+
+    const headers = [
+      "Registration ID",
+      "User ID",
+      "Username",
+      "Role",
+      "Status",
+    ];
+    const rows = registrations.map((r) => [
+      r.regId,
+      r.user.id,
+      r.user.username,
+      r.user.role,
+      r.status,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8,\uFEFF" + 
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `registrations_event_${eventId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToJSON = () => {
+    if (!registrations.length) return;
+
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(registrations, null, 2));
+
+    const link = document.createElement("a");
+    link.setAttribute("href", dataStr);
+    link.setAttribute("download", `registrations_event_${eventId}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-2">
@@ -148,36 +207,69 @@ export const RegistrationManagement = ({ eventId }: { eventId: string }) => {
   }
 
   return (
-    <Tabs defaultValue="pending" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-4">
-        <TabsTrigger value="pending" className="relative">
-          Requests
-          {registrations.filter((r) => r.status === RegistrationStatus.Pending)
-            .length > 0 && (
-            <span className="ml-2 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full">
-              {
-                registrations.filter(
-                  (r) => r.status === RegistrationStatus.Pending
-                ).length
-              }
-            </span>
-          )}
-        </TabsTrigger>
-        <TabsTrigger value="approved">Members</TabsTrigger>
-        <TabsTrigger value="rejected">Rejected</TabsTrigger>
-      </TabsList>
+    <div>
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-muted-foreground">
+          Total: {registrations.length} registrations
+        </h3>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-2">
+              <Download className="h-4 w-4" />
+              Export Data
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={exportToCSV}
+              className="gap-2 cursor-pointer"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+              Export to CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={exportToJSON}
+              className="gap-2 cursor-pointer"
+            >
+              <FileJson className="h-4 w-4 text-blue-600" />
+              Export to JSON
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-      <ScrollArea className="h-[450px] pr-4">
-        <TabsContent value="pending" className="mt-0">
-          {renderUserList(RegistrationStatus.Pending)}
-        </TabsContent>
-        <TabsContent value="approved" className="mt-0">
-          {renderUserList(RegistrationStatus.Approved)}
-        </TabsContent>
-        <TabsContent value="rejected" className="mt-0">
-          {renderUserList(RegistrationStatus.Rejected)}
-        </TabsContent>
-      </ScrollArea>
-    </Tabs>
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="pending" className="relative">
+            Requests
+            {registrations.filter(
+              (r) => r.status === RegistrationStatus.Pending
+            ).length > 0 && (
+              <span className="ml-2 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full">
+                {
+                  registrations.filter(
+                    (r) => r.status === RegistrationStatus.Pending
+                  ).length
+                }
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="approved">Members</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+        </TabsList>
+
+        <ScrollArea className="h-[450px] pr-4">
+          <TabsContent value="pending" className="mt-0">
+            {renderUserList(RegistrationStatus.Pending)}
+          </TabsContent>
+          <TabsContent value="approved" className="mt-0">
+            {renderUserList(RegistrationStatus.Approved)}
+          </TabsContent>
+          <TabsContent value="rejected" className="mt-0">
+            {renderUserList(RegistrationStatus.Rejected)}
+          </TabsContent>
+        </ScrollArea>
+      </Tabs>
+    </div>
   );
 };
