@@ -44,7 +44,7 @@ export function FilterEventsStatsBar({
   ];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+    <div className="bg-white border border-border rounded-lg p-4 space-y-4">
       {/* Time range */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex items-center gap-2">

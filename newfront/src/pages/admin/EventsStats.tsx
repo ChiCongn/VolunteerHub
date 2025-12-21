@@ -249,7 +249,7 @@ export function EventManagementPage() {
   ).filter((p) => Math.abs(p - page) <= 2);
 
   return (
-    <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
+    <div className="min-h-screen bg-card dark:bg-black">
       <div className="flex w-full justify-center">
         <div className="flex flex-1 justify-center min-w-0">
           <div className="space-y-6 w-full max-w-6xl p-6">
@@ -270,7 +270,7 @@ export function EventManagementPage() {
 
             {/* stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Total Events</p>
                   <Calendar className="w-5 h-5 text-[#43A047]" />
@@ -279,7 +279,7 @@ export function EventManagementPage() {
                   {stats?.totalEvents ?? 0}
                 </p>
               </div>
-              {/* <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              {/* <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     Ongoing Events
@@ -289,7 +289,7 @@ export function EventManagementPage() {
                 <p className="text-3xl font-semibold">{stats?.activeEvents}</p>
                 <p className="text-xs text-[#FFC107]">Top 15% of volunteers</p>
               </div> */}
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     Completed Events
@@ -302,7 +302,7 @@ export function EventManagementPage() {
                 <p className="text-xs text-[#FFC107]">.....</p>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Participants</p>
                   <Clock className="w-5 h-5 text-[#2196F3]" />
@@ -331,7 +331,7 @@ export function EventManagementPage() {
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Posts</p>
                   <Trophy className="w-5 h-5 text-[#FFC107]" />
@@ -373,7 +373,7 @@ export function EventManagementPage() {
             />
 
             {/* table */}
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
+            <div className="bg-white border border-border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>

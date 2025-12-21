@@ -37,7 +37,7 @@ export default function Feed() {
   };
 
   return (
-    <div className="min-h-screen bg-[#dae0e6] dark:bg-black pb-10">
+    <div className="min-h-screen bg-card pb-10">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center py-10 space-y-2">
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
