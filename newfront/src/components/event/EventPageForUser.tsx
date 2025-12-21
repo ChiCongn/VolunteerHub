@@ -283,8 +283,6 @@ export default function EventPageForUser() {
           </TableBody>
         </Table>
       </div>
-      {/* Leave Confirm Dialog */}
-      {/* ===== CONFIRM LEAVE EVENT ===== */}
       <Dialog open={openLeaveConfirm} onOpenChange={setOpenLeaveConfirm}>
         <DialogContent className="max-w-md">
           <div className="space-y-4">
