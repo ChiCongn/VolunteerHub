@@ -97,7 +97,7 @@ const NotificationMenu = ({
   const [notifications, setNotifications] = React.useState<NotificationItem[]>(
     []
   );
-  const { user } = useUserStore();
+  const { user } = useAuth();
   const [unreadCount, setUnreadCount] = React.useState(0);
   const navigate = useNavigate();
 
@@ -393,7 +393,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-6">
               <button
-                onClick={handleLogoClick} 
+                onClick={handleLogoClick}
                 className="flex items-center space-x-2 text-primary hover:text-primary/90 transition-colors cursor-pointer"
               >
                 <div className="text-2xl">{logo}</div>

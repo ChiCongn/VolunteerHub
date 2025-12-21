@@ -12,6 +12,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import type { NotificationItem } from "@/components/cards/NotificationCard";
+import { useAuth } from "@/components/context/AuthContext";
 
 const parseMessage = (msg: string) => {
   const regex = /\*\*(.*?)\*\*\s*(.*)/;
@@ -25,8 +26,7 @@ const parseMessage = (msg: string) => {
 export default function NotificationPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useUserStore();
-
+  const { user } = useAuth();
   const fetchNotifications = async () => {
     if (!user?.id) return;
     try {

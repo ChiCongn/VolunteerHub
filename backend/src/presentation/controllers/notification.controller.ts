@@ -114,6 +114,7 @@ export class NotificationController {
                 pagination,
                 sort
             );
+
             res.status(200).json(notifications);
         } catch (error) {
             this.handleError(res, error);

@@ -23,15 +23,11 @@ notificationRouter.post(
     notificationController.createNotification
 );
 
-notificationRouter.post(
-    "/subscribe",
-    authenticate,
-    notificationController.subscribe
-);
+notificationRouter.post("/subscribe", authenticate, notificationController.subscribe);
 
 notificationRouter.post("/test-push", authenticate, async (req, res) => {
     const userId = req.user.id;
-    
+
     await notificationService.sendNotification(
         userId,
         "Test Thông Báo",
@@ -51,9 +47,9 @@ notificationRouter.get(
 
 notificationRouter.get(
     "/users/:userId",
-    //authenticate,
+    authenticate,
     validate(NotificationFilterSchema),
-    //notificationController.getNotificationsByUserId
+    notificationController.getNotificationsByUserId
 );
 
 notificationRouter.patch(
@@ -68,4 +64,3 @@ notificationRouter.patch(
     authenticate,
     notificationController.markAllAsRead
 );
-

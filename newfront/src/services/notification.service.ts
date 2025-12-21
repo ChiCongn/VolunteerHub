@@ -1,4 +1,3 @@
-// newfront/src/services/notification.service.ts
 import apiClient from "@/lib/api-client";
 
 export interface ApiNotificationItem {
@@ -8,7 +7,7 @@ export interface ApiNotificationItem {
     _message: string;
     _redirectUrl: string;
     _createdAt: string;
-    _isRead?: boolean; 
+    _isRead?: boolean;
 }
 
 interface NotificationApiResponse {
@@ -23,6 +22,7 @@ export const notificationService = {
         const response = await apiClient.get<NotificationApiResponse>(
             `/notifications/users/${userId}`
         );
+        console.log("Notification Service:", response.data);
         return response.data;
     },
 
