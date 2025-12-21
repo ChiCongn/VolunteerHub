@@ -16,16 +16,21 @@ import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, Clock } from "lucide-react";
 import { eventService, type DailyPost } from "@/services/event.service";
 import type { Event } from "@/types/event.type";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventStatsProps {
   event: Event;
 }
 
-export default function EventOverviewCard({
-  event,
-}: EventStatsProps) {
+export default function EventOverviewCard({ event }: EventStatsProps) {
+  const { user } = useAuthState();
   const [dailyPosts, setDailyPosts] = useState<DailyPost[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Hide Event Insights for volunteers
+  if (user?.role === "volunteer") {
+    return null;
+  }
 
   useEffect(() => {
     const fetchStats = async () => {
