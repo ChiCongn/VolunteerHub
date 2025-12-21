@@ -41,6 +41,7 @@ export const EventHeader = ({
   const [currentEvent, setCurrentEvent] = useState(initialEvent);
   const [openConfirmComplete, setOpenConfirmComplete] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
 
   const handleEditEvent = () => {
     setOpenEdit(true);
@@ -146,11 +147,7 @@ export const EventHeader = ({
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full"
-                    >
+                    <Button variant="outline" size="icon" className="rounded-full">
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -176,7 +173,7 @@ export const EventHeader = ({
 
                     <DropdownMenuItem
                       className="flex items-center gap-2 text-destructive"
-                      onClick={handleDeleteEvent}
+                      onClick={() => setOpenConfirmDelete(true)} // ✅ CHANGE
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete event
@@ -208,6 +205,20 @@ export const EventHeader = ({
           setOpenConfirmComplete(false);
         }}
         onCancel={() => setOpenConfirmComplete(false)}
+      />
+
+      {/* ===== CONFIRM DELETE EVENT ===== */}
+      <ConfirmDiaLog
+        open={openConfirmDelete}
+        title="Delete event"
+        description="Are you sure you want to delete this event? This action cannot be undone."
+        confirmText="Yes, delete"
+        cancelText="Cancel"
+        onConfirm={() => {
+          handleDeleteEvent();
+          setOpenConfirmDelete(false);
+        }}
+        onCancel={() => setOpenConfirmDelete(false)}
       />
     </>
   );
