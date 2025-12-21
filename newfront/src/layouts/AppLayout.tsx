@@ -26,7 +26,6 @@ const HeartbeatProcessor = () => {
 
         // Update lastPulse ONLY after a successful API call
         lastPulse = now;
-
       } catch (err) {
         console.error("Heartbeat failed", err);
         // We don't update lastPulse here so that the next successful
@@ -56,7 +55,7 @@ export default function AppLayout() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-64 border-r overflow-y-auto">
+        <div className="md:w-64 md:border-r md:overflow-y-auto">
           <LeftPanel />
         </div>
 

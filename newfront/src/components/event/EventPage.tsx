@@ -5,6 +5,7 @@ import { CATEGORY_FILTERS, STATUS_FILTERS } from "./EventFilter";
 import EventGrid from "./EventGird";
 import { eventService } from "../../services/event.service";
 import { Loader2, AlertCircle } from "lucide-react";
+import { FilterEventBarForComunity } from "../EventFilterBarForComunity";
 type Props = {
   events: EventData[];
 };
@@ -19,6 +20,8 @@ export default function EventPage() {
     EventCategory | "all"
   >("all");
 
+  const [searchText, setSearchText] = useState<string>("");
+  
   const [selectedStatus, setSelectedStatus] = useState<EventStatus | "all">(
     "all"
   );
@@ -52,17 +55,28 @@ export default function EventPage() {
 
 
   const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      const matchCategory =
-        selectedCategory === "all" ||
-        event.categories.includes(selectedCategory);
+  const keyword = searchText.trim().toLowerCase();
 
-      const matchStatus =
-        selectedStatus === "all" || event.status === selectedStatus;
+  return events.filter((event) => {
+    // Category
+    const matchCategory =
+      selectedCategory === "all" ||
+      event.categories.includes(selectedCategory);
 
-      return matchCategory && matchStatus;
-    });
-  }, [events, selectedCategory, selectedStatus]);
+    // Status
+    const matchStatus =
+      selectedStatus === "all" || event.status === selectedStatus;
+
+    // Search (title + description)
+    const matchSearch =
+      keyword === "" ||
+      event.name.toLowerCase().includes(keyword) ||
+      event.description?.toLowerCase().includes(keyword);
+
+    return matchCategory && matchStatus && matchSearch;
+  });
+}, [events, selectedCategory, selectedStatus, searchText]);
+
 
   if (isLoading) {
     return (
@@ -101,44 +115,14 @@ export default function EventPage() {
         </p>
       </div>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-2">
-        {CATEGORY_FILTERS.map((c) => (
-          <button
-            key={c.value}
-            onClick={() =>
-              setSelectedCategory(c.value as EventCategory | "all")
-            }
-            className={`px-3 py-1.5 rounded-full text-sm border transition 
-              ${
-                selectedCategory === c.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background hover:bg-muted"
-              }`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Status Filters */}
-      <div className="flex gap-2">
-        {STATUS_FILTERS.map((s) => (
-          <button
-            key={s.value}
-            onClick={() => setSelectedStatus(s.value as EventStatus | "all")}
-            className={`px-3 py-1.5 rounded-full text-sm border transition
-              ${
-                selectedStatus === s.value
-                  ? "bg-secondary text-secondary-foreground"
-                  : "bg-background hover:bg-muted"
-              }`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
+    <FilterEventBarForComunity
+        selectedCategory={selectedCategory}
+        selectedStatus={selectedStatus}
+        onCategoryChange={setSelectedCategory}
+        onStatusChange={setSelectedStatus}
+        onSearch={setSearchText}
+      />
+      
       <EventGrid events={filteredEvents} />
     </div>
   );
