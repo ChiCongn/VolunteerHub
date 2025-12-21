@@ -171,7 +171,7 @@ export class EventController {
             const filters: EventFilterDto = validated.data;
             const pagination: Pagination = {
                 page: parseInt(req.query.page as string) || 1,
-                limit: parseInt(req.query.limit as string) || 10,
+                limit: parseInt(req.query.limit as string) || 50,
             };
             const sort: SortOption = {
                 field: (req.query.sortField as string) || "createdAt",

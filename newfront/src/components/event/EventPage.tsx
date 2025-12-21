@@ -21,10 +21,12 @@ export default function EventPage() {
   >("all");
 
   const [searchText, setSearchText] = useState<string>("");
-  
+
   const [selectedStatus, setSelectedStatus] = useState<EventStatus | "all">(
     "all"
   );
+
+  const [limit, setLimit] = useState<number>(10);
 
   //api
   useEffect(() => {
@@ -53,30 +55,30 @@ export default function EventPage() {
     fetchEvents();
   }, []);
 
-
   const filteredEvents = useMemo(() => {
-  const keyword = searchText.trim().toLowerCase();
+    const keyword = searchText.trim().toLowerCase();
 
-  return events.filter((event) => {
-    // Category
-    const matchCategory =
-      selectedCategory === "all" ||
-      event.categories.includes(selectedCategory);
+    return events
+      .filter((event) => {
+        // Category
+        const matchCategory =
+          selectedCategory === "all" ||
+          event.categories.includes(selectedCategory);
 
-    // Status
-    const matchStatus =
-      selectedStatus === "all" || event.status === selectedStatus;
+        // Status
+        const matchStatus =
+          selectedStatus === "all" || event.status === selectedStatus;
 
-    // Search (title + description)
-    const matchSearch =
-      keyword === "" ||
-      event.name.toLowerCase().includes(keyword) ||
-      event.description?.toLowerCase().includes(keyword);
+        // Search (title + description)
+        const matchSearch =
+          keyword === "" ||
+          event.name.toLowerCase().includes(keyword) ||
+          event.description?.toLowerCase().includes(keyword);
 
-    return matchCategory && matchStatus && matchSearch;
-  });
-}, [events, selectedCategory, selectedStatus, searchText]);
-
+        return matchCategory && matchStatus && matchSearch;
+      })
+      .slice(0, limit);
+  }, [events, selectedCategory, selectedStatus, searchText, limit]);
 
   if (isLoading) {
     return (
@@ -115,14 +117,16 @@ export default function EventPage() {
         </p>
       </div>
 
-    <FilterEventBarForComunity
+      <FilterEventBarForComunity
         selectedCategory={selectedCategory}
         selectedStatus={selectedStatus}
         onCategoryChange={setSelectedCategory}
         onStatusChange={setSelectedStatus}
         onSearch={setSearchText}
+        selectedLimit={limit}
+        onLimitChange={setLimit}
       />
-      
+
       <EventGrid events={filteredEvents} />
     </div>
   );

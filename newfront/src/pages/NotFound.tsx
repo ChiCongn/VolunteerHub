@@ -6,7 +6,7 @@ import { Search, Home } from "lucide-react";
 export function NotFound() {
   const navigate = useNavigate();
   const onGoHome = () => {
-    navigate("/");
+    navigate("/feed");
   };
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">

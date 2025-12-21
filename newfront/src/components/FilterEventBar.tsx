@@ -13,6 +13,11 @@ interface FilterBarProps {
   onSearch?: (query: string) => void;
   onCategoryChange?: (category: EventCategory | "all") => void;
   onStatusChange?: (status: EventStatus) => void;
+
+  /* ===== NEW ===== */
+  onLimitChange?: (limit: number) => void;
+  selectedLimit?: number;
+
   selectedCategory?: string;
   selectedStatus?: string;
 }
@@ -21,6 +26,8 @@ export function FilterEventBar({
   onSearch,
   onCategoryChange,
   onStatusChange,
+  onLimitChange,
+  selectedLimit = 10, // default 10
   selectedCategory = "all",
   selectedStatus = EventStatus.Pending,
 }: FilterBarProps) {
@@ -33,6 +40,7 @@ export function FilterEventBar({
     { value: EventCategory.TechnologyStem, label: "💻 Technology & STEM" },
     { value: EventCategory.Other, label: "✨ Other" },
   ];
+
   const eventStatuses = [
     { value: EventStatus.Pending, label: "⏳ Pending" },
     { value: EventStatus.Approved, label: "✅ Approved" },
@@ -42,11 +50,14 @@ export function FilterEventBar({
     { value: EventStatus.Completed, label: "🏁 Completed" },
   ];
 
+  const limits = [5, 10, 15, 20, 30, 50, 100, 200];
+
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
+        {/* ===== SEARCH ===== */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search events..."
@@ -55,7 +66,9 @@ export function FilterEventBar({
           />
         </div>
 
+        {/* ===== FILTERS ===== */}
         <div className="flex gap-2">
+          {/* Category */}
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
             <SelectTrigger className="w-[200px]">
               <div className="flex items-center gap-2">
@@ -72,6 +85,7 @@ export function FilterEventBar({
             </SelectContent>
           </Select>
 
+          {/* Status */}
           <Select value={selectedStatus} onValueChange={onStatusChange}>
             <SelectTrigger className="w-[160px]">
               <div className="flex items-center gap-2">
@@ -83,6 +97,22 @@ export function FilterEventBar({
               {eventStatuses.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={String(selectedLimit)}
+            onValueChange={(v) => onLimitChange?.(Number(v))}
+          >
+            <SelectTrigger className="w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {limits.map((n) => (
+                <SelectItem key={n} value={String(n)}>
+                  {n}
                 </SelectItem>
               ))}
             </SelectContent>
