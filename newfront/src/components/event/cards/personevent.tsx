@@ -67,11 +67,11 @@ export default function ParticipantsPerEventCard() {
     <Card className="bg-white">
       <CardHeader className="pb-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Participants per Event</CardTitle>
+          <CardTitle className="text-base">Trent Event</CardTitle>
         </div>
 
         <p className="text-xs mt-1 font-medium text-muted-foreground">
-          Number of participants for each event
+          Discover your most popular events.
         </p>
       </CardHeader>
 

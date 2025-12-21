@@ -11,9 +11,11 @@ import {
   Newspaper,
   Calendar,
   Shield,
+  ClipboardList,
 } from "lucide-react";
 
 import { useAuthState } from "@/hooks/useAuthState";
+import EventShortcuts from "./EventShortcuts";
 
 // Volunteer: 'volunteer',
 // EventManager: 'event_manager',
@@ -40,6 +42,7 @@ export default function LeftPanel() {
     ...(user?.role === "event_manager"
       ? [
           { icon: Calendar, label: "Manager Overview", path: "/event-manage" },
+          { icon: ClipboardList, label: "Your Events", path: "/your-events" },
           { icon: Newspaper, label: "Feed", path: "/feed" },
           { icon: Users, label: "Communities", path: "/communities" },
           { icon: Bell, label: "Notifications", path: "/notifications" },
@@ -87,32 +90,7 @@ export default function LeftPanel() {
       </nav>
 
       <div className="mt-8">
-        <h3 className="mb-4 text-sm font-semibold">Your Communities</h3>
-        <div className="space-y-2 flex flex-col">
-          <Link
-            to="/r/design" // Đường dẫn ví dụ
-            className="flex items-center text-sm hover:underline p-1"
-          >
-            <div className="mr-2 h-2 w-2 rounded-full bg-pink-500"></div>
-            Design Community
-          </Link>
-
-          <Link
-            to="/r/tech"
-            className="flex items-center text-sm hover:underline p-1"
-          >
-            <div className="mr-2 h-2 w-2 rounded-full bg-blue-500"></div>
-            Tech Enthusiasts
-          </Link>
-
-          <Link
-            to="/r/sustainability"
-            className="flex items-center text-sm hover:underline p-1"
-          >
-            <div className="mr-2 h-2 w-2 rounded-full bg-green-500"></div>
-            Sustainability
-          </Link>
-        </div>
+        <EventShortcuts />
       </div>
     </div>
   );
