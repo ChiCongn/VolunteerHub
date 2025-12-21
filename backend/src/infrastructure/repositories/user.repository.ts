@@ -34,6 +34,7 @@ import {
     WeeklyEventParticipationDto,
 } from "../../application/dtos/users/weekly-event-participant.dto";
 import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
+import { EventAuthInfo } from "../../application/dtos/event.dto";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;

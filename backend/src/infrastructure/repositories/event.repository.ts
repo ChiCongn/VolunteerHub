@@ -5,6 +5,7 @@ import {
     UpdateEventDto,
     EventFilterDto,
     PublicEventView,
+    EventAuthInfo,
 } from "../../application/dtos/event.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
@@ -917,6 +918,35 @@ export class EventRepository implements IEventRepository {
         }
 
         return result;
+    }
+
+    async getEventAuthInfo(eventId: string): Promise<EventAuthInfo> {
+        const row = await this.prisma.events.findUnique({
+            where: { id: eventId },
+            select: {
+                owner_id: true,
+                event_manager_ids: true,
+                registrations: {
+                    select: {
+                        user_id: true,
+                        status: true,
+                    },
+                },
+            },
+        });
+
+        if (!row) {
+            throw new EventNotFoundError(eventId);
+        }
+
+        return {
+            ownerId: row.owner_id,
+            managerIds: row.event_manager_ids,
+            registers: row.registrations.map((r) => ({
+                userId: r.user_id,
+                status: r.status as RegistrationStatus,
+            })),
+        };
     }
 
     private async getRegisteredVolunteerIds(eventId: string): Promise<string[]> {

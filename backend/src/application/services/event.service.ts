@@ -4,6 +4,7 @@ import { EventAlreadyApprovedError, EventNotFoundError } from "../../domain/erro
 import { IEventRepository } from "../../domain/repositories/event.irepository";
 import { eventRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
+import { EventAuthInfo } from "../dtos/event.dto";
 import { DailyPostDto } from "../dtos/stats";
 import { notificationService, NotificationService } from "./notification.service";
 
@@ -86,6 +87,16 @@ export class EventService {
         // notification
         // fire-and-forget (do not block approval)
         void this.notifyEventApproved(event, false);
+    }
+
+    async getEventAuthInfo(eventId: string): Promise<EventAuthInfo> {
+        const authInfo = await this.eventRepo.getEventAuthInfo(eventId);
+
+        if (!authInfo) {
+            throw new EventNotFoundError(eventId);
+        }
+
+        return authInfo;
     }
 
     private async notifyEventApproved(event: IEvent, isApprove: boolean) {

@@ -134,6 +134,29 @@ export class EventController {
         }
     }
 
+    getEventAuthInfo = async (req: Request, res: Response) => {
+        const { eventId } = req.params;
+
+        try {
+            const result = await this.eventRepository.getEventAuthInfo(eventId);
+
+            logger.info({ eventId }, "[EventController] Lấy thông tin quyền hạn thành công");
+
+            return res.status(200).json(result);
+        } catch (error: any) {
+            logger.error(
+                { eventId, error: error.message },
+                "[EventController] Lỗi khi lấy thông tin quyền hạn"
+            );
+
+            if (error instanceof EventNotFoundError) {
+                return res.status(404).json({ message: error.message });
+            }
+
+            return res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+        }
+    };
+
     async searchEvents(req: Request, res: Response): Promise<void> {
         try {
             const validated = EventFilterSchema.safeParse(req.query);
@@ -164,20 +187,20 @@ export class EventController {
     getPostActivity = async (req: Request, res: Response) => {
         const { eventId } = req.params;
         const days = req.query.days ? Number(req.query.days) : 7;
-        
-            logger.info(
+
+        logger.info(
             { eventId, days, action: "getPostActivity" },
             "[StatsController] Fetching post activity trend"
         );
-    
+
         try {
             const data = await this.eventRepository.getPostsDays(eventId, days);
-    
+
             logger.debug(
                 { eventId, dataCount: data.length },
                 "[StatsController] Post activity data retrieved successfully"
             );
-    
+
             return res.status(200).json(data);
         } catch (error) {
             if (error instanceof EventNotFoundError) {
@@ -187,16 +210,16 @@ export class EventController {
                 );
                 return res.status(404).json({ message: error.message });
             }
-    
+
             logger.error(
-                { 
-                    eventId, 
+                {
+                    eventId,
                     error: error instanceof Error ? error.message : error,
-                    stack: error instanceof Error ? error.stack : undefined 
+                    stack: error instanceof Error ? error.stack : undefined,
                 },
                 "[StatsController] Unexpected error in getPostActivity"
             );
-            
+
             return res.status(500).json({ message: "Internal server error" });
         }
     };

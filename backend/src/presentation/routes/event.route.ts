@@ -24,7 +24,7 @@ eventRouter.get("/:eventId", validate(GetEventSchema), eventController.fetchPubl
 
 // AUTHENTICATED ROUTES (Volunteers/All)
 eventRouter.post(
-    "/:eventId/registrations",
+    "/:eventId/register",
     authenticate,
     validate(RegistrationFilterSchema),
     authorize(EventPolicy.register),
@@ -38,6 +38,12 @@ eventRouter.post(
     validate(CreatePostSchema),
     authorize(PostPolicy.participant, (req) => [req.params.eventId]),
     postController.createPost
+);
+
+eventRouter.get(
+    "/:eventId/auth-info",
+    authenticate,     
+    eventController.getEventAuthInfo
 );
 
 eventRouter.get("/:eventId/posts", authenticate, postController.getPostsByEvent);

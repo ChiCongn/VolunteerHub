@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client";
-import type { EventCategory } from "@/types/enum";
+import type { EventCategory, RegistrationStatus } from "@/types/enum";
 import type { Event } from "@/types/event.type";
 
 export interface PaginatedEvents {
@@ -71,6 +71,15 @@ export const eventService = {
         });
         return response.data;
     },
+
+    registerEvent: async (eventId: string): Promise<void> => {
+        await apiClient.post(`/events/${eventId}/register`);
+    },
+
+    getEventAuthInfo: async (eventId: string): Promise<EventAuthInfo> => {
+        const response = await apiClient.get(`/events/${eventId}/auth-info`);
+        return response.data;
+    },
 };
 
 export interface CreateEvent {
@@ -87,4 +96,13 @@ export interface CreateEvent {
 export interface DailyPost {
     date: string;
     postCount: number;
+}
+
+export interface EventAuthInfo {
+    ownerId: string;
+    managerIds: string[];
+    registers: {
+        status: RegistrationStatus;
+        userId: string;
+    }[];
 }

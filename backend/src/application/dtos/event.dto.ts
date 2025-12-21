@@ -1,4 +1,4 @@
-import { EventStatus, EventCategory } from "../../domain/entities/enums";
+import { EventStatus, EventCategory, RegistrationStatus } from "../../domain/entities/enums";
 
 export interface CreateEventDto {
     name: string;
@@ -45,4 +45,13 @@ export interface PublicEventView {
     categories: EventCategory[];
     registerCount: number;
     capacity: number;
+}
+
+export interface EventAuthInfo {
+    ownerId: string;
+    managerIds: string[];
+    registers: {
+        status: RegistrationStatus;
+        userId: string;
+    }[];
 }

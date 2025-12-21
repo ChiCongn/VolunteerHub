@@ -14,7 +14,7 @@ import { CreatePostModal } from "../components/CreatePostModal";
 
 // Services & Store
 import { useUserStore } from "@/stores/user.store";
-import { eventService } from "@/services/event.service";
+import { eventService, type EventAuthInfo } from "@/services/event.service";
 import { postService } from "@/services/post.service";
 
 // Types

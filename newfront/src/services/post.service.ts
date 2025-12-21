@@ -59,6 +59,7 @@ export const postService = {
         const { data } = await apiClient.get<ListResult<Post>>(
             `/events/${eventId}/posts`
         );
+        console.log("post in event: ", data);
         return data;
     },
 

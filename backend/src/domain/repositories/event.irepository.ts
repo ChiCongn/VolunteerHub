@@ -4,6 +4,7 @@ import {
     UpdateEventDto,
     EventFilterDto,
     PublicEventView,
+    EventAuthInfo,
 } from "../../application/dtos/event.dto";
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
@@ -58,6 +59,7 @@ export interface IEventRepository {
 
     findOwner(eventId: string): Promise<string>;
     findManagers(eventId: string): Promise<string[]>;
+    getEventAuthInfo(eventId: string): Promise<EventAuthInfo>;
     getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus>;
 
     // ============ stats ================
