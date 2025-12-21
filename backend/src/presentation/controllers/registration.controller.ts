@@ -4,9 +4,6 @@ import {
     RegistrationService,
 } from "../../application/services/registration.service";
 import logger from "../../logger";
-import { RegistrationFilterDto } from "../../application/dtos/registration.dto";
-import { Pagination } from "../../application/dtos/pagination.dto";
-import { SortOption } from "../../application/dtos/sort-option.dto";
 import {
     RegistrationFilter,
     RegistrationFilterSchema,
@@ -18,8 +15,7 @@ export class RegistrationController {
     constructor(private readonly registrationService: RegistrationService) {}
 
     register = async (req: Request, res: Response) => {
-        //const userId = req.user.sub;
-        const userId = '0aad94f9-6f6b-498b-b620-01fd0809bcbd';
+        const userId = req.user.sub;
         const { eventId } = req.params;
 
         logger.info(

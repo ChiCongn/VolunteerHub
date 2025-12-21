@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "@/types/user.type";
+import { useUserStore } from "@/stores/user.store";
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const clearSession = useUserStore((state) => state.clearSession);
 
   // Khởi tạo: Lấy dữ liệu từ localStorage
   useEffect(() => {
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setAccessToken(null);
     setRefreshToken(null);
+    clearSession();
 
     // Xóa khỏi localStorage
     localStorage.removeItem("auth_user");
