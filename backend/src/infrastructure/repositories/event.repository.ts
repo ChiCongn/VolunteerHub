@@ -18,7 +18,7 @@ import {
     EventTimeInvalidError,
 } from "../../domain/errors/event.error";
 import { EventStatus, EventCategory, RegistrationStatus } from "../../domain/entities/enums";
-import { Event } from "../../domain/entities/event.entity";
+import { Event, IEvent } from "../../domain/entities/event.entity";
 import { UserRepository } from "./user.repository";
 import logger from "../../logger";
 import { RegistrationNotFoundError } from "../../domain/errors/registration.error";
@@ -35,7 +35,7 @@ export class EventRepository implements IEventRepository {
     ) {}
 
     // Core CRUD
-    async create(event: CreateEventDto): Promise<Event> {
+    async create(event: CreateEventDto): Promise<IEvent> {
         logger.debug(
             { ownerId: event.ownerId, name: event.name, action: "create event" },
             "[EventRepository] Creating event"
@@ -60,7 +60,7 @@ export class EventRepository implements IEventRepository {
         return this.findById(eventId);
     }
 
-    async findById(id: string): Promise<Event> {
+    async findById(id: string): Promise<IEvent> {
         logger.debug(
             { eventId: id, action: "find event by id" },
             "[EventRepository] Fetching event by id"
@@ -80,15 +80,29 @@ export class EventRepository implements IEventRepository {
             this.getPostIds(id),
         ]);
 
-        return this.toDomain({
-            ...eventPrisma,
+        return {
+            id: eventPrisma.id,
+            ownerId: eventPrisma.owner_id,
+            name: eventPrisma.name,
+            location: eventPrisma.location,
+            startTime: eventPrisma.start_time,
+            endTime: eventPrisma.end_time,
+            description: eventPrisma.description || "",
+            imageUrl: eventPrisma.image_url || "",
+            categories: eventPrisma.categories as EventCategory[],
+            status: eventPrisma.status as EventStatus,
+            capacity: eventPrisma.capacity,
+            registerCount: registeredUserIds.length,
+            updatedAt: eventPrisma.updated_at || new Date(),
+            
             participantIds: approvedUserIds,
             registerUserIds: registeredUserIds,
             postIds: postIds,
-        });
+            eventManagerIds: [],
+        };
     }
 
-    async update(id: string, changes: UpdateEventDto): Promise<Event> {
+    async update(id: string, changes: UpdateEventDto): Promise<IEvent> {
         logger.debug(
             { eventId: id, changes, action: "update event" },
             "[EventRepository] Updating event"

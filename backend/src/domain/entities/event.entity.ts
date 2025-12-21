@@ -110,3 +110,25 @@ export class Event {
         this._updatedAt = new Date();
     }
 }
+
+export interface IEvent {
+    id: string;
+    ownerId: string;
+    name: string;
+    location: string;
+    startTime: Date | string;
+    endTime: Date | string | null;
+    description: string;
+    imageUrl: string;
+    categories: EventCategory[];
+    status: EventStatus;
+    
+    eventManagerIds: string[];
+    participantIds: string[];
+    registerUserIds: string[];
+    postIds: string[];
+    
+    capacity: number;
+    registerCount: number;
+    updatedAt: Date | string;
+}

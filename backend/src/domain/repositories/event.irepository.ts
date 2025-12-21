@@ -1,4 +1,4 @@
-import { Event } from "../entities/event.entity";
+import { Event, IEvent } from "../entities/event.entity";
 import {
     CreateEventDto,
     UpdateEventDto,
@@ -8,7 +8,6 @@ import {
 import { Pagination } from "../../application/dtos/pagination.dto";
 import { SortOption } from "../../application/dtos/sort-option.dto";
 import { ListResult } from "../../application/dtos/list-result.dto";
-import { User } from "../entities/user.entity";
 import { PublicUserProfile } from "../../application/dtos/user.dto";
 import { RegistrationStatus } from "../entities/enums";
 import {
@@ -19,9 +18,9 @@ import {
 
 export interface IEventRepository {
     // Core CRUD
-    create(data: CreateEventDto): Promise<Event>;
-    findById(id: string): Promise<Event>;
-    update(id: string, data: UpdateEventDto): Promise<Event>;
+    create(data: CreateEventDto): Promise<IEvent>;
+    findById(id: string): Promise<IEvent>;
+    update(id: string, data: UpdateEventDto): Promise<IEvent>;
     softDelete(id: string): Promise<void>;
 
     // Public view
