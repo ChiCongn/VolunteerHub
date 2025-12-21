@@ -14,6 +14,7 @@ export default function TrendingEvents() {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
+        // TODO: thay getEvent bằng getTrending
         const data = await eventService.getEvents({ page: 1, limit: 5 });
         setTrending(data.items);
       } catch (error) {
