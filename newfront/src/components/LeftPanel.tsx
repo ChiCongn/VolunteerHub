@@ -138,7 +138,7 @@ export default function LeftPanel() {
     ...(user?.role === "event_manager"
       ? [
           { icon: Calendar, label: "Manager Overview", path: "/event-manage" },
-          { icon: ClipboardList, label: "Your Events", path: "/your-events" },
+          { icon: ClipboardList, label: "Manage Your Events", path: "/your-events" },
           { icon: Newspaper, label: "Feed", path: "/feed" },
           { icon: Users, label: "Communities", path: "/communities" },
           { icon: Bell, label: "Notifications", path: "/notifications" },

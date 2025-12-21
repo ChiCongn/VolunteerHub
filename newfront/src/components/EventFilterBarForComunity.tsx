@@ -15,6 +15,8 @@ interface FilterBarProps {
   onStatusChange?: (status: EventStatus | "all") => void;
   selectedCategory?: EventCategory | "all";
   selectedStatus?: EventStatus | "all";
+  selectedLimit?: number;
+  onLimitChange?: (limit: number) => void;
 }
 
 export function FilterEventBarForComunity({
@@ -23,6 +25,8 @@ export function FilterEventBarForComunity({
   onStatusChange,
   selectedCategory = "all",
   selectedStatus = "all",
+  selectedLimit = 20,
+  onLimitChange,
 }: FilterBarProps) {
   const categories = [
     { value: "all", label: "📋 All Categories" },
@@ -96,6 +100,24 @@ export function FilterEventBarForComunity({
                   {s.label}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          {/* Limit */}
+          <Select
+            value={String(selectedLimit)}
+            onValueChange={(v) => onLimitChange?.(Number(v))}
+          >
+            <SelectTrigger className="w-[90px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="50">50</SelectItem>
             </SelectContent>
           </Select>
         </div>

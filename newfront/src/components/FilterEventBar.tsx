@@ -102,7 +102,6 @@ export function FilterEventBar({
             </SelectContent>
           </Select>
 
-          {/* 🔥 LIMIT (NEW) */}
           <Select
             value={String(selectedLimit)}
             onValueChange={(v) => onLimitChange?.(Number(v))}
