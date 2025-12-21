@@ -40,8 +40,9 @@ export default function EventPageForUser() {
 
   // filters
   const [searchText, setSearchText] = useState("");
-  const [selectedStatus, setSelectedStatus] =
-    useState<UserEventStatus | "all">("all");
+  const [selectedStatus, setSelectedStatus] = useState<UserEventStatus | "all">(
+    "all"
+  );
   const [limit, setLimit] = useState(10);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function EventPageForUser() {
         // TODO: Implement getJoinedEvents endpoint
         // For now, fetch all events as a workaround
         const res = await eventService.getEvents();
-        
+
         // Mock user status for demonstration
         const eventsWithStatus = res.items.map((event) => ({
           ...event,
@@ -218,9 +219,7 @@ export default function EventPageForUser() {
                       />
                     </TableCell>
 
-                    <TableCell className="font-medium">
-                      {event.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{event.name}</TableCell>
 
                     <TableCell>
                       <Badge
