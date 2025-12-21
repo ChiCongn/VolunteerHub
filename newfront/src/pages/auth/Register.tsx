@@ -21,6 +21,7 @@ import { useUserStore } from "@/stores/user.store";
 import { useAuth } from "@/components/context/AuthContext";
 import { userStartsService } from "@/services/user/user-stats.service";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 import volunteerImg from "@/assets/register.png";
 
@@ -29,6 +30,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login: authContextLogin } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const registerForm = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
@@ -79,8 +81,8 @@ export default function SignupPage() {
           Become a Volunteer Today
         </h2>
         <p className="text-muted-foreground text-center max-w-sm">
-          Create your account to join impactful events, connect with communities,
-          and make a difference.
+          Create your account to join impactful events, connect with
+          communities, and make a difference.
         </p>
 
         <div className="mt-8 w-full max-w-xs">
@@ -139,12 +141,26 @@ export default function SignupPage() {
 
                 <Field>
                   <FieldLabel>Password</FieldLabel>
-                  <Input
-                    type="password"
-                    placeholder="Create a strong password"
-                    {...registerForm.register("password")}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a strong password"
+                      {...registerForm.register("password")}
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                   {watchedPassword && (
                     <div className="space-y-2 pt-2">
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -165,12 +181,26 @@ export default function SignupPage() {
 
                 <Field>
                   <FieldLabel>Confirm Password</FieldLabel>
-                  <Input
-                    type="password"
-                    placeholder="Confirm your password"
-                    {...registerForm.register("confirmPassword")}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      {...registerForm.register("confirmPassword")}
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                   {registerForm.formState.errors.confirmPassword && (
                     <p className="text-sm text-red-600">
                       {registerForm.formState.errors.confirmPassword.message}

@@ -18,6 +18,7 @@ import { useAuth } from "@/components/context/AuthContext";
 import { userStartsService } from "@/services/user/user-stats.service";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 import volunteerImg from "@/assets/volunteer.png";
 
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const { login: authContextLogin } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // === Login Form ===
   const loginForm = useForm<LoginSchema>({
@@ -131,13 +133,27 @@ export default function LoginPage() {
                         Forgot your password?
                       </a>
                     </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      disabled={isLoading}
-                      {...loginForm.register("password")}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        disabled={isLoading}
+                        {...loginForm.register("password")}
+                        required
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                     {loginForm.formState.errors.password && (
                       <FieldDescription className="text-red-500">
                         {loginForm.formState.errors.password.message}
