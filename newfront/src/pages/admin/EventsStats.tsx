@@ -34,7 +34,7 @@ export function EventManagementPage() {
 
   // pagination
   const [page, setPage] = useState(1);
-  const [limit] = useState(5); // fixed page size
+  const [limit, setLimit] = useState(5); // fixed page size
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -70,6 +70,8 @@ export function EventManagementPage() {
       setLoading(true);
       try {
         const res = await eventManagementService.listEvents({
+          page,
+          limit,
           name: debouncedSearch || undefined,
           status: selectedStatus,
           categories:
@@ -362,6 +364,12 @@ export function EventManagementPage() {
               onStatusChange={handleStatusChange}
               selectedCategory={selectedCategory}
               selectedStatus={selectedStatus}
+
+                selectedLimit={limit}
+                onLimitChange={(l) => {
+                    setLimit(l);
+                    setPage(1); // reset to first page when limit changes
+                }}
             />
 
             {/* table */}
