@@ -8,10 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import type { Event } from "@/types/event.type";
 import {
@@ -34,6 +31,7 @@ interface EventHeaderProps {
 export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openConfirmComplete, setOpenConfirmComplete] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false); // ✅ NEW
 
   const handleEditEvent = () => {
     setOpenEdit(true);
@@ -41,6 +39,9 @@ export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
 
   const handleDeleteEvent = () => {
     console.log("DELETE EVENT");
+    // 👉 sau này gọi API:
+    // await eventService.deleteEvent(event.id);
+    // window.location.href = "/communities";
   };
 
   const handleMarkCompleted = () => {
@@ -101,11 +102,7 @@ export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full"
-                    >
+                    <Button variant="outline" size="icon" className="rounded-full">
                       <MoreHorizontal className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -131,7 +128,7 @@ export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
 
                     <DropdownMenuItem
                       className="flex items-center gap-2 text-destructive"
-                      onClick={handleDeleteEvent}
+                      onClick={() => setOpenConfirmDelete(true)} // ✅ CHANGE
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete event
@@ -163,6 +160,20 @@ export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
           setOpenConfirmComplete(false);
         }}
         onCancel={() => setOpenConfirmComplete(false)}
+      />
+
+      {/* ===== CONFIRM DELETE EVENT ===== */}
+      <ConfirmDiaLog
+        open={openConfirmDelete}
+        title="Delete event"
+        description="Are you sure you want to delete this event? This action cannot be undone."
+        confirmText="Yes, delete"
+        cancelText="Cancel"
+        onConfirm={() => {
+          handleDeleteEvent();
+          setOpenConfirmDelete(false);
+        }}
+        onCancel={() => setOpenConfirmDelete(false)}
       />
     </>
   );
