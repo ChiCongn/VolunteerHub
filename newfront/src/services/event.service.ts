@@ -33,7 +33,6 @@ export const eventService = {
     },
 
     createEvent: async (data: CreateEvent) => {
-        
         const response = await apiClient.post("/events", data);
         return response.data;
     },
@@ -44,6 +43,22 @@ export const eventService = {
                 "Content-Type": "multipart/form-data",
             },
         });
+        return response.data;
+    },
+
+    updateEvent: async (eventId: string, data: Partial<CreateEvent>) => {
+        const response = await apiClient.patch(`/events/${eventId}`, data);
+        return response.data;
+    },
+
+    // soft delete
+    deleteEvent: async (eventId: string) => {
+        const response = await apiClient.post(`/events/${eventId}/cancel`);
+        return response.data;
+    },
+
+    completeEvent: async (eventId: string) => {
+        const response = await apiClient.post(`/events/${eventId}/complete`);
         return response.data;
     },
 };

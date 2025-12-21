@@ -8,10 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import type { Event } from "@/types/event.type";
 import {
@@ -25,28 +22,73 @@ import {
 
 import EventEdit from "@/components/event/EventEdit";
 import ConfirmDiaLog from "@/components/ConfirmDiaLog";
+import { eventService } from "@/services/event.service";
+import { toast } from "sonner";
+import { EventStatus } from "@/types/enum";
+import { useNavigate } from "react-router-dom";
 
 interface EventHeaderProps {
   event: Event;
   onCreatePost: () => void;
 }
 
-export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
+export const EventHeader = ({
+  event: initialEvent,
+  onCreatePost,
+}: EventHeaderProps) => {
+  const navigate = useNavigate();
   const [openEdit, setOpenEdit] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState(initialEvent);
   const [openConfirmComplete, setOpenConfirmComplete] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const handleEditEvent = () => {
     setOpenEdit(true);
   };
 
-  const handleDeleteEvent = () => {
-    console.log("DELETE EVENT");
+  const handleEditSuccess = (updatedEvent: Event) => {
+    setCurrentEvent((prev) => ({
+      ...prev,
+      ...updatedEvent,
+    }));
+    console.log(currentEvent);
+    console.log(updatedEvent);
+
+    setOpenEdit(false);
   };
 
-  const handleMarkCompleted = () => {
-    console.log("MARK EVENT AS COMPLETED");
-    // 👉 sau này gọi API:
-    // eventService.markCompleted(event.id)
+  const handleDeleteEvent = async () => {
+    try {
+      setIsPending(true);
+      await eventService.deleteEvent(currentEvent.id);
+
+      toast.success("Event has been canceled and removed.");
+
+      navigate("/communities");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to cancel event");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const handleMarkCompleted = async () => {
+    try {
+      setIsPending(true);
+      await eventService.completeEvent(currentEvent.id);
+
+      setCurrentEvent((prev) => ({
+        ...prev,
+        status: EventStatus.Completed,
+      }));
+
+      toast.success("Congratulations! Event completed.");
+      setOpenConfirmComplete(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to complete event");
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (
@@ -61,19 +103,22 @@ export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="flex flex-col md:flex-row items-start gap-4 -mt-6 relative z-10">
             <Avatar className="w-20 h-20 md:w-24 md:h-24 border-4 border-white bg-white">
-              <AvatarImage src={event.imageUrl} className="object-cover" />
+              <AvatarImage
+                src={currentEvent.imageUrl}
+                className="object-cover"
+              />
               <AvatarFallback className="text-2xl font-bold bg-zinc-100 text-zinc-500">
-                {event.name.charAt(0).toUpperCase()}
+                {currentEvent.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4 mt-2">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                  {event.name}
+                  {currentEvent.name}
                 </h1>
                 <p className="text-zinc-500 text-sm font-medium">
-                  r/{event.name.toLowerCase().replace(/\s+/g, "")}
+                  r/{currentEvent.name.toLowerCase().replace(/\s+/g, "")}
                 </p>
               </div>
 
@@ -147,7 +192,7 @@ export const EventHeader = ({ event, onCreatePost }: EventHeaderProps) => {
       {/* ===== EDIT EVENT DIALOG ===== */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
         <DialogContent className="max-w-3xl">
-          <EventEdit />
+          <EventEdit event={currentEvent} onSuccess={handleEditSuccess} />
         </DialogContent>
       </Dialog>
 

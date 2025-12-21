@@ -16,21 +16,23 @@ import {
 } from "@/components/ui/popover";
 
 import { format, startOfDay } from "date-fns";
-import {
-  CalendarIcon,
-  MapPin,
-  AlignLeft,
-  Loader2,
-} from "lucide-react";
+import { CalendarIcon, MapPin, AlignLeft, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { eventService } from "@/services/event.service";
+import { eventService, type CreateEvent } from "@/services/event.service";
 import { toast } from "sonner";
 import ConfirmDiaLog from "@/components/ConfirmDiaLog";
 import type { Event } from "@/types/event.type";
 
-export default function EditEventPage() {
-  const { eventId } = useParams();
+interface EditEventPageProps {
+  event: Event;
+  onSuccess: (updatedData: Event) => void;
+}
+
+export default function EditEventPage({
+  event,
+  onSuccess,
+}: EditEventPageProps) {
   const navigate = useNavigate();
 
   /* ===== FORM STATE ===== */
@@ -48,13 +50,11 @@ export default function EditEventPage() {
 
   /* ===== FETCH EVENT ===== */
   useEffect(() => {
-    const fetchEvent = async () => {
-      if (!eventId) return;
+    const loadEvent = async () => {
+      if (!event) return;
 
       try {
         setLoading(true);
-        const event: Event = await eventService.getEventById(eventId);
-
         setName(event.name);
         setLocation(event.location);
         setDescription(event.description || "");
@@ -68,12 +68,12 @@ export default function EditEventPage() {
       }
     };
 
-    fetchEvent();
-  }, [eventId, navigate]);
+    loadEvent();
+  }, [event, navigate]);
 
   /* ===== SUBMIT ===== */
   const handleUpdateEvent = async () => {
-    if (!name || !location || !startDate) {
+    if (!name.trim() || !location.trim() || !startDate) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -86,17 +86,19 @@ export default function EditEventPage() {
     try {
       setIsSubmitting(true);
 
-    //   await eventService.updateEvent(eventId!, {
-    //     name,
-    //     location,
-    //     description,
-    //     startTime: startDate.toISOString(),
-    //     endTime: endDate?.toISOString(),
-    //   });
+      const updateData: Partial<CreateEvent> = {
+        name: name.trim(),
+        location: location.trim(),
+        description: description.trim() || undefined,
+        startTime: startDate,
+        endTime: endDate ? endDate : null,
+      };
 
+      const result = await eventService.updateEvent(event.id, updateData);
       toast.success("Event updated successfully!");
-      navigate("/communities");
+      onSuccess(result);
     } catch (err: any) {
+      console.error("Update error:", err);
       toast.error(err.response?.data?.message || "Update failed");
     } finally {
       setIsSubmitting(false);
@@ -122,10 +124,7 @@ export default function EditEventPage() {
           {/* Name */}
           <div className="space-y-2">
             <Label>Event Name</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           {/* Time */}
