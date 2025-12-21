@@ -35,6 +35,7 @@ import {
 } from "../../application/dtos/users/weekly-event-participant.dto";
 import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
 import { EventAuthInfo } from "../../application/dtos/event.dto";
+import { UserJoinedEvent } from "../../application/dtos/users/join-event.dto";
 
 const ROOT_ADMIN_ID = process.env.ROOT_ADMIN_ID;
 const LIMIT_SEARCH_USERS = process.env.LIMIT_SEARCH_USERS;
@@ -777,6 +778,36 @@ export class UserRepository implements IUserRepository {
         );
 
         return rows[0] ?? null;
+    }
+
+    async getUserEvents(userId: string): Promise<UserJoinedEvent[]> {
+        const registrations = await this.prisma.registrations.findMany({
+            where: { user_id: userId },
+            select: {
+                id: true,
+                status: true,
+                events: {
+                    select: {
+                        id: true,
+                        name: true,
+                        status: true,
+                        image_url: true,
+                        start_time: true,
+                    },
+                },
+            },
+            orderBy: { created_at: "desc" },
+        });
+
+        return registrations.map((reg) => ({
+            registrationId: reg.id,
+            eventId: reg.events.id,
+            eventName: reg.events.name,
+            eventStatus: reg.events.status,
+            imageUrl: reg.events.image_url,
+            startTime: reg.events.start_time,
+            registrationStatus: reg.status,
+        }));
     }
 
     // ================ utils =================

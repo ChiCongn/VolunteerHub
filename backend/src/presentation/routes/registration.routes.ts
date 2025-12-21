@@ -13,7 +13,7 @@ registrationRouter.delete(
     "/:registrationId",
     authenticate,
     validate(WithdrawRegistrationSchema),
-    authorize(RegistrationPolicy.withdraw),
+    authorize(RegistrationPolicy.withdraw, (req) => [req.params.registrationId]),
     registrationController.withdraw
 );
 
@@ -21,6 +21,8 @@ registrationRouter.patch(
     "/:registrationId",
     authenticate,
     validate(UpdateRegistrationApprovalSchema),
-    authorize(RegistrationPolicy.updateStatus),
+    authorize(RegistrationPolicy.updateStatus, (req) => [req.params.registrationId]),
     registrationController.updateRegistrationStatus
 );
+
+registrationRouter.get("/my-events", authenticate, registrationController.getMyJoinedEvents);

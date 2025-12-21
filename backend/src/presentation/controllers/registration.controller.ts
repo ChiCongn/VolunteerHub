@@ -150,6 +150,18 @@ export class RegistrationController {
             });
         }
     };
+
+
+    getMyJoinedEvents = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user.id;
+            const data = await this.registrationService.getMyEvents(userId);
+
+            return res.status(200).json(data);
+        } catch (error: any) {
+            return res.status(500).json({ message: error.message });
+        }
+    };
 }
 
 export const registrationController = new RegistrationController(registrationService);

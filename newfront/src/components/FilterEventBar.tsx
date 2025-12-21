@@ -53,7 +53,7 @@ export function FilterEventBar({
   const limits = [5, 10, 15, 20, 30, 50, 100, 200];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+    <div className="bg-white border border-border rounded-lg p-4 space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         {/* ===== SEARCH ===== */}
         <div className="flex-1 relative">

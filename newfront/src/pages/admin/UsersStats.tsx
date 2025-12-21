@@ -201,7 +201,7 @@ export function UserManagementPage() {
   /* ================= RENDER ================= */
 
   return (
-    <div className="min-h-screen bg-[#dae0e6]">
+    <div className="min-h-screen bg-card">
       <div className="flex justify-center">
         <div className="w-full max-w-6xl p-6 space-y-6">
           <div>
@@ -211,7 +211,7 @@ export function UserManagementPage() {
 
           {/* STATS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-card border rounded-lg p-6">
+            <div className="bg-white border rounded-lg p-6">
               <div className="flex justify-between">
                 <p className="text-sm text-muted-foreground">Total Volunteer</p>
                 <Calendar className="w-5 h-5 text-green-600" />
@@ -221,7 +221,7 @@ export function UserManagementPage() {
               </p>
             </div>
 
-            <div className="bg-card border rounded-lg p-6">
+            <div className="bg-white border rounded-lg p-6">
               <div className="flex justify-between">
                 <p className="text-sm text-muted-foreground">New Volunteer</p>
                 <Trophy className="w-5 h-5 text-yellow-500" />
@@ -236,7 +236,7 @@ export function UserManagementPage() {
               <p className="text-xs text-muted-foreground">This Week</p>
             </div>
 
-            <div className="bg-card border rounded-lg p-6">
+            <div className="bg-white border rounded-lg p-6">
               <div className="flex justify-between">
                 <p className="text-sm text-muted-foreground">Total Manager</p>
                 <Trophy className="w-5 h-5 text-yellow-500" />
@@ -257,7 +257,7 @@ export function UserManagementPage() {
           />
 
           {/* TABLE */}
-          <div className="bg-card border rounded-lg overflow-hidden">
+          <div className="bg-white border rounded-lg overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
