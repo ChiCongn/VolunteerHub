@@ -16,6 +16,7 @@ export class RegistrationRepository implements IRegistrationRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
     async findById(registrationId: string): Promise<RegistrationEntity> {
+        logger.debug({ registrationId }, "[RegistrationRepository] Finding registration by ID");
         const row = await this.prisma.registrations.findUnique({
             where: { id: registrationId },
             select: {
@@ -28,6 +29,7 @@ export class RegistrationRepository implements IRegistrationRepository {
         });
 
         if (!row) {
+            logger.warn({ registrationId }, "[RegistrationRepository] Registration not found");
             throw new RegistrationNotFoundError(registrationId);
         }
 

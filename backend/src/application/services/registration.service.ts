@@ -6,9 +6,12 @@ import {
     RegistrationClosedError,
     RegistrationNotFoundError,
 } from "../../domain/errors/registration.error";
+import { UserNotFoundError } from "../../domain/errors/user.error";
 import { IEventRepository } from "../../domain/repositories/event.irepository";
 import { IRegistrationRepository } from "../../domain/repositories/registration.irepository";
+import { IUserRepository } from "../../domain/repositories/user.irepositoty";
 import { eventRepo, registrationRepo } from "../../infrastructure/repositories";
+import { userRepo } from "../../infrastructure/repositories/index";
 import logger from "../../logger";
 import { Pagination } from "../dtos/pagination.dto";
 import { RegistrationFilterDto } from "../dtos/registration.dto";
@@ -19,7 +22,8 @@ export class RegistrationService {
     constructor(
         private readonly registrationRepo: IRegistrationRepository,
         private readonly eventRepo: IEventRepository,
-        private readonly notificationService: NotificationService
+        private readonly notificationService: NotificationService,
+        private readonly userRepo: IUserRepository
     ) {}
 
     async register(userId: string, eventId: string) {
@@ -160,12 +164,38 @@ export class RegistrationService {
         );
     }
 
-    async findOwnerId(registrationId: string): Promise<string | null> {
-        const registration = await this.registrationRepo.findById(registrationId);
-        if (!registration) {
-            throw new RegistrationNotFoundError(registrationId);
+    async getMyEvents(userId: string) {
+        const exist = await this.userRepo.exists(userId);
+        if (!exist) {
+            throw new UserNotFoundError(userId);
         }
-        return registration.userId;
+        return await this.userRepo.getUserEvents(userId);
+    }
+
+    async findOwnerId(registrationId: string): Promise<string | null> {
+        try {
+            logger.info(
+                { registrationId},
+                "[RegistrationService] Retrieved owner ID for registration"
+            );
+            const registration = await this.registrationRepo.findById(registrationId);
+
+            if (!registration) {
+                logger.warn(
+                    { registrationId },
+                    "[RegistrationService] Registration not found while fetching owner"
+                );
+                throw new RegistrationNotFoundError(registrationId);
+            }
+
+            return registration.userId;
+        } catch (err: any) {
+            logger.error(
+                { registrationId, error: err.message },
+                "[RegistrationService] Failed to find owner ID"
+            );
+            throw err;
+        }
     }
 
     async findAuthorizedManagersByRegistration(registrationId: string): Promise<string[]> {
@@ -176,5 +206,6 @@ export class RegistrationService {
 export const registrationService = new RegistrationService(
     registrationRepo,
     eventRepo,
-    notificationService
+    notificationService,
+    userRepo
 );

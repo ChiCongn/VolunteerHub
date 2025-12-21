@@ -19,6 +19,7 @@ import {
 } from "../../application/dtos/users/weekly-event-participant.dto";
 import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
 import { UserRole } from "../entities/enums";
+import { UserJoinedEvent } from "../../application/dtos/users/join-event.dto";
 
 export interface IUserRepository {
     // Core CRUD
@@ -66,6 +67,8 @@ export interface IUserRepository {
     ): Promise<WeeklyEventCountRow | null>;
     trackLogin(userId: string): Promise<UserDailyActivity>;
     updateOnlineTime(userId: string, seconds: number): Promise<void>;
+
+    getUserEvents(userId: string): Promise<UserJoinedEvent[]>;
 
     count(filter?: ListUserFilterDto): Promise<number>;
     setUserLock(id: string, locked: boolean): Promise<void>;
