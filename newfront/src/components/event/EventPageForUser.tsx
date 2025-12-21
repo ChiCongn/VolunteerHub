@@ -179,6 +179,7 @@ export default function EventPageForUser() {
               <TableHead>Start Date</TableHead>
               <TableHead>Thumbnail</TableHead>
               <TableHead>Event Name</TableHead>
+              <TableHead>Event Status</TableHead>
               <TableHead>My Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -187,13 +188,13 @@ export default function EventPageForUser() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-6">
+                <TableCell colSpan={7} className="text-center py-6">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : filteredEvents.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-6">
+                <TableCell colSpan={7} className="text-center py-6">
                   No events found
                 </TableCell>
               </TableRow>
@@ -219,6 +220,21 @@ export default function EventPageForUser() {
 
                     <TableCell className="font-medium">
                       {event.name}
+                    </TableCell>
+
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          event.status === EventStatus.Approved
+                            ? "text-green-600"
+                            : event.status === EventStatus.Pending
+                            ? "text-yellow-600"
+                            : "text-gray-600"
+                        }
+                      >
+                        {event.status}
+                      </Badge>
                     </TableCell>
 
                     <TableCell>
