@@ -74,17 +74,18 @@ export const CommunityEventPage = () => {
   };
 
   // Create post
-  const handleCreatePostSubmit = async (content: string, imageUrl?: string) => {
+  const handleCreatePostSubmit = async (content: string, file: File | null) => {
     if (!eventId) return;
 
     try {
-      const newPostData = await postService.createPost({
-        eventId,
-        content,
-        imageUrl,
-      });
-
-      setPosts((prev) => [newPostData.data, ...prev]);
+      const formData = new FormData();
+      formData.append("content", content);
+      if (file) {
+        formData.append("image", file);
+      }
+      const newPost = await postService.createPost(eventId, formData);
+      console.log(newPost);
+      setPosts((prev) => [newPost.data, ...prev]);
       toast.success("Created post successfully!");
     } catch (error) {
       console.error("Failed to create post:", error);

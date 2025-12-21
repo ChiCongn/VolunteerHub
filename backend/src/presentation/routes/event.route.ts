@@ -34,6 +34,7 @@ eventRouter.post(
 eventRouter.post(
     "/:eventId/posts",
     authenticate,
+    uploadLocal("posts").single("image"),
     validate(CreatePostSchema),
     authorize(PostPolicy.participant, (req) => [req.params.eventId]),
     postController.createPost

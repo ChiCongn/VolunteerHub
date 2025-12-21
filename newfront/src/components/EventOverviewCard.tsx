@@ -32,7 +32,6 @@ export default function EventOverviewCard({
       try {
         setLoading(true);
         const data = await eventService.getEventPostsStats(event.id, 7);
-        console.log("post daily", data);
         setDailyPosts(data);
       } catch (error) {
         console.error("Failed to load stats", error);
