@@ -18,6 +18,7 @@ import {
   Pencil,
   Trash2,
   CheckCircle,
+  Users,
 } from "lucide-react";
 
 import EventEdit from "@/components/event/EventEdit";
@@ -43,6 +44,7 @@ export const EventHeader = ({
   const [currentEvent, setCurrentEvent] = useState(initialEvent);
   const [openConfirmComplete, setOpenConfirmComplete] = useState(false);
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+  const [openJoinRequests, setOpenJoinRequests] = useState(false);
 
   const { user } = useAuth();
   console.log(user);
@@ -154,6 +156,10 @@ export const EventHeader = ({
     }
   };
 
+  const handleRequestEvent = () => {
+    setOpenJoinRequests(true);
+  };
+
   return (
     <>
       <div className="bg-white dark:bg-zinc-900 pb-4 shadow-sm">
@@ -252,6 +258,15 @@ export const EventHeader = ({
 
                     <DropdownMenuItem
                       className="flex items-center gap-2"
+                      onClick={handleRequestEvent}
+                      disabled={currentEvent.status === EventStatus.Completed}
+                    >
+                      <Users className="w-4 h-4" />
+                      <span>View Join Requests</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="flex items-center gap-2"
                       onClick={() => setOpenConfirmComplete(true)}
                       disabled={currentEvent.status === EventStatus.Completed}
                     >
@@ -320,6 +335,29 @@ export const EventHeader = ({
         }}
         onCancel={() => setOpenConfirmDelete(false)}
       />
+      {/* ===== JOIN REQUESTS DIALOG ===== */}
+      <Dialog open={openJoinRequests} onOpenChange={setOpenJoinRequests}>
+        <DialogContent className="max-w-3xl">
+          {/* 
+      TODO:
+      - Truyền eventId
+      - Truyền authInfo.registers
+      - Component bạn sẽ thêm sau
+    */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Join Requests</h2>
+
+            <p className="text-sm text-muted-foreground">
+              Manage users who requested to join this event.
+            </p>
+
+            {/* PLACEHOLDER */}
+            <div className="rounded-md border border-dashed p-6 text-center text-muted-foreground">
+              Join requests component will be added here.
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

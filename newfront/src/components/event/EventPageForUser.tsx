@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "../ui/dialog";
 
 type UserEventStatus = "pending" | "approved" | "rejected";
 
@@ -37,6 +38,9 @@ export default function EventPageForUser() {
 
   const navigate = useNavigate();
   const { user } = useAuthState();
+
+  const [openLeaveConfirm, setOpenLeaveConfirm] = useState(false);
+  const [eventToLeave, setEventToLeave] = useState<string | null>(null);
 
   // filters
   const [searchText, setSearchText] = useState("");
@@ -264,7 +268,10 @@ export default function EventPageForUser() {
                         size="sm"
                         variant="destructive"
                         disabled={started}
-                        onClick={() => handleLeaveEvent(event.id)}
+                        onClick={() => {
+                          setEventToLeave(event.id);
+                          setOpenLeaveConfirm(true);
+                        }}
                       >
                         {started ? "Started" : "Leave Event"}
                       </Button>
@@ -276,6 +283,42 @@ export default function EventPageForUser() {
           </TableBody>
         </Table>
       </div>
+      {/* Leave Confirm Dialog */}
+      {/* ===== CONFIRM LEAVE EVENT ===== */}
+      <Dialog open={openLeaveConfirm} onOpenChange={setOpenLeaveConfirm}>
+        <DialogContent className="max-w-md">
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Leave Event</h2>
+
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to leave this event? You may need to request
+              again if you change your mind.
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setOpenLeaveConfirm(false)}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (eventToLeave) {
+                    handleLeaveEvent(eventToLeave);
+                  }
+                  setOpenLeaveConfirm(false);
+                  setEventToLeave(null);
+                }}
+              >
+                Leave Event
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
