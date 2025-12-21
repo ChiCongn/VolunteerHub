@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { EventStatus, RegistrationStatus } from "@/types/enum";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { RegistrationManagement } from "./RegistrationManagement";
 
 interface EventHeaderProps {
   event: Event;
@@ -363,8 +364,7 @@ export const EventHeader = ({
             </p>
 
             <div className="rounded-md border border-dashed p-6 text-center text-muted-foreground">
-              Join requests component will be added here.
-              Ném component vào đây nhé!
+              <RegistrationManagement eventId={currentEvent.id} />
             </div>
           </div>
         </DialogContent>

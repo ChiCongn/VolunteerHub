@@ -80,6 +80,29 @@ export const eventService = {
         const response = await apiClient.get(`/events/${eventId}/auth-info`);
         return response.data;
     },
+
+    getEventRegistrations: async (eventId: string) => {
+        const response = await apiClient.get(
+            `/events/${eventId}/registrations`
+        );
+        return response.data;
+    },
+
+    updateRegistrationStatus: async (
+        registrationId: string,
+        isApproved: boolean
+    ) => {
+        const response = await apiClient.patch(
+            `/registrations/${registrationId}`,
+            {
+                approved: isApproved,
+                reason: isApproved
+                    ? "Welcome to the event!"
+                    : "Sorry, we cannot accept your request at this time.",
+            }
+        );
+        return response.data;
+    },
 };
 
 export interface CreateEvent {
