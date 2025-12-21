@@ -71,6 +71,13 @@ export const EventHeader = ({
   const userStatus = useMemo(() => {
     if (!user?.id || !authInfo) return "GUEST";
 
+    const isOwner = authInfo.ownerId === user.id;
+    const isManager = authInfo.managerIds.includes(user.id);
+
+    if (isOwner || isManager) {
+      return "MANAGER";
+    }
+
     const userRegistration = authInfo.registers.find(
       (reg) => reg.userId === user.id
     );
@@ -208,7 +215,15 @@ export const EventHeader = ({
                   <Bell className="w-4 h-4" />
                 </Button>
 
-                {userStatus === "PARTICIPANT" ? (
+                {userStatus === "MANAGER" ? (
+                  <Button
+                    className="rounded-full px-6 font-bold bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+                    variant="secondary"
+                    disabled
+                  >
+                    MANAGER
+                  </Button>
+                ) : userStatus === "PARTICIPANT" ? (
                   <Button
                     className="rounded-full px-6 font-bold bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
                     variant="secondary"
