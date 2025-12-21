@@ -24,6 +24,7 @@ import { Toaster } from "sonner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserRole } from "./types/enum";
 import NotificationPage from "./pages/NotificationPage";
+import ManageYourEvent from "./pages/ManageYourEvent";
 
 function App() {
   return (
@@ -131,6 +132,15 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={[UserRole.EventManager]}>
                     <ManageEvent />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/your-events"
+                element={
+                  <ProtectedRoute allowedRoles={[UserRole.EventManager]}>
+                    <ManageYourEvent />
                   </ProtectedRoute>
                 }
               />
