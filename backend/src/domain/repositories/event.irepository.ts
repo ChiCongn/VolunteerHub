@@ -50,6 +50,7 @@ export interface IEventRepository {
         pagination?: Pagination,
         sort?: SortOption
     ): Promise<ListResult<PublicEventView>>;
+    getTrendingCandidates(limit: number): Promise<IEvent[]>;
 
     checkExistedAndApprovedEvent(eventId: string): Promise<void>;
 

@@ -20,6 +20,7 @@ export const eventRouter = Router();
 
 // Public routes
 eventRouter.get("/", eventController.searchEvents);
+eventRouter.get("/trending", authenticate, eventController.getTrendingEvents);
 eventRouter.get("/:eventId", validate(GetEventSchema), eventController.fetchPublicEventView);
 
 // AUTHENTICATED ROUTES (Volunteers/All)

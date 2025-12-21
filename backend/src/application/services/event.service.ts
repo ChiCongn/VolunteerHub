@@ -99,6 +99,55 @@ export class EventService {
         return authInfo;
     }
 
+    async getTrendingEvents(limit = 10) {
+        const candidates = await this.eventRepo.getTrendingCandidates(50);
+
+        return candidates
+            .map((event) => ({
+                event,
+                score: this.calculateTrendingScore(event),
+            }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limit)
+            .map(({ event }) => ({
+                id: event.id,
+                ownerId: event.ownerId,
+                name: event.name,
+                location: event.location,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                description: event.description,
+                imageUrl: event.imageUrl,
+                categories: event.categories,
+                status: event.status,
+                capacity: event.capacity,
+                registerCount: event.registerCount,
+                updatedAt: event.updatedAt,
+            }));
+    }
+
+    private calculateTrendingScore(event: IEvent): number {
+        const now = Date.now();
+
+        const createdAt = new Date(event.createdAt).getTime();
+        const updatedAt = new Date(event.updatedAt).getTime();
+
+        const ageHours = (now - createdAt) / (1000 * 60 * 60);
+
+        const registerCount = event.registerCount;
+
+        const capacityFillRate = event.capacity > 0 ? registerCount / event.capacity : 0;
+
+        const recentActivityBoost = now - updatedAt < 12 * 60 * 60 * 1000 ? 15 : 0;
+
+        const timeDecayPenalty = Math.pow(ageHours, 1.2);
+
+        const score =
+            registerCount * 1.5 + capacityFillRate * 35 + recentActivityBoost - timeDecayPenalty;
+
+        return Number(score.toFixed(2));
+    }
+
     private async notifyEventApproved(event: IEvent, isApprove: boolean) {
         const managers = event.eventManagerIds;
         const statusText = isApprove ? "đã được phê duyệt" : "đã bị từ chối";

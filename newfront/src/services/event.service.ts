@@ -26,6 +26,11 @@ export const eventService = {
         return response.data;
     },
 
+    getTrendingEvent: async () => {
+        const { data } = await apiClient.get("/events/trending");
+        return data;
+    },
+
     uploadEventImage(formData: FormData) {
         return apiClient
             .post<{ url: string }>("/events/upload-image", formData)
