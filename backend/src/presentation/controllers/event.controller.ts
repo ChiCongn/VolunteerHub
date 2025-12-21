@@ -16,9 +16,13 @@ import { Request, Response } from "express";
 import { EventFilterSchema } from "../validators/event/filetr-event.schema";
 import logger from "../../logger";
 import { EventNotFoundError } from "../../domain/errors/event.error";
+import { eventService, EventService } from "../../application/services/event.service";
 
 export class EventController {
-    constructor(private readonly eventRepository: IEventRepository) {
+    constructor(
+        private readonly eventRepository: IEventRepository,
+        private readonly eventService: EventService
+    ) {
         this.createEvent = this.createEvent.bind(this);
         this.getEventById = this.getEventById.bind(this);
         this.updateEvent = this.updateEvent.bind(this);
@@ -184,6 +188,14 @@ export class EventController {
         }
     }
 
+    getTrendingEvents = async (req: Request, res: Response) => {
+        const limit = Number(req.query.limit) || 10;
+
+        const events = await this.eventService.getTrendingEvents(limit);
+
+        return res.status(200).json(events);
+    };
+
     getPostActivity = async (req: Request, res: Response) => {
         const { eventId } = req.params;
         const days = req.query.days ? Number(req.query.days) : 7;
@@ -325,4 +337,4 @@ export class EventController {
     }
 }
 
-export const eventController = new EventController(eventRepo);
+export const eventController = new EventController(eventRepo, eventService);

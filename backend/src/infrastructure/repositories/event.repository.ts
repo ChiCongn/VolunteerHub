@@ -94,6 +94,7 @@ export class EventRepository implements IEventRepository {
             status: eventPrisma.status as EventStatus,
             capacity: eventPrisma.capacity,
             registerCount: registeredUserIds.length,
+            createdAt: eventPrisma.created_at,
             updatedAt: eventPrisma.updated_at || new Date(),
 
             participantIds: approvedUserIds,
@@ -844,6 +845,51 @@ export class EventRepository implements IEventRepository {
         }
 
         return result;
+    }
+
+    async getTrendingCandidates(limit: number = 50): Promise<IEvent[]> {
+        logger.debug({ limit }, "[EventRepository] Fetching trending events");
+
+        const rows = await this.prisma.events.findMany({
+            where: {
+                status: EventStatus.Approved,
+            },
+            take: limit,
+            orderBy: {
+                updated_at: "desc",
+            },
+            include: {
+                _count: {
+                    select: {
+                        registrations: true,
+                    },
+                },
+            },
+        });
+
+        return rows.map((row) => ({
+            id: row.id,
+            ownerId: row.owner_id,
+            name: row.name,
+            location: row.location,
+            startTime: row.start_time,
+            endTime: row.end_time,
+            description: row.description,
+            imageUrl: row.image_url,
+            categories: row.categories,
+            status: row.status,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at || new Date(),
+
+            eventManagerIds: row.event_manager_ids ?? [],
+
+            participantIds: [],
+            registerUserIds: [],
+            postIds: [],
+
+            capacity: row.capacity,
+            registerCount: row._count.registrations,
+        }));
     }
 
     async getApprovedRegistrations(

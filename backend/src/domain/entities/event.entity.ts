@@ -130,5 +130,6 @@ export interface IEvent {
     
     capacity: number;
     registerCount: number;
+    createdAt: Date | string;
     updatedAt: Date | string;
 }

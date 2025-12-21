@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { eventService } from "@/services/event.service";
 import type { Event } from "@/types/event.type";
 import { useNavigate } from "react-router-dom";
@@ -14,9 +14,8 @@ export default function TrendingEvents() {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        // TODO: thay getEvent bằng getTrending
-        const data = await eventService.getEvents({ page: 1, limit: 5 });
-        setTrending(data.items);
+        const data = await eventService.getTrendingEvent();
+        setTrending(data);
       } catch (error) {
         console.error("Failed to fetch trending:", error);
       }
@@ -33,7 +32,7 @@ export default function TrendingEvents() {
         </CardHeader>
 
         <div className="p-0 bg-white">
-          {trending.map((event, index) => (
+          {trending.map((event) => (
             <div
               key={event.id}
               className="p-4 hover:bg-zinc-50 cursor-pointer transition-colors"
