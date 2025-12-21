@@ -355,7 +355,7 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
       <header
         ref={combinedRef}
         className={cn(
-          "sticky top-0 z-50 w-full border-b bg-white px-4 md:px-6 [&_*]:no-underline",
+          "sticky top-0 z-50 w-full border-b bg-white px-4 md:px-6 [&_*]:no-underline pl-16 md:pl-4",
           className
         )}
         {...(props as any)}
@@ -363,25 +363,6 @@ export const Navbar05 = React.forwardRef<HTMLElement, Navbar05Props>(
         <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between gap-4">
           {/* Left side */}
           <div className="flex items-center gap-2">
-            {/* Mobile menu trigger */}
-            {isMobile && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    className="group h-9 w-9 hover:bg-accent hover:text-accent-foreground"
-                    variant="ghost"
-                    size="icon"
-                  >
-                    <HamburgerIcon />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-64 p-1">
-                  <NavigationMenu className="max-w-none">
-                    <NavigationMenuList className="flex-col items-start gap-0"></NavigationMenuList>
-                  </NavigationMenu>
-                </PopoverContent>
-              </Popover>
-            )}
             <div className="flex items-center gap-6">
               <button
                 onClick={handleLogoClick} // Gọi hàm điều hướng
