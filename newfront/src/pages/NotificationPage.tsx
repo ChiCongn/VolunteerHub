@@ -158,7 +158,7 @@ const BigNotificationCard = ({
       )}
     >
       {notification.isUnread && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-600" />
       )}
 
       <Avatar className="h-14 w-14 border border-gray-100 shadow-sm">
@@ -204,11 +204,11 @@ const BigNotificationCard = ({
         </div>
       </div>
 
-      {notification.isUnread && (
+      {/* {notification.isUnread && (
         <div className="self-center ml-2">
           <div className="h-3 w-3 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]" />
         </div>
-      )}
+      )} */}
     </div>
   );
 };

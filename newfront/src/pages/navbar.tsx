@@ -129,7 +129,7 @@ const NotificationMenu = ({
             locale: vi,
           }),
           type: item._type,
-          isUnread: item._isRead === false || true,
+          isUnread: !item._isRead,
           redirectUrl: item._redirectUrl,
         };
       });
@@ -156,6 +156,8 @@ const NotificationMenu = ({
           n.id === notification.id ? { ...n, isUnread: false } : n
         )
       );
+
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Error marking as read", error);
     }
@@ -166,11 +168,11 @@ const NotificationMenu = ({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9 relative">
           <BellIcon className="h-4 w-4" />
-          {unreadCount > 0 && (
+          {/* {unreadCount > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 border-2 border-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
-          )}
+          )} */}
         </Button>
       </DropdownMenuTrigger>
 

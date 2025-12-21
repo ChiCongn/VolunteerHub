@@ -105,11 +105,11 @@ export const NotificationCard = ({
       </div>
 
       {/* Chấm xanh báo chưa đọc */}
-      {notification.isUnread && (
+      {/* {notification.isUnread && (
         <div className="mt-5 shrink-0">
           <div className="h-3 w-3 rounded-full bg-blue-600" />
         </div>
-      )}
+      )} */}
     </div>
   );
 };

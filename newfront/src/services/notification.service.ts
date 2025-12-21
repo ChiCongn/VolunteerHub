@@ -1,3 +1,4 @@
+import type { NotificationItem } from "@/components/cards/NotificationCard";
 import apiClient from "@/lib/api-client";
 
 export interface ApiNotificationItem {

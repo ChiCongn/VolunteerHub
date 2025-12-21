@@ -47,7 +47,7 @@ export class NotificationService {
         return this.create({
             userId: recipientId,
             type: NotificationType.User,
-            message: `**${senderName}** ${action}`,
+            message: `**Một người dùng** ${action}`,
             redirectUrl: `/posts/${postId}`,
         });
     }
