@@ -225,6 +225,7 @@ export const requireRegistrationOwner = async (userId: string, registrationId: s
 
     // Assuming your registrationService has a method to find the owner of a registration
     const ownerId = await registrationService.findOwnerId(registrationId);
+    console.log(ownerId);
 
     if (userId !== ownerId) {
         logger.error(

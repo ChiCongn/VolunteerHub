@@ -12,6 +12,7 @@ import { MonthlyEventStatsDto } from "../dtos/users/monthly-event-stats.dto";
 import { UserDailyActivity } from "../dtos/users/user-daily-activity.dto";
 import { notificationService } from "./notification.service";
 import { UserRole } from "../../domain/entities/enums";
+import { UserNotFoundError } from "../../domain/errors/user.error";
 
 export class UserService {
     constructor(private readonly userRepo: IUserRepository) {}

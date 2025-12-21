@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Event } from "@/types/event.type";
-import { EventStatus } from "@/types/enum";
-import { eventService } from "@/services/event.service";
+import { EventStatus, RegistrationStatus } from "@/types/enum";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -26,14 +24,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  registrationService,
+  type UserJoinedEvent,
+} from "@/services/registration.service";
+import { toast } from "sonner";
 import { Dialog, DialogContent } from "../ui/dialog";
 
-type UserEventStatus = "pending" | "approved" | "rejected";
-
 export default function EventPageForUser() {
-  const [events, setEvents] = useState<
-    (Event & { userStatus: UserEventStatus })[]
-  >([]);
+  const [joinedEvents, setJoinedEvents] = useState<UserJoinedEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -44,9 +43,9 @@ export default function EventPageForUser() {
 
   // filters
   const [searchText, setSearchText] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<UserEventStatus | "all">(
-    "all"
-  );
+  const [selectedStatus, setSelectedStatus] = useState<
+    RegistrationStatus | "all"
+  >("all");
   const [limit, setLimit] = useState(10);
 
   useEffect(() => {
@@ -55,21 +54,11 @@ export default function EventPageForUser() {
 
       setLoading(true);
       try {
-        // TODO: Implement getJoinedEvents endpoint
-        // For now, fetch all events as a workaround
-        const res = await eventService.getEvents();
-
-        // Mock user status for demonstration
-        const eventsWithStatus = res.items.map((event) => ({
-          ...event,
-          userStatus: ["approved", "pending", "rejected"][
-            Math.floor(Math.random() * 3)
-          ] as UserEventStatus,
-        }));
-
-        setEvents(eventsWithStatus);
+        const data = await registrationService.getMyJoinedEvents();
+        setJoinedEvents(data);
       } catch (err) {
         console.error("Fetch user events failed", err);
+        toast.error("Failed to load your events");
       } finally {
         setLoading(false);
       }
@@ -81,26 +70,29 @@ export default function EventPageForUser() {
   const filteredEvents = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
 
-    return events
+    return joinedEvents
       .filter((event) => {
         const matchSearch =
-          keyword === "" || event.name.toLowerCase().includes(keyword);
+          keyword === "" || event.eventName.toLowerCase().includes(keyword);
 
         const matchStatus =
-          selectedStatus === "all" || event.userStatus === selectedStatus;
+          selectedStatus === "all" ||
+          event.registrationStatus === selectedStatus;
 
         return matchSearch && matchStatus;
       })
       .slice(0, limit);
-  }, [events, searchText, selectedStatus, limit]);
+  }, [joinedEvents, searchText, selectedStatus, limit]);
 
-  const handleLeaveEvent = async (eventId: string) => {
+  const handleLeaveEvent = async (registrationId: string) => {
     try {
-      // TODO: Implement leaveEvent endpoint
-      // For now, just remove from local state
-      setEvents((prev) => prev.filter((e) => e.id !== eventId));
-      console.log("Leave event:", eventId);
+      await registrationService.withdrawRegistration(registrationId);
+      setJoinedEvents((prev) =>
+        prev.filter((e) => e.registrationId !== registrationId)
+      );
+      toast.success("Left event successfully");
     } catch (err) {
+      toast.error("Could not leave event at this time");
       console.error("Leave event failed", err);
     }
   };
@@ -138,7 +130,7 @@ export default function EventPageForUser() {
             <Select
               value={selectedStatus}
               onValueChange={(v) =>
-                setSelectedStatus(v as UserEventStatus | "all")
+                setSelectedStatus(v as RegistrationStatus | "all")
               }
             >
               <SelectTrigger className="w-[160px]">
@@ -204,39 +196,41 @@ export default function EventPageForUser() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredEvents.map((event, index) => {
-                const started = isEventStarted(event.startTime);
+              filteredEvents.map((joinedEvent, index) => {
+                const started = isEventStarted(joinedEvent.startTime);
 
                 return (
-                  <TableRow key={event.id}>
+                  <TableRow key={joinedEvent.eventId}>
                     <TableCell>{index + 1}</TableCell>
 
                     <TableCell>
-                      {new Date(event.startTime).toLocaleDateString()}
+                      {new Date(joinedEvent.startTime).toLocaleDateString()}
                     </TableCell>
 
                     <TableCell>
                       <img
-                        src={getImageUrl(event.imageUrl)}
-                        alt={event.name}
+                        src={getImageUrl(joinedEvent.imageUrl)}
+                        alt={joinedEvent.eventName}
                         className="h-16 w-24 object-contain rounded-md border"
                       />
                     </TableCell>
 
-                    <TableCell className="font-medium">{event.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {joinedEvent.eventName}
+                    </TableCell>
 
                     <TableCell>
                       <Badge
                         variant="outline"
                         className={
-                          event.status === EventStatus.Approved
+                          joinedEvent.eventStatus === EventStatus.Approved
                             ? "text-green-600"
-                            : event.status === EventStatus.Pending
+                            : joinedEvent.eventStatus === EventStatus.Pending
                             ? "text-yellow-600"
                             : "text-gray-600"
                         }
                       >
-                        {event.status}
+                        {joinedEvent.eventStatus}
                       </Badge>
                     </TableCell>
 
@@ -244,14 +238,16 @@ export default function EventPageForUser() {
                       <Badge
                         variant="outline"
                         className={
-                          event.userStatus === "approved"
+                          joinedEvent.registrationStatus ===
+                          RegistrationStatus.Approved
                             ? "text-green-600"
-                            : event.userStatus === "pending"
+                            : joinedEvent.registrationStatus ===
+                              RegistrationStatus.Pending
                             ? "text-yellow-600"
                             : "text-red-600"
                         }
                       >
-                        {event.userStatus}
+                        {joinedEvent.registrationStatus}
                       </Badge>
                     </TableCell>
 
@@ -259,7 +255,9 @@ export default function EventPageForUser() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/events/${event.id}`)}
+                        onClick={() =>
+                          navigate(`/events/${joinedEvent.eventId}`)
+                        }
                       >
                         View
                       </Button>
@@ -267,15 +265,11 @@ export default function EventPageForUser() {
                       <Button
                         size="sm"
                         disabled={started}
-                        className={`w-[110px] ${
-                          started
-                            ? "bg-green-600 text-white hover:bg-green-600 cursor-not-allowed"
-                            : ""
-                        }`}
-                        variant={started ? "default" : "destructive"}
+                        className={"w-[110px]"}
+                        variant={started ? "outline" : "destructive"}
                         onClick={() => {
                           if (started) return;
-                          setEventToLeave(event.id);
+                          setEventToLeave(joinedEvent.registrationId);
                           setOpenLeaveConfirm(true);
                         }}
                       >
