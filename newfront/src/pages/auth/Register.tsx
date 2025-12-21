@@ -31,6 +31,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const { login: authContextLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [showPassword1, setShowPassword1] = useState(false);
 
   const registerForm = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
@@ -143,7 +144,7 @@ export default function SignupPage() {
                   <FieldLabel>Password</FieldLabel>
                   <div className="relative">
                     <Input
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword1 ? "text" : "password"}
                       placeholder="Create a strong password"
                       {...registerForm.register("password")}
                       required
@@ -151,10 +152,10 @@ export default function SignupPage() {
 
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword1(!showPassword1)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? (
+                      {showPassword1 ? (
                         <EyeOff className="h-4 w-4" />
                       ) : (
                         <Eye className="h-4 w-4" />
