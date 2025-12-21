@@ -39,6 +39,7 @@ import {
   type VolunteerStats,
 } from "@/services/admin/user-management.service";
 import { useDebounce } from "@/hooks/useDebounce";
+import { toast } from "sonner";
 
 export function UserManagementPage() {
   const [filterUsers, setFilterUsers] = useState<UserProfile[]>([]);
@@ -60,15 +61,17 @@ export function UserManagementPage() {
   );
 
   // role editing
-  const [editingRoles, setEditingRoles] = useState<
-    Record<string, UserRole>
-  >({});
+  const [editingRoles, setEditingRoles] = useState<Record<string, UserRole>>(
+    {}
+  );
 
   // stats
-  const [volunteerStats, setVolunteerStats] =
-    useState<VolunteerStats | null>(null);
-  const [managerStats, setManagerStats] =
-    useState<EventManagerStats | null>(null);
+  const [volunteerStats, setVolunteerStats] = useState<VolunteerStats | null>(
+    null
+  );
+  const [managerStats, setManagerStats] = useState<EventManagerStats | null>(
+    null
+  );
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -151,14 +154,18 @@ export function UserManagementPage() {
           u.id === userId
             ? {
                 ...u,
-                status: locked
-                  ? UserStatus.Locked
-                  : UserStatus.Active,
+                status: locked ? UserStatus.Locked : UserStatus.Active,
               }
             : u
         )
       );
+      if (locked) {
+        toast.success("User has been locked");
+      } else {
+        toast.success("User has been unlocked");
+      }
     } catch (err) {
+      toast.error("Lock/unlock failed");
       console.error("Lock/unlock failed", err);
     }
   };
@@ -171,9 +178,7 @@ export function UserManagementPage() {
       await userManagementService.updateUserRole(userId, newRole);
 
       setFilterUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, role: newRole } : u
-        )
+        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
       );
 
       setEditingRoles((prev) => {
@@ -181,7 +186,9 @@ export function UserManagementPage() {
         delete copy[userId];
         return copy;
       });
+      toast.success("Updated role successfully");
     } catch (err) {
+      toast.error("Failed to update user role");
       console.error("Update role failed", err);
     }
   };
@@ -198,21 +205,15 @@ export function UserManagementPage() {
       <div className="flex justify-center">
         <div className="w-full max-w-6xl p-6 space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold">
-              User Management
-            </h1>
-            <p className="text-muted-foreground">
-              Manage users
-            </p>
+            <h1 className="text-2xl font-semibold">User Management</h1>
+            <p className="text-muted-foreground">Manage users</p>
           </div>
 
           {/* STATS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-card border rounded-lg p-6">
               <div className="flex justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Total Volunteer
-                </p>
+                <p className="text-sm text-muted-foreground">Total Volunteer</p>
                 <Calendar className="w-5 h-5 text-green-600" />
               </div>
               <p className="text-3xl font-semibold">
@@ -222,30 +223,22 @@ export function UserManagementPage() {
 
             <div className="bg-card border rounded-lg p-6">
               <div className="flex justify-between">
-                <p className="text-sm text-muted-foreground">
-                  New Volunteer
-                </p>
+                <p className="text-sm text-muted-foreground">New Volunteer</p>
                 <Trophy className="w-5 h-5 text-yellow-500" />
               </div>
               <p className="text-2xl font-semibold">
                 {volunteerStats?.newVolunteers.today}
               </p>
-              <p className="text-xs text-muted-foreground">
-                Today
-              </p>
+              <p className="text-xs text-muted-foreground">Today</p>
               <p className="text-2xl font-semibold mt-2">
                 {volunteerStats?.newVolunteers.thisWeek}
               </p>
-              <p className="text-xs text-muted-foreground">
-                This Week
-              </p>
+              <p className="text-xs text-muted-foreground">This Week</p>
             </div>
 
             <div className="bg-card border rounded-lg p-6">
               <div className="flex justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Total Manager
-                </p>
+                <p className="text-sm text-muted-foreground">Total Manager</p>
                 <Trophy className="w-5 h-5 text-yellow-500" />
               </div>
               <p className="text-3xl font-semibold">
@@ -272,28 +265,20 @@ export function UserManagementPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">
-                    Actions
-                  </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center py-6"
-                    >
+                    <TableCell colSpan={5} className="text-center py-6">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filterUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center py-6"
-                    >
+                    <TableCell colSpan={5} className="text-center py-6">
                       No users found
                     </TableCell>
                   </TableRow>
@@ -303,25 +288,19 @@ export function UserManagementPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage
-                              src={user.avatarUrl}
-                            />
+                            <AvatarImage src={user.avatarUrl} />
                             <AvatarFallback>
                               {user.username.slice(0, 2)}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium">
-                            {user.username}
-                          </span>
+                          <span className="font-medium">{user.username}</span>
                         </div>
                       </TableCell>
 
                       <TableCell>{user.email}</TableCell>
 
                       <TableCell>
-                        <Badge variant="outline">
-                          {user.role}
-                        </Badge>
+                        <Badge variant="outline">{user.role}</Badge>
                       </TableCell>
 
                       <TableCell>
@@ -343,29 +322,20 @@ export function UserManagementPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() =>
-                              handleViewUser(user.id)
-                            }
+                            onClick={() => handleViewUser(user.id)}
                           >
                             View
                           </Button>
 
                           <Select
-                            value={
-                              editingRoles[user.id] ??
-                              user.role
-                            }
+                            value={editingRoles[user.id] ?? user.role}
                             onValueChange={(value) =>
                               setEditingRoles((prev) => ({
                                 ...prev,
-                                [user.id]:
-                                  value as UserRole,
+                                [user.id]: value as UserRole,
                               }))
                             }
-                            disabled={
-                              user.status ===
-                              UserStatus.Locked
-                            }
+                            disabled={user.status === UserStatus.Locked}
                           >
                             <SelectTrigger className="w-[150px] h-8">
                               <SelectValue placeholder="Change Role" />
@@ -377,45 +347,33 @@ export function UserManagementPage() {
                               <SelectItem value={UserRole.EventManager}>
                                 Event Manager
                               </SelectItem>
-                              <SelectItem value={UserRole.Admin}>
-                                Admin
-                              </SelectItem>
                             </SelectContent>
                           </Select>
 
                           {editingRoles[user.id] &&
-                            editingRoles[user.id] !==
-                              user.role && (
+                            editingRoles[user.id] !== user.role && (
                               <Button
                                 size="sm"
-                                onClick={() =>
-                                  handleUpdateRole(user.id)
-                                }
+                                onClick={() => handleUpdateRole(user.id)}
                               >
                                 Update
                               </Button>
                             )}
 
-                          {user.status ===
-                            UserStatus.Active && (
+                          {user.status === UserStatus.Active && (
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() =>
-                                handleUserLock(user.id, true)
-                              }
+                              onClick={() => handleUserLock(user.id, true)}
                             >
                               Lock
                             </Button>
                           )}
 
-                          {user.status ===
-                            UserStatus.Locked && (
+                          {user.status === UserStatus.Locked && (
                             <Button
                               size="sm"
-                              onClick={() =>
-                                handleUserLock(user.id, false)
-                              }
+                              onClick={() => handleUserLock(user.id, false)}
                             >
                               Unlock
                             </Button>
@@ -435,9 +393,7 @@ export function UserManagementPage() {
               <PaginationItem>
                 <PaginationPrevious
                   isActive={page !== 1}
-                  onClick={() =>
-                    setPage((p) => Math.max(1, p - 1))
-                  }
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                 />
               </PaginationItem>
 
@@ -455,11 +411,7 @@ export function UserManagementPage() {
               <PaginationItem>
                 <PaginationNext
                   isActive={page !== totalPages}
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.min(totalPages, p + 1)
-                    )
-                  }
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 />
               </PaginationItem>
             </PaginationContent>

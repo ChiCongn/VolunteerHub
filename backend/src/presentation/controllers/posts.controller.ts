@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { postService, PostService } from "../../application/services/post.service";
 import logger from "../../logger";
+import { CreatePostDto } from "../../application/dtos/post.dto";
 
 export class PostsController {
     private postService: PostService;
@@ -14,20 +15,23 @@ export class PostsController {
     // Create Post
     createPost = async (req: Request, res: Response) => {
         const { eventId } = req.params;
-        const { content, imageUrl } = req.body;
+        const file = req.file as Express.Multer.File;
         const authorId = req.user.sub;
 
         logger.info(
             { authorId, eventId, action: "createPost" },
             `[PostController] Creating new post for event: ${eventId}`
         );
+
         try {
-            const result = await this.postService.createPost({
+            const validatedData = req.body;
+            const postDto: CreatePostDto = {
+                ...validatedData,
                 eventId,
-                content,
-                imageUrl,
                 authorId,
-            });
+                imageUrl: file ? file.path : validatedData.imageUrl,
+            };
+            const result = await this.postService.createPost(postDto);
             return res.status(201).json({
                 message: "Post created successfully",
                 data: result,

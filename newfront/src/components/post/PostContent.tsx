@@ -1,4 +1,5 @@
 import type { Post } from "@/types/post.type";
+import { getImageUrl } from "@/utils/imageUrl.utils";
 
 interface Props {
   post: Post;
@@ -11,7 +12,7 @@ export default function PostContent({ post }: Props) {
 
       {post.imageUrl && (
         <img
-          src={post.imageUrl}
+          src={getImageUrl(post.imageUrl)}
           alt="Post image"
           className="rounded-md border object-cover max-h-[600px] w-full"
         />

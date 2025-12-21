@@ -14,7 +14,7 @@ import { CreatePostModal } from "../components/CreatePostModal";
 
 // Services & Store
 import { useUserStore } from "@/stores/user.store";
-import { eventService } from "@/services/event.service";
+import { eventService, type EventAuthInfo } from "@/services/event.service";
 import { postService } from "@/services/post.service";
 
 // Types
@@ -74,20 +74,18 @@ export const CommunityEventPage = () => {
   };
 
   // Create post
-  const handleCreatePostSubmit = async (
-    content: string,
-    imageUrl?: string
-  ) => {
+  const handleCreatePostSubmit = async (content: string, file: File | null) => {
     if (!eventId) return;
 
     try {
-      const newPostData = await postService.createPost({
-        eventId,
-        content,
-        imageUrl,
-      });
-
-      setPosts((prev) => [newPostData.data, ...prev]);
+      const formData = new FormData();
+      formData.append("content", content);
+      if (file) {
+        formData.append("image", file);
+      }
+      const newPost = await postService.createPost(eventId, formData);
+      console.log(newPost);
+      setPosts((prev) => [newPost.data, ...prev]);
       toast.success("Created post successfully!");
     } catch (error) {
       console.error("Failed to create post:", error);
@@ -183,7 +181,7 @@ export const CommunityEventPage = () => {
                 {/* ================= RIGHT COLUMN ================= */}
                 <div className="hidden md:block space-y-4">
                   {/* EVENT OVERVIEW */}
-                  <EventOverviewCard />
+                  <EventOverviewCard event={event} />
 
                   {/* ABOUT COMMUNITY */}
                   <Card className="shadow-sm border border-zinc-200">
@@ -199,8 +197,7 @@ export const CommunityEventPage = () => {
                         <Avatar className="w-12 h-12">
                           <AvatarImage
                             src={
-                              event.imageUrl ||
-                              "https://github.com/shadcn.png"
+                              event.imageUrl || "https://github.com/shadcn.png"
                             }
                           />
                           <AvatarFallback>EV</AvatarFallback>

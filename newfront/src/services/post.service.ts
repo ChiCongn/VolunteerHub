@@ -4,13 +4,17 @@ import type { Post } from "@/types/post.type";
 
 export const postService = {
     // POST /api/v1/posts
-    // TODO: remove authorId
-    createPost: async (data: {
-        eventId: string;
-        content: string;
-        imageUrl?: string;
-    }) => {
-        const response = await apiClient.post(`/events/${data.eventId}/posts`, data);
+    createPost: async (eventId: string, formData: FormData) => {
+        console.log(Object.fromEntries(formData));
+        const response = await apiClient.post(
+            `/events/${eventId}/posts`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
         return response.data;
     },
 
@@ -55,6 +59,7 @@ export const postService = {
         const { data } = await apiClient.get<ListResult<Post>>(
             `/events/${eventId}/posts`
         );
+        console.log("post in event: ", data);
         return data;
     },
 

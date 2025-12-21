@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (content: string, imageUrl?: string) => Promise<void>;
+  onSubmit: (content: string, file: File | null) => Promise<void>;
   userAvatar?: string;
   userName: string;
 }
@@ -20,22 +20,41 @@ export const CreatePostModal = ({
   userName,
 }: CreatePostModalProps) => {
   const [content, setContent] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && !selectedFile) return;
 
     setIsSubmitting(true);
     try {
-      await onSubmit(content, imageUrl);
-      setContent("");
-      setImageUrl("");
+      await onSubmit(content, selectedFile);
+
+      setContent("default");
+      removeImage();
       onClose();
     } catch (error) {
-      console.error(error);
+      console.error("Modal submit error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -83,37 +102,48 @@ export const CreatePostModal = ({
             </div>
           </div>
 
-          {/* Image Input (Simple URL for now) */}
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Image URL (optional)..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="flex-1"
-            />
-          </div>
-
-          {/* Image Preview */}
-          {imageUrl && (
-            <div className="relative rounded-md overflow-hidden bg-zinc-100 max-h-60">
+          {/* 3. Image Preview Area */}
+          {previewUrl && (
+            <div className="relative rounded-md overflow-hidden bg-zinc-100 border border-zinc-200 dark:border-zinc-800">
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 rounded-full h-8 w-8 z-10 shadow-lg"
+                onClick={removeImage}
+              >
+                <X className="w-4 h-4" />
+              </Button>
               <img
-                src={imageUrl}
+                src={previewUrl}
                 alt="Preview"
-                className="w-full h-full object-contain"
+                className="w-full max-h-72 object-cover"
               />
             </div>
           )}
+          {/* 4. Hidden File Input */}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
         </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/50 rounded-b-lg">
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="text-zinc-500">
-              <ImageIcon className="w-5 h-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary hover:bg-primary/10"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <ImageIcon className="w-6 h-6" />
             </Button>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>
             <Button
@@ -121,9 +151,9 @@ export const CreatePostModal = ({
               disabled={!content.trim() || isSubmitting}
               className="rounded-full px-6"
             >
-              {isSubmitting ? (
+              {isSubmitting && (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
+              )}
               Post
             </Button>
           </div>

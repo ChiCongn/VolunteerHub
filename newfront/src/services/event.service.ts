@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client";
-import type { EventCategory } from "@/types/enum";
+import type { EventCategory, RegistrationStatus } from "@/types/enum";
 import type { Event } from "@/types/event.type";
 
 export interface PaginatedEvents {
@@ -33,7 +33,6 @@ export const eventService = {
     },
 
     createEvent: async (data: CreateEvent) => {
-        
         const response = await apiClient.post("/events", data);
         return response.data;
     },
@@ -44,6 +43,41 @@ export const eventService = {
                 "Content-Type": "multipart/form-data",
             },
         });
+        return response.data;
+    },
+
+    updateEvent: async (eventId: string, data: Partial<CreateEvent>) => {
+        const response = await apiClient.patch(`/events/${eventId}`, data);
+        return response.data;
+    },
+
+    // soft delete
+    deleteEvent: async (eventId: string) => {
+        const response = await apiClient.patch(`/events/${eventId}/cancel`);
+        return response.data;
+    },
+
+    completeEvent: async (eventId: string) => {
+        const response = await apiClient.patch(`/events/${eventId}/complete`);
+        return response.data;
+    },
+
+    getEventPostsStats: async (
+        eventId: string,
+        currentPeriodDays = 7
+    ): Promise<DailyPost[]> => {
+        const response = await apiClient.get(`stats/events/${eventId}/posts`, {
+            params: { currentPeriodDays },
+        });
+        return response.data;
+    },
+
+    registerEvent: async (eventId: string): Promise<void> => {
+        await apiClient.post(`/events/${eventId}/register`);
+    },
+
+    getEventAuthInfo: async (eventId: string): Promise<EventAuthInfo> => {
+        const response = await apiClient.get(`/events/${eventId}/auth-info`);
         return response.data;
     },
 };
@@ -57,4 +91,18 @@ export interface CreateEvent {
     imageUrl: string;
     capacity: number;
     categories: EventCategory[] | [];
+}
+
+export interface DailyPost {
+    date: string;
+    postCount: number;
+}
+
+export interface EventAuthInfo {
+    ownerId: string;
+    managerIds: string[];
+    registers: {
+        status: RegistrationStatus;
+        userId: string;
+    }[];
 }

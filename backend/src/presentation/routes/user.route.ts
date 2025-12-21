@@ -15,6 +15,7 @@ import {
     UpdateOnlineTimeSchema,
 } from "../validators/stats/user-activity.schema";
 import { uploadLocal } from "../../infrastructure/config/cloudinary.config";
+import { UpdateRoleSchema } from "../validators/user/update-role.schema";
 
 export const userRouter = Router();
 
@@ -106,4 +107,11 @@ userRouter.patch(
     validate(LockUserSchema),
     authorize(UserPolicy.setUserLock), // Policy: Only RootAdmin & Admin
     userController.setUserLock
+);
+userRouter.patch(
+    "/:userId/role",
+    authenticate,
+    validate(UpdateRoleSchema),
+    authorize(UserPolicy.setUserLock),
+    userController.updateRole
 );

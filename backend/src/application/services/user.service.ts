@@ -11,6 +11,7 @@ import { LoginStreakDto } from "../dtos/users/login-streak.dto";
 import { MonthlyEventStatsDto } from "../dtos/users/monthly-event-stats.dto";
 import { UserDailyActivity } from "../dtos/users/user-daily-activity.dto";
 import { notificationService } from "./notification.service";
+import { UserRole } from "../../domain/entities/enums";
 
 export class UserService {
     constructor(private readonly userRepo: IUserRepository) {}
@@ -74,10 +75,25 @@ export class UserService {
 
             await notificationService.notifySystemAlert(userId, message);
         } catch (err) {
-            logger.error("[UserService] Lock notification failed", err);
+            logger.error("[UserService] Lock notification failed");
         }
 
         return result;
+    }
+
+    async changeUserRole(adminId: string, targetUserId: string, newRole: UserRole) {
+        const allowedRoles: UserRole[] = [UserRole.EventManager, UserRole.Volunteer];
+
+        if (!allowedRoles.includes(newRole)) {
+            throw new Error(
+                `Invalid role. Only the following roles are allowed: ${allowedRoles.join(", ")}`
+            );
+        }
+        if (adminId === targetUserId) {
+            throw new Error("You cannot change your own role.");
+        }
+
+        await this.userRepo.updateRole(targetUserId, newRole);
     }
 
     // current user

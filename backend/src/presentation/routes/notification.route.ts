@@ -53,7 +53,7 @@ notificationRouter.get(
     "/users/:userId",
     //authenticate,
     validate(NotificationFilterSchema),
-    notificationController.getNotificationsByUserId
+    //notificationController.getNotificationsByUserId
 );
 
 notificationRouter.patch(

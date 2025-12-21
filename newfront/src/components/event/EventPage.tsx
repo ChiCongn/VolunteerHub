@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import type { Event as EventData } from "@/types/event.type";
+import type { Event } from "@/types/event.type";
 import { EventCategory, EventStatus } from "@/types/enum";
 import { CATEGORY_FILTERS, STATUS_FILTERS } from "./EventFilter";
 import EventGrid from "./EventGird";
@@ -7,12 +7,12 @@ import { eventService } from "../../services/event.service";
 import { Loader2, AlertCircle } from "lucide-react";
 import { FilterEventBarForComunity } from "../EventFilterBarForComunity";
 type Props = {
-  events: EventData[];
+  events: Event[];
 };
 
 export default function EventPage() {
   // state cho dữ liệu từ API
-  const [events, setEvents] = useState<EventData[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +35,7 @@ export default function EventPage() {
         setIsLoading(true);
         const response = await eventService.getEvents();
 
-        const formattedEvents: EventData[] = response.items.map(
+        const formattedEvents: Event[] = response.items.map(
           (item: any) => ({
             ...item,
             startTime: new Date(item.startTime),

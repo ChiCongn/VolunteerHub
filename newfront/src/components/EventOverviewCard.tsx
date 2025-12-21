@@ -1,203 +1,181 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
   XAxis,
   ResponsiveContainer,
   Tooltip,
-  LabelList,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, CheckCircle } from "lucide-react";
+import { Download, CheckCircle, Clock } from "lucide-react";
+import { eventService, type DailyPost } from "@/services/event.service";
+import type { Event } from "@/types/event.type";
 
-/* === MOCK DATA === */
-const MOCK_POSTS_PER_DAY = [
-  { day: "M", posts: 2 },
-  { day: "T", posts: 5 },
-  { day: "W", posts: 3 },
-  { day: "T", posts: 6 },
-  { day: "F", posts: 4 },
-  { day: "S", posts: 7 },
-  { day: "S", posts: 1 },
-];
+interface EventStatsProps {
+  event: Event;
+}
 
-const MOCK_JOINED = 32;
-const MOCK_CAPACITY = 50;
+export default function EventOverviewCard({
+  event,
+}: EventStatsProps) {
+  const [dailyPosts, setDailyPosts] = useState<DailyPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-/* Event progress mock */
-const INITIAL_PROGRESS = 65;
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const data = await eventService.getEventPostsStats(event.id, 7);
+        setDailyPosts(data);
+      } catch (error) {
+        console.error("Failed to load stats", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, [event.id]);
 
-export default function EventOverviewCard() {
-  const remaining = Math.max(MOCK_CAPACITY - MOCK_JOINED, 0);
-  const percent = Math.round((MOCK_JOINED / MOCK_CAPACITY) * 100);
+  const progressPercent = useMemo(() => {
+    const now = new Date().getTime();
+    const start = new Date(event.startTime).getTime();
+    const end = event.endTime ? new Date(event.endTime).getTime() : null;
 
-  /* ===== PROGRESS STATE ===== */
-  const [progressPercent, setProgressPercent] =
-    useState<number>(INITIAL_PROGRESS);
-  const [inputValue, setInputValue] = useState<string>(
-    String(INITIAL_PROGRESS)
+    if (!end || now < start) return 0;
+    if (now > end) return 100;
+
+    const totalDuration = end - start;
+    const elapsed = now - start;
+    return Math.round((elapsed / totalDuration) * 100);
+  }, [event.startTime, event.endTime]);
+
+  const postData = useMemo(() => {
+    return dailyPosts.map((d) => ({
+      day: new Date(d.date).toLocaleDateString("en-US", { weekday: "short" }),
+      posts: d.postCount,
+    }));
+  }, [dailyPosts]);
+
+  const { targetParticipants, actualParticipants } = {
+    targetParticipants: event.capacity || 1,
+    actualParticipants: event.registerCount || 0,
+  };
+
+  const remaining = Math.max(targetParticipants - actualParticipants, 0);
+  const fillPercent = Math.round(
+    (actualParticipants / targetParticipants) * 100
   );
 
   const participantPie = useMemo(
     () => [
-      { name: "Joined", value: MOCK_JOINED },
+      { name: "Joined", value: actualParticipants },
       { name: "Remaining", value: remaining },
     ],
-    [remaining]
+    [actualParticipants, remaining]
   );
 
   const progressPie = useMemo(
     () => [
-      { name: "Completed", value: progressPercent },
+      { name: "Elapsed", value: progressPercent },
       { name: "Remaining", value: 100 - progressPercent },
     ],
     [progressPercent]
   );
 
-  const handleProgressEnter = (
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === "Enter") {
-      let value = Number(inputValue);
-      if (isNaN(value)) return;
+  if (loading)
+    return (
+      <div className="p-10 text-center text-sm text-zinc-500">
+        Loading Stats...
+      </div>
+    );
 
-      value = Math.max(0, Math.min(100, value));
-      setProgressPercent(value);
-      setInputValue(String(value));
-    }
-  };
-
-  const handleExport = () => {
-    console.log("EXPORT VOLUNTEERS LIST");
-  };
-
-  const handleMarkCompleted = () => {
-    console.log("EVENT MARKED AS COMPLETED");
-  };
+  const handleExport = () => console.log("EXPORT VOLUNTEERS LIST");
 
   return (
-    <Card className="bg-white">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold">
-          Event Overview
+    <Card className="bg-white border-none shadow-sm">
+      <CardHeader className="pb-2 border-b mb-4">
+        <CardTitle className="text-sm font-bold flex items-center gap-2">
+          <Clock className="w-4 h-4 text-zinc-500" />
+          Event Insights
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          {/* ===== LEFT: POSTS + PROGRESS ===== */}
-          <div className="space-y-4">
-            {/* Posts activity */}
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-2 gap-6">
+          {/* LEFT: POSTS + TIME PROGRESS */}
+          <div className="space-y-6">
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">
-                Posts activity (last 7 days)
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                Post Activity (7D)
               </p>
-
-              <div className="h-[120px] text-[hsl(var(--chart-1))]">
+              <div className="h-[100px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={MOCK_POSTS_PER_DAY}>
+                  <BarChart data={postData}>
                     <XAxis
                       dataKey="day"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 11 }}
+                      tick={{ fontSize: 10 }}
                     />
-
                     <Tooltip
-                      cursor={false}
                       content={({ active, payload }) =>
-                        active && payload?.length ? (
-                          <div className="rounded-md bg-background px-2 py-1 text-xs border shadow">
-                            {payload[0].value} posts
+                        active && (
+                          <div className="bg-zinc-900 text-white px-2 py-1 text-[10px] rounded shadow-lg">
+                            {payload?.[0].value} posts
                           </div>
-                        ) : null
+                        )
                       }
                     />
-
-                    <Bar dataKey="posts" radius={[4, 4, 0, 0]} fill="currentColor">
-                      <LabelList
-                        dataKey="posts"
-                        position="top"
-                        fontSize={10}
-                      />
-                    </Bar>
+                    <Bar dataKey="posts" radius={[2, 2, 0, 0]} fill="#18181b" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            {/* Event progress (editable) */}
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">
-                Event progress
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                Timeline
               </p>
-
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative h-[110px] w-[110px]">
+              <div className="flex flex-col items-center">
+                <div className="relative h-[100px] w-[100px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={progressPie}
                         dataKey="value"
-                        innerRadius={40}
-                        outerRadius={55}
+                        innerRadius={35}
+                        outerRadius={45}
                         startAngle={90}
                         endAngle={-270}
+                        stroke="none"
                       >
-                        <Cell fill="hsl(var(--chart-2))" />
-                        <Cell fill="#e5e7eb" />
+                        <Cell fill="#10b981" />
+                        <Cell fill="#f4f4f5" />
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
-
-                  <div className="absolute inset-0 flex items-center justify-center text-sm font-bold">
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-bold">
                     {progressPercent}%
                   </div>
                 </div>
-
-                {/* INPUT */}
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleProgressEnter}
-                  className="w-20 text-center text-xs border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-
-                <span className="text-[10px] text-muted-foreground">
-                  Press Enter to update
+                <span className="text-[10px] text-zinc-500 mt-1">
+                  {progressPercent === 100 ? "Event Finished" : "In Progress"}
                 </span>
-
-                {/* ✅ COMPLETE BUTTON */}
-                {progressPercent === 100 && (
-                  <Button
-                    size="sm"
-                    className="mt-2 w-full flex items-center gap-2"
-                    onClick={handleMarkCompleted}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Completed
-                  </Button>
-                )}
               </div>
             </div>
           </div>
 
-          {/* ===== RIGHT: PARTICIPANTS ===== */}
+          {/* RIGHT: PARTICIPANTS */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">
-              Participants vs Capacity
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Capacity
             </p>
-
             <div className="flex flex-col items-center">
               <div className="relative h-[120px] w-[120px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -205,47 +183,45 @@ export default function EventOverviewCard() {
                     <Pie
                       data={participantPie}
                       dataKey="value"
-                      innerRadius={42}
-                      outerRadius={58}
+                      innerRadius={40}
+                      outerRadius={52}
                       startAngle={90}
                       endAngle={-270}
-                      paddingAngle={remaining === 0 ? 0 : 3}
+                      stroke="none"
                     >
-                      <Cell fill="hsl(var(--chart-1))" />
-                      <Cell fill="#e5e7eb" />
+                      <Cell fill="#3b82f6" />
+                      <Cell fill="#f4f4f5" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-bold">{percent}%</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    filled
+                  <span className="text-lg font-bold">{fillPercent}%</span>
+                  <span className="text-[9px] text-muted-foreground uppercase font-medium">
+                    Full
                   </span>
                 </div>
               </div>
 
-              <div className="mt-2 text-center text-xs">
-                <div className="font-medium">
-                  {MOCK_JOINED} / {MOCK_CAPACITY} participants
+              <div className="mt-4 text-center">
+                <div className="text-xs font-bold">
+                  {actualParticipants} / {targetParticipants}
                 </div>
-                <div className="text-muted-foreground">
-                  {remaining} slots remaining
+                <div className="text-[10px] text-muted-foreground mt-0.5">
+                  {remaining} spots left
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ===== EXPORT BUTTON ===== */}
         <Button
           variant="outline"
           size="sm"
-          className="w-full flex items-center gap-2 justify-center"
+          className="w-full h-8 text-xs gap-2 font-medium border-zinc-200 hover:bg-zinc-50"
           onClick={handleExport}
         >
-          <Download className="h-4 w-4" />
-          Export volunteer list
+          <Download className="h-3.5 w-3.5" />
+          Export Volunteer Data
         </Button>
       </CardContent>
     </Card>
