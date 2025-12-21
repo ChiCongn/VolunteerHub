@@ -1,10 +1,8 @@
-import * as React from "react";
 import { useEffect, useState } from "react";
 import { CheckCheck, Bell, Trash2, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { useUserStore } from "@/stores/user.store";
 import {
   notificationService,
   type ApiNotificationItem,
