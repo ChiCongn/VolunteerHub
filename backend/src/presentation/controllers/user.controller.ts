@@ -211,6 +211,37 @@ export class UserController {
         }
     };
 
+    updateRole = async (req: Request, res: Response) => {
+        const adminId = req.user.sub;
+        const { userId } = req.params;
+        const { role } = req.body;
+
+        logger.info(
+            { adminId, targetUserId: userId, requestedRole: role },
+            "[UserController] Attempting to update user role"
+        );
+
+        try {
+            const result = await this.userService.changeUserRole(adminId, userId, role);
+
+            return res.status(200).json({ message: "User role updated successfully" });
+        } catch (error: any) {
+            logger.error(
+                {
+                    adminId,
+                    targetUserId: userId,
+                    error: error.message,
+                    stack: error.stack,
+                },
+                "[UserController] Failed to update user role"
+            );
+
+            return res.status(400).json({
+                message: error.message || "An unexpected error occurred while updating role",
+            });
+        }
+    };
+
     softDelete = async (req: Request, res: Response) => {
         const userId = req.user.sub;
 

@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api-client";
+import type { UserRole } from "@/types/enum";
 import type { ListResult, Pagination } from "@/types/paging";
 import type { ListUserFilterDto, UserProfile } from "@/types/user.type";
 
@@ -33,6 +34,10 @@ export const userManagementService = {
 
     async setUserLock(userId: string, locked: boolean) {
         await apiClient.patch(`/users/${userId}/lock`, { locked });
+    },
+
+    async updateUserRole(userId: string, role: UserRole) {
+        await apiClient.patch(`/users/${userId}/role`, { role });
     },
 };
 

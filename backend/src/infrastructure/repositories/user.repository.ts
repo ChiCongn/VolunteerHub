@@ -140,6 +140,19 @@ export class UserRepository implements IUserRepository {
         return await this.findById(id);
     }
 
+    async updateRole(userId: string, role: UserRole): Promise<void> {
+        await this.prisma.users.update({
+            where: { id: userId },
+            data: { role },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+            },
+        });
+    }
+
     // mark status as deleted not hard delete
     async softDelete(id: string): Promise<void> {
         logger.debug(
@@ -665,15 +678,22 @@ export class UserRepository implements IUserRepository {
 
     //     return { year, monthlyCounts };
     // }
-    async getApprovedRegistrationCountsByYear(userId: string, year: number): Promise<{ month: number; count: number }[]> {
-        logger.debug({ userId, year, action: "getApprovedRegistrationCountsByYear" }, "[UserRepository] Fetching registration counts");
+    async getApprovedRegistrationCountsByYear(
+        userId: string,
+        year: number
+    ): Promise<{ month: number; count: number }[]> {
+        logger.debug(
+            { userId, year, action: "getApprovedRegistrationCountsByYear" },
+            "[UserRepository] Fetching registration counts"
+        );
 
         return await this.prisma.$queryRawUnsafe<{ month: number; count: number }[]>(
             `SELECT EXTRACT(MONTH FROM r.created_at)::int AS month, COUNT(*)::int AS count
              FROM registrations r
              WHERE r.user_id = $1::uuid AND r.status = 'approved' AND EXTRACT(YEAR FROM r.created_at) = $2
              GROUP BY month ORDER BY month`,
-            userId, year
+            userId,
+            year
         );
     }
 

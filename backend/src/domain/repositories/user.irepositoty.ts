@@ -17,15 +17,15 @@ import {
     WeeklyEventCountRow,
     WeeklyEventParticipationDto,
 } from "../../application/dtos/users/weekly-event-participant.dto";
-import { MonthlyEventStatsDto } from "../../application/dtos/users/monthly-event-stats.dto";
-import { LoginStreakDto } from "../../application/dtos/users/login-streak.dto";
 import { UserDailyActivity } from "../../application/dtos/users/user-daily-activity.dto";
+import { UserRole } from "../entities/enums";
 
 export interface IUserRepository {
     // Core CRUD
     create(user: CreateVolunteerDto): Promise<AuthUser>;
     findById(id: string): Promise<User | null>;
     update(id: string, changes: UpdateUserDto): Promise<User>;
+    updateRole(userId: string, role: UserRole): Promise<void>;
     softDelete(id: string): Promise<void>;
 
     // Auth-related
