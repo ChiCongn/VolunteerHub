@@ -301,14 +301,12 @@ export const EventHeader = ({
         </div>
       </div>
 
-      {/* ===== EDIT EVENT DIALOG ===== */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
         <DialogContent className="max-w-3xl">
           <EventEdit event={currentEvent} onSuccess={handleEditSuccess} />
         </DialogContent>
       </Dialog>
 
-      {/* ===== CONFIRM COMPLETE EVENT ===== */}
       <ConfirmDiaLog
         open={openConfirmComplete}
         title="Mark event as completed"
@@ -322,7 +320,6 @@ export const EventHeader = ({
         onCancel={() => setOpenConfirmComplete(false)}
       />
 
-      {/* ===== CONFIRM DELETE EVENT ===== */}
       <ConfirmDiaLog
         open={openConfirmDelete}
         title="Delete event"
@@ -335,7 +332,6 @@ export const EventHeader = ({
         }}
         onCancel={() => setOpenConfirmDelete(false)}
       />
-      {/* ===== JOIN REQUESTS DIALOG ===== */}
       <Dialog open={openJoinRequests} onOpenChange={setOpenJoinRequests}>
         <DialogContent className="max-w-3xl">
           {/* 
@@ -351,9 +347,9 @@ export const EventHeader = ({
               Manage users who requested to join this event.
             </p>
 
-            {/* PLACEHOLDER */}
             <div className="rounded-md border border-dashed p-6 text-center text-muted-foreground">
               Join requests component will be added here.
+              Ném component vào đây nhé!
             </div>
           </div>
         </DialogContent>
