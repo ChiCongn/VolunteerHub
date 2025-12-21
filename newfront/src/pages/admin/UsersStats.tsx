@@ -20,7 +20,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Download, Trophy } from "lucide-react";
+import {
+  Calendar,
+  Download,
+  Trophy,
+  FileJson,
+  FileSpreadsheet,
+} from "lucide-react";
 
 import {
   Select,
@@ -29,6 +35,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import type { UserProfile } from "@/types/user.type";
 import { UserRole, UserStatus } from "@/types/enum";
@@ -191,6 +204,61 @@ export function UserManagementPage() {
     }
   };
 
+  const exportToCSV = () => {
+    if (!filterUsers.length) {
+      toast.error("Không có dữ liệu để xuất");
+      return;
+    }
+
+    // Build CSV headers
+    const headers = [
+      "ID",
+      "Username",
+      "Email",
+      "Role",
+      "Status",
+      "Last Login",
+      "Update",
+    ];
+
+    const rows = filterUsers.map((u) => [
+      u.id,
+      `"${u.username.replace(/"/g, '""')}"`,
+      u.email || "N/A",
+      u.role,
+      u.status,
+      u.lastLogin ? new Date(u.lastLogin).toLocaleString("vi-VN") : "Chưa từng",
+      u.updatedAt ? new Date(u.updatedAt).toLocaleString("vi-VN") : "N/A",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((r) => r.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "events.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToJSON = () => {
+    if (!filterUsers.length) return;
+
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(filterUsers, null, 2));
+
+    const link = document.createElement("a");
+    link.setAttribute("href", dataStr);
+    link.setAttribute("download", "events.json");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const visiblePages = Array.from(
     { length: totalPages },
     (_, i) => i + 1
@@ -208,24 +276,31 @@ export function UserManagementPage() {
           </div>
 
           <div className="flex justify-end">
-            <Button
-              size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white gap-2 mr-10"
-            >
-              <Download className="w-4 h-4" />
-              Export Data
-            </Button>
-
-            <Button
-              size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Export Json
-            </Button>
-            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 gap-2">
+                  <Download className="h-4 w-4" />
+                  Export Data
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={exportToCSV}
+                  className="gap-2 cursor-pointer"
+                >
+                  <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                  Export to CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={exportToJSON}
+                  className="gap-2 cursor-pointer"
+                >
+                  <FileJson className="h-4 w-4 text-blue-600" />
+                  Export to JSON
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-
 
           {/* STATS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

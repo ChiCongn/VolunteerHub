@@ -15,9 +15,23 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Trophy } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Download,
+  FileJson,
+  FileSpreadsheet,
+  Trophy,
+} from "lucide-react";
 import { EventCategory, EventStatus } from "@/types/enum";
 import { FilterEventBar } from "@/components/FilterEventBar";
 import type { Event } from "@/types/event.type";
@@ -27,6 +41,13 @@ import {
 } from "@/services/admin/event-management.service";
 import { useDebounce } from "@/hooks/useDebounce";
 import { FilterEventsStatsBar } from "@/components/FilterEventsStatsBar";
+import { toast } from "sonner";
+
+const getRelativeDate = (daysOffset: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return d.toISOString().slice(0, 10);
+};
 
 export function EventManagementPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -34,7 +55,7 @@ export function EventManagementPage() {
 
   // pagination
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5); // fixed page size
+  const [limit, setLimit] = useState(10); // fixed page size
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -47,17 +68,16 @@ export function EventManagementPage() {
     EventStatus.Pending
   );
 
-  // stats
   // stats filters
-  const [statsRange, setStatsRange] = useState<{
-    from?: string;
-    to?: string;
-  }>({});
+  const [statsRange, setStatsRange] = useState<{ from?: string; to?: string }>({
+    from: getRelativeDate(-30),
+    to: getRelativeDate(0),
+  });
   const [selectedCategoryStats, setSelectedCategoryStats] = useState<
     EventCategory | "all"
   >("all");
   const [selectedStatusStats, setSelectedStatusStats] = useState<EventStatus>(
-    EventStatus.Pending
+    EventStatus.Approved
   );
 
   const [stats, setStats] = useState<EventsStats | null>(null);
@@ -168,10 +188,10 @@ export function EventManagementPage() {
       setEvents((prev) =>
         prev.map((e) => (e.id === eventId ? { ...e, status: "approved" } : e))
       );
-      //toast.success("Event approved successfully");
+      toast.success("Event approved successfully");
     } catch (err) {
       console.error(err);
-      //toast.error("Failed to approve event");
+      toast.error("Failed to approve event");
     }
   };
 
@@ -181,15 +201,15 @@ export function EventManagementPage() {
       setEvents((prev) =>
         prev.map((e) => (e.id === eventId ? { ...e, status: "rejected" } : e))
       );
-      //toast.success("Event rejected successfully");
+      toast.success("Event rejected successfully");
     } catch (err) {
       console.error(err);
-      //toast.error("Failed to reject event");
+      toast.error("Failed to reject event");
     }
   };
 
   // =========== export data =====================
-  const exportEventsToCSV = () => {
+  const exportToCSV = () => {
     if (!events.length) return;
 
     // Build CSV headers
@@ -228,7 +248,7 @@ export function EventManagementPage() {
     document.body.removeChild(link);
   };
 
-  const exportEventsToJSON = () => {
+  const exportToJSON = () => {
     if (!events.length) return;
 
     const dataStr =
@@ -257,7 +277,32 @@ export function EventManagementPage() {
               <h1 className="text-2xl font-semibold">Event Management</h1>
               <p className="text-muted-foreground">Manage event</p>
             </div>
-
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 gap-2">
+                    <Download className="h-4 w-4" />
+                    Export Data
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={exportToCSV}
+                    className="gap-2 cursor-pointer"
+                  >
+                    <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                    Export to CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={exportToJSON}
+                    className="gap-2 cursor-pointer"
+                  >
+                    <FileJson className="h-4 w-4 text-blue-600" />
+                    Export to JSON
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <FilterEventsStatsBar
               selectedCategory={selectedCategoryStats}
               selectedStatus={selectedStatusStats}
@@ -316,7 +361,9 @@ export function EventManagementPage() {
                   </div>
                   <div>
                     <p className="text-3xl font-semibold leading-none">
-                      {stats?.participants.average ?? 0}
+                      {stats?.participants.average
+                        ? Number(stats.participants.average).toFixed(2)
+                        : 0}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Average
@@ -346,7 +393,9 @@ export function EventManagementPage() {
 
                   <div>
                     <p className="text-3xl font-semibold leading-none">
-                      {stats?.avgPostsPerEvent}
+                      {stats?.avgPostsPerEvent
+                        ? Number(stats.avgPostsPerEvent).toFixed(2)
+                        : 0}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Average
@@ -354,22 +403,18 @@ export function EventManagementPage() {
                   </div>
                 </div>
               </div>
-              <Button onClick={exportEventsToCSV}>Export Events</Button>
-              <Button onClick={exportEventsToJSON}>Export Events (JSON)</Button>
             </div>
-
             <FilterEventBar
               onSearch={handleSearch}
               onCategoryChange={handleCategoryChange}
               onStatusChange={handleStatusChange}
               selectedCategory={selectedCategory}
               selectedStatus={selectedStatus}
-
-                selectedLimit={limit}
-                onLimitChange={(l) => {
-                    setLimit(l);
-                    setPage(1); // reset to first page when limit changes
-                }}
+              selectedLimit={limit}
+              onLimitChange={(l) => {
+                setLimit(l);
+                setPage(1); // reset to first page when limit changes
+              }}
             />
 
             {/* table */}

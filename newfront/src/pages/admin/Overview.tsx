@@ -6,41 +6,41 @@ import {
 } from "@/services/admin/overview.service";
 import { useEffect, useState } from "react";
 
-export const sampleOverviewStats: OverviewStats = {
-  users: {
-    dailyLogins: [
-      12, 15, 10, 8, 20, 18, 25, 22, 19, 17, 23, 21, 14, 16, 20, 18, 22, 24, 26,
-      28, 30, 25, 27, 29, 31, 35, 32, 28, 30, 33, 36,
-    ], // 31 days sample
-    totalUsers: 420,
-    activeUsers: 350,
-    newUsers: 50,
-  },
-  events: {
-    dailyCreated: [
-      1, 0, 2, 1, 3, 1, 0, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 1, 2, 0, 1, 2, 3, 1, 0,
-      1, 2, 3, 2, 1, 0,
-    ],
-    totalEvents: 120,
-    activeEvents: 80,
-    completedEvents: 30,
-    canceledEvents: 10,
-  },
-  registrations: {
-    topEventsByRegistration: [
-      { name: "Health Awareness", count: 45 },
-      { name: "Beach Cleanup", count: 38 },
-      { name: "Blood Donation", count: 32 },
-      { name: "Tree Planting", count: 30 },
-      { name: "Food Drive", count: 25 },
-    ],
-    dailyRegistrations: [
-      5, 3, 4, 2, 6, 3, 5, 4, 2, 3, 6, 5, 4, 3, 2, 4, 5, 6, 3, 2, 4, 5, 3, 2, 4,
-      5, 6, 3, 4, 2, 5,
-    ],
-    totalRegistrations: 350,
-  },
-};
+// export const sampleOverviewStats: OverviewStats = {
+//   users: {
+//     dailyLogins: [
+//       12, 15, 10, 8, 20, 18, 25, 22, 19, 17, 23, 21, 14, 16, 20, 18, 22, 24, 26,
+//       28, 30, 25, 27, 29, 31, 35, 32, 28, 30, 33, 36,
+//     ], // 31 days sample
+//     totalUsers: 420,
+//     activeUsers: 350,
+//     newUsers: 50,
+//   },
+//   events: {
+//     dailyCreated: [
+//       1, 0, 2, 1, 3, 1, 0, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 1, 2, 0, 1, 2, 3, 1, 0,
+//       1, 2, 3, 2, 1, 0,
+//     ],
+//     totalEvents: 120,
+//     activeEvents: 80,
+//     completedEvents: 30,
+//     canceledEvents: 10,
+//   },
+//   registrations: {
+//     topEventsByRegistration: [
+//       { name: "Health Awareness", count: 45 },
+//       { name: "Beach Cleanup", count: 38 },
+//       { name: "Blood Donation", count: 32 },
+//       { name: "Tree Planting", count: 30 },
+//       { name: "Food Drive", count: 25 },
+//     ],
+//     dailyRegistrations: [
+//       5, 3, 4, 2, 6, 3, 5, 4, 2, 3, 6, 5, 4, 3, 2, 4, 5, 6, 3, 2, 4, 5, 3, 2, 4,
+//       5, 6, 3, 4, 2, 5,
+//     ],
+//     totalRegistrations: 350,
+//   },
+// };
 
 export default function OverviewPage() {
   // const { users, events, registrations } = sampleOverviewStats;
