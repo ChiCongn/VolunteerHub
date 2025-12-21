@@ -68,7 +68,7 @@ export default function OverviewPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#dae0e6] dark:bg-black">
+    <div className="min-h-screen bg-card dark:bg-black">
       <div className="flex w-full justify-center">
 
         {/* Main content */}
@@ -82,7 +82,7 @@ export default function OverviewPage() {
             {/* Top stats cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Users */}
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Total Users</p>
                   <Calendar className="w-5 h-5 text-[#43A047]" />
@@ -99,7 +99,7 @@ export default function OverviewPage() {
               </div>
 
               {/* Events */}
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Total Events</p>
                   <Trophy className="w-5 h-5 text-[#FFC107]" />
@@ -115,7 +115,7 @@ export default function OverviewPage() {
               </div>
 
               {/* Registrations */}
-              <div className="bg-card border border-border rounded-lg p-6 space-y-2">
+              <div className="bg-white border border-border rounded-lg p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Registrations</p>
                   <Clock className="w-5 h-5 text-[#2196F3]" />

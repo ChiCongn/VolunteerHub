@@ -46,7 +46,7 @@ export function FilterEventBarForComunity({
   ];
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
+    <div className="bg-white border border-border rounded-lg p-4">
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search */}
         <div className="flex-1 relative">
