@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
-import CreatePostDialog from "./PostCreateDialog";
+import CreatePostDialog from "./PostCreateDiaLog";
 
 export default function CreatePost() {
   const [open, setOpen] = useState(false);
