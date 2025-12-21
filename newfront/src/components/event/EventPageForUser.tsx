@@ -29,6 +29,7 @@ import {
   type UserJoinedEvent,
 } from "@/services/registration.service";
 import { toast } from "sonner";
+import { Dialog, DialogContent } from "../ui/dialog";
 
 export default function EventPageForUser() {
   const [joinedEvents, setJoinedEvents] = useState<UserJoinedEvent[]>([]);
@@ -36,6 +37,9 @@ export default function EventPageForUser() {
 
   const navigate = useNavigate();
   const { user } = useAuthState();
+
+  const [openLeaveConfirm, setOpenLeaveConfirm] = useState(false);
+  const [eventToLeave, setEventToLeave] = useState<string | null>(null);
 
   // filters
   const [searchText, setSearchText] = useState("");
@@ -211,7 +215,9 @@ export default function EventPageForUser() {
                       />
                     </TableCell>
 
-                    <TableCell className="font-medium">{joinedEvent.eventName}</TableCell>
+                    <TableCell className="font-medium">
+                      {joinedEvent.eventName}
+                    </TableCell>
 
                     <TableCell>
                       <Badge
@@ -232,9 +238,11 @@ export default function EventPageForUser() {
                       <Badge
                         variant="outline"
                         className={
-                          joinedEvent.registrationStatus === RegistrationStatus.Approved
+                          joinedEvent.registrationStatus ===
+                          RegistrationStatus.Approved
                             ? "text-green-600"
-                            : joinedEvent.registrationStatus === RegistrationStatus.Pending
+                            : joinedEvent.registrationStatus ===
+                              RegistrationStatus.Pending
                             ? "text-yellow-600"
                             : "text-red-600"
                         }
@@ -247,16 +255,23 @@ export default function EventPageForUser() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/events/${joinedEvent.eventId}`)}
+                        onClick={() =>
+                          navigate(`/events/${joinedEvent.eventId}`)
+                        }
                       >
                         View
                       </Button>
 
                       <Button
                         size="sm"
-                        variant="destructive"
                         disabled={started}
-                        onClick={() => handleLeaveEvent(joinedEvent.registrationId)}
+                        className={"w-[110px]"}
+                        variant={started ? "outline" : "destructive"}
+                        onClick={() => {
+                          if (started) return;
+                          setEventToLeave(joinedEvent.registrationId);
+                          setOpenLeaveConfirm(true);
+                        }}
                       >
                         {started ? "Started" : "Leave Event"}
                       </Button>
@@ -268,6 +283,40 @@ export default function EventPageForUser() {
           </TableBody>
         </Table>
       </div>
+      <Dialog open={openLeaveConfirm} onOpenChange={setOpenLeaveConfirm}>
+        <DialogContent className="max-w-md">
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Leave Event</h2>
+
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to leave this event? You may need to request
+              again if you change your mind.
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setOpenLeaveConfirm(false)}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (eventToLeave) {
+                    handleLeaveEvent(eventToLeave);
+                  }
+                  setOpenLeaveConfirm(false);
+                  setEventToLeave(null);
+                }}
+              >
+                Leave Event
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

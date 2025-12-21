@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Calendar, TrendingUp } from "lucide-react";
 import { eventService } from "@/services/event.service";
 import type { Event } from "@/types/event.type";
