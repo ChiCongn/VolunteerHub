@@ -17,7 +17,12 @@ export const PostPolicy = {
      * If general post: Authenticated.
      */
     participant: async (authUser: AuthContext, eventId: string) => {
-        await requirePartcipantEvent(authUser.id, eventId);
+        try {
+            await requireManagerEvent(authUser.id, eventId);
+            return; 
+        } catch (err) {
+            await requirePartcipantEvent(authUser.id, eventId);
+        }
     },
 
     /**

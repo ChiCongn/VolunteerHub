@@ -669,7 +669,7 @@ export class PostRepository implements IPostRepository {
     }
 
     async getPostAuthInfo(postId: string): Promise<PostAuthInfoDto> {
-        logger.warn(
+        logger.debug(
             { postId, action: "getPostAuthInfo" },
             "[PostRepository] Fetching post auth info"
         );

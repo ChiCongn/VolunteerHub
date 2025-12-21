@@ -143,9 +143,9 @@ export const requirePostEditPermission = async (userId: string, postId: string) 
     );
 
     const allowedIds = await postService.getEditPermissionIds(postId);
-
+    console.log("is allowed id", allowedIds);
     if (!allowedIds.includes(userId)) {
-        throw new ForbiddenError("Only the author or event managers can edit this post");
+        throw new ForbiddenError();
     }
 };
 

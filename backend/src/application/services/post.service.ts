@@ -144,22 +144,52 @@ export class PostService {
 
     async getEditPermissionIds(postId: string): Promise<string[]> {
         logger.debug(
-            { action: "requireEditPermission", postId },
-            `[Authorization] Checking edit rights for post ${postId}`
+            { action: "getEditPermissionIds", postId },
+            `[PostService] Checking edit rights for post ${postId}`
         );
 
-        const postAuthInfo = await this.postRepo.getPostAuthInfo(postId);
+        try {
+            const postAuthInfo = await this.postRepo.getPostAuthInfo(postId);
 
-        if (!postAuthInfo) {
-            throw new PostNotFoundError(postId);
+            if (!postAuthInfo) {
+                logger.warn(
+                    { action: "getEditPermissionIds", postId },
+                    `[PostService] Permission check failed: Post ${postId} not found`
+                );
+                throw new PostNotFoundError(postId);
+            }
+
+            const { authorId, eventOwnerId, eventManagerIds } = postAuthInfo;
+
+            const permissionIds = [authorId, eventOwnerId, ...(eventManagerIds || [])];
+            const uniquePermissionIds = Array.from(new Set(permissionIds));
+            logger.debug(
+                {
+                    postId,
+                    totalAuthorized: uniquePermissionIds.length,
+                    hasManagers: (eventManagerIds?.length ?? 0) > 0,
+                },
+                `[PostService] Successfully resolved ${uniquePermissionIds.length} unique editor(s) for post`
+            );
+
+            return uniquePermissionIds;
+        } catch (error) {
+            if (!(error instanceof PostNotFoundError)) {
+                logger.error(
+                    {
+                        action: "getEditPermissionIds",
+                        postId,
+                        error: error instanceof Error ? error.message : error,
+                    },
+                    `[PostService] Unexpected error while fetching permission IDs`
+                );
+            }
+            logger.error(
+                { postId, error },
+                `[PostService] Unexpected error while fetching permission IDs`
+            );
+            throw error;
         }
-
-        const { authorId, eventOwnerId, eventManagerIds } = postAuthInfo;
-
-        const permissionIds = [authorId, eventOwnerId, ...(eventManagerIds || [])];
-
-        // Deduplicate in case author === owner or manager
-        return Array.from(new Set(permissionIds));
     }
 }
 
