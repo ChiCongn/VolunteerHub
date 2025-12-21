@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: List Reactions API
+  version: 1.0.0
+  description: Retrieve a list of reactions for a specific post.
+paths:
+  /posts/{postId}/reactions:
+    get:
+      summary: List Reactions
+      description: Returns all reactions associated with a specific post.
+      tags:
+        - Reactions
+      operationId: listReactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+        - $ref: "#/components/parameters/PaginationPage"
+        - $ref: "#/components/parameters/PaginationLimit"
+      responses:
+        "200":
+          description: List of reactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Emoji"
+                      meta:
+                        $ref: "#/components/schemas/Meta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"

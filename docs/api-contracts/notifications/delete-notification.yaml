@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Delete Notification
+  version: 1.0.0
+  description: Deletes a specific notification for the authenticated user.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /notifications/{notificationId}:
+    delete:
+      tags:
+        - Notifications
+      summary: Delete notification
+      operationId: deleteNotification
+      description: >-
+        Permanently deletes a single notification for the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          description: The unique identifier of the notification.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notification deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Notification deleted successfully.
+                data: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'

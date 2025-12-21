@@ -1,0 +1,101 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VolunteerHub API - List Comments on a Post",
+    "version": "1.0.0",
+    "description": "Retrieve all comments under a specific post in threaded (nested) format."
+  },
+  "servers": [
+    {
+      "url": "https://volunteerhub.com/api/v1",
+      "description": "Production"
+    }
+  ],
+  "components": {
+    "$ref": "./components.json"
+  },
+  "paths": {
+    "/posts/{postId}/comments": {
+      "get": {
+        "tags": ["Comments"],
+        "summary": "List comments for a specific post (threaded)",
+        "operationId": "listPostComments",
+        "description": "Fetch all comments for a given post, including nested replies (threaded view). Supports pagination for top-level comments.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PostId"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationPage"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationLimit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Comment"
+                          }
+                        },
+                        "meta": {
+                          "$ref": "#/components/schemas/Meta"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "message": "Comments fetched successfully.",
+                  "data": [
+                    {
+                      "id": "c1",
+                      "postId": "p1",
+                      "authorId": "u1",
+                      "content": "This is a great post!",
+                      "createdAt": "2025-10-30T08:25:00Z",
+                      "updatedAt": "2025-10-30T08:25:00Z",
+                      "replies": [
+                        {
+                          "id": "c2",
+                          "postId": "p1",
+                          "authorId": "u2",
+                          "content": "Totally agree!",
+                          "createdAt": "2025-10-30T08:30:00Z",
+                          "updatedAt": "2025-10-30T08:30:00Z"
+                        }
+                      ]
+                    }
+                  ],
+                  "meta": {
+                    "total": 12,
+                    "page": 1,
+                    "limit": 10,
+                    "totalPages": 2
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    }
+  }
+}

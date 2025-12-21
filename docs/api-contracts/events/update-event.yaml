@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: VolunteerHub API – Update Event
+  version: 1.0.0
+  description: Partially update an existing event. Manager / admin only.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production server
+components:
+  $ref: ./components.yaml
+paths:
+  /events/{eventId}:
+    patch:
+      tags: [Events]
+      summary: Update event (partial)
+      operationId: updateEvent
+      description: Updates fields of an existing event using UpdateEventDto.
+      security:
+        - bearerAuth: []
+      x-rolesAllowed: [manager, admin]
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                location:
+                  type: string
+                startTime:
+                  type: string
+                  format: date-time
+                endTime:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '200':
+          description: Event updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'

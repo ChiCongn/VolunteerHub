@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: VolunteerHub API - Get User Notifications
+  version: 1.0.0
+  description: >-
+    Fetches a paginated list of the authenticated user's in-app
+    notifications.
+servers:
+  - url: https://volunteerhub.com/api/v1
+    description: Production
+components:
+  $ref: ./components.json
+paths:
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get my notifications
+      operationId: getUserNotifications
+      description: >-
+        Fetches a paginated list of notifications for the currently
+        authenticated user, newest first.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationLimit'
+      responses:
+        '200':
+          description: Notifications retrieved successfully.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Notification'
+                      meta:
+                        $ref: '#/components/schemas/Meta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
