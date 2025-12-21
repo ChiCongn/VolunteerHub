@@ -266,9 +266,15 @@ export default function EventPageForUser() {
 
                       <Button
                         size="sm"
-                        variant="destructive"
                         disabled={started}
+                        className={`w-[110px] ${
+                          started
+                            ? "bg-green-600 text-white hover:bg-green-600 cursor-not-allowed"
+                            : ""
+                        }`}
+                        variant={started ? "default" : "destructive"}
                         onClick={() => {
+                          if (started) return;
                           setEventToLeave(event.id);
                           setOpenLeaveConfirm(true);
                         }}
