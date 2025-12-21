@@ -51,8 +51,6 @@ export const EventHeader = ({
       ...prev,
       ...updatedEvent,
     }));
-    console.log(currentEvent);
-    console.log(updatedEvent);
 
     setOpenEdit(false);
   };

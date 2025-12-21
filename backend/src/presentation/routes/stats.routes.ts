@@ -10,6 +10,8 @@ import {
     getManagerMonthlyCompletedSchema,
     getManagerTopParticipantsSchema,
 } from "../validators/stats/manager-event.schem";
+import { EventPolicy } from "../../application/policies/event.policy";
+import { eventController } from "../controllers/event.controller";
 
 export const statsRouter = Router();
 
@@ -30,8 +32,15 @@ statsRouter.get(
     "/events/:eventId",
     authenticate,
     validate(GetEventSchema),
-    authorize(StatsPolicy.eventStats),
+    authorize(StatsPolicy.eventStats, (req) => [req.params.eventId]),
     statsController.getEventStats
+);
+
+statsRouter.get(
+    "/events/:eventId/posts",
+    authenticate,
+    authorize(EventPolicy.manageEvent, (req) => [req.params.eventId]),
+    eventController.getPostActivity
 );
 statsRouter.get(
     "/trending",

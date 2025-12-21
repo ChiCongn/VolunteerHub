@@ -61,6 +61,16 @@ export const eventService = {
         const response = await apiClient.patch(`/events/${eventId}/complete`);
         return response.data;
     },
+
+    getEventPostsStats: async (
+        eventId: string,
+        currentPeriodDays = 7
+    ): Promise<DailyPost[]> => {
+        const response = await apiClient.get(`stats/events/${eventId}/posts`, {
+            params: { currentPeriodDays },
+        });
+        return response.data;
+    },
 };
 
 export interface CreateEvent {
@@ -72,4 +82,9 @@ export interface CreateEvent {
     imageUrl: string;
     capacity: number;
     categories: EventCategory[] | [];
+}
+
+export interface DailyPost {
+    date: string;
+    postCount: number;
 }

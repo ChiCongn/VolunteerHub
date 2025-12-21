@@ -94,7 +94,7 @@ export class EventRepository implements IEventRepository {
             capacity: eventPrisma.capacity,
             registerCount: registeredUserIds.length,
             updatedAt: eventPrisma.updated_at || new Date(),
-            
+
             participantIds: approvedUserIds,
             registerUserIds: registeredUserIds,
             postIds: postIds,
@@ -174,11 +174,11 @@ export class EventRepository implements IEventRepository {
         );
 
         const event = await this.prisma.events.findUnique({
-            where: { 
-                id, 
+            where: {
+                id,
                 status: {
-                    in: [EventStatus.Approved, EventStatus.Completed, EventStatus.Ongoing]
-                }
+                    in: [EventStatus.Approved, EventStatus.Completed, EventStatus.Ongoing],
+                },
             },
             select: {
                 id: true,
@@ -759,13 +759,15 @@ export class EventRepository implements IEventRepository {
             throw new EventNotFoundError(eventId);
         }
 
-        const explicitManagers = event.event_manager_ids ?? [];
+        const managers = event.event_manager_ids ?? [];
+        const ownerId = event.owner_id;
 
-        if (event.owner_id && !explicitManagers.includes(event.owner_id)) {
-            return [...explicitManagers, event.owner_id];
+        const managerSet = new Set(managers);
+        if (ownerId) {
+            managerSet.add(ownerId);
         }
 
-        return event.event_manager_ids;
+        return Array.from(managerSet);
     }
 
     async getRegistrationStatus(userId: string, eventId: string): Promise<RegistrationStatus> {
@@ -889,7 +891,7 @@ export class EventRepository implements IEventRepository {
                 COUNT(*)::int AS count
             FROM posts
             WHERE
-                event_id = ${eventId}
+                event_id = ${eventId}::uuid
                 AND created_at >= ${fromDate}
             GROUP BY DATE(created_at)
             ORDER BY date ASC;

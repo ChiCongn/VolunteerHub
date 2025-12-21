@@ -74,10 +74,7 @@ export const CommunityEventPage = () => {
   };
 
   // Create post
-  const handleCreatePostSubmit = async (
-    content: string,
-    imageUrl?: string
-  ) => {
+  const handleCreatePostSubmit = async (content: string, imageUrl?: string) => {
     if (!eventId) return;
 
     try {
@@ -183,7 +180,7 @@ export const CommunityEventPage = () => {
                 {/* ================= RIGHT COLUMN ================= */}
                 <div className="hidden md:block space-y-4">
                   {/* EVENT OVERVIEW */}
-                  <EventOverviewCard />
+                  <EventOverviewCard event={event} />
 
                   {/* ABOUT COMMUNITY */}
                   <Card className="shadow-sm border border-zinc-200">
@@ -199,8 +196,7 @@ export const CommunityEventPage = () => {
                         <Avatar className="w-12 h-12">
                           <AvatarImage
                             src={
-                              event.imageUrl ||
-                              "https://github.com/shadcn.png"
+                              event.imageUrl || "https://github.com/shadcn.png"
                             }
                           />
                           <AvatarFallback>EV</AvatarFallback>

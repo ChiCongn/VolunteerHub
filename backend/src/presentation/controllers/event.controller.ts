@@ -15,6 +15,7 @@ import { eventRepo } from "../../infrastructure/repositories/index";
 import { Request, Response } from "express";
 import { EventFilterSchema } from "../validators/event/filetr-event.schema";
 import logger from "../../logger";
+import { EventNotFoundError } from "../../domain/errors/event.error";
 
 export class EventController {
     constructor(private readonly eventRepository: IEventRepository) {
@@ -159,6 +160,46 @@ export class EventController {
             this.handleError(res, error);
         }
     }
+
+    getPostActivity = async (req: Request, res: Response) => {
+        const { eventId } = req.params;
+        const days = req.query.days ? Number(req.query.days) : 7;
+        
+            logger.info(
+            { eventId, days, action: "getPostActivity" },
+            "[StatsController] Fetching post activity trend"
+        );
+    
+        try {
+            const data = await this.eventRepository.getPostsDays(eventId, days);
+    
+            logger.debug(
+                { eventId, dataCount: data.length },
+                "[StatsController] Post activity data retrieved successfully"
+            );
+    
+            return res.status(200).json(data);
+        } catch (error) {
+            if (error instanceof EventNotFoundError) {
+                logger.warn(
+                    { eventId, message: error.message },
+                    "[StatsController] Event not found while fetching post activity"
+                );
+                return res.status(404).json({ message: error.message });
+            }
+    
+            logger.error(
+                { 
+                    eventId, 
+                    error: error instanceof Error ? error.message : error,
+                    stack: error instanceof Error ? error.stack : undefined 
+                },
+                "[StatsController] Unexpected error in getPostActivity"
+            );
+            
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
 
     //event manager
     async approveEvent(req: Request, res: Response): Promise<void> {

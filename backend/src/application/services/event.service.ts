@@ -1,9 +1,10 @@
 import { EventStatus, RegistrationStatus } from "../../domain/entities/enums";
-import { Event } from "../../domain/entities/event.entity";
+import { Event, IEvent } from "../../domain/entities/event.entity";
 import { EventAlreadyApprovedError, EventNotFoundError } from "../../domain/errors/event.error";
 import { IEventRepository } from "../../domain/repositories/event.irepository";
 import { eventRepo } from "../../infrastructure/repositories";
 import logger from "../../logger";
+import { DailyPostDto } from "../dtos/stats";
 import { notificationService, NotificationService } from "./notification.service";
 
 export class EventService {
@@ -37,11 +38,15 @@ export class EventService {
         return status === RegistrationStatus.Approved;
     }
 
+    async getEventPostActivity(eventId: string, days: number = 7): Promise<DailyPostDto[]> {
+        return await this.eventRepo.getPostsDays(eventId, days);
+    }
+
     async approveEvent(eventId: string) {
         const event = await this.eventRepo.findById(eventId);
 
         if (!event) {
-            logger.warn({ eventId}, "[EventService] Event not found");
+            logger.warn({ eventId }, "[EventService] Event not found");
             throw new EventNotFoundError(eventId);
         }
 
@@ -83,7 +88,7 @@ export class EventService {
         void this.notifyEventApproved(event, false);
     }
 
-    private async notifyEventApproved(event: Event, isApprove: boolean) {
+    private async notifyEventApproved(event: IEvent, isApprove: boolean) {
         const managers = event.eventManagerIds;
         const statusText = isApprove ? "đã được phê duyệt" : "đã bị từ chối";
         const message = `Đơn đăng ký tham gia sự kiện "${event.name}" của bạn ${statusText}.`;
