@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Trophy } from "lucide-react";
+import { Calendar, Download, Trophy } from "lucide-react";
 
 import {
   Select,
@@ -47,9 +47,8 @@ export function UserManagementPage() {
 
   // pagination
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
 
   // filter
   const [search, setSearchQuery] = useState("");
@@ -91,7 +90,6 @@ export function UserManagementPage() {
         );
 
         setFilterUsers(res.items);
-        setTotalItems(res.total);
         setTotalPages(Math.ceil(res.total / limit));
       } catch (err) {
         console.error("Fetch users failed", err);
@@ -209,6 +207,26 @@ export function UserManagementPage() {
             <p className="text-muted-foreground">Manage users</p>
           </div>
 
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white gap-2 mr-10"
+            >
+              <Download className="w-4 h-4" />
+              Export Data
+            </Button>
+
+            <Button
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export Json
+            </Button>
+            
+          </div>
+
+
           {/* STATS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white border rounded-lg p-6">
@@ -254,138 +272,141 @@ export function UserManagementPage() {
             onStatusChange={handleStatusChange}
             selectedRole={selectedRole}
             selectedStatus={selectedStatus}
+            selectedLimit={limit}
+            onLimitChange={(l) => {
+              setLimit(l);
+              setPage(1); // reset to first page when limit changes
+            }}
           />
 
           {/* TABLE */}
-          <div className="bg-white border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {loading ? (
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableCell colSpan={5} className="text-center py-6">
+                    Loading...
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6">
-                      Loading...
+              ) : filterUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6">
+                    No users found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filterUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={user.avatarUrl} />
+                          <AvatarFallback>
+                            {user.username.slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{user.username}</span>
+                      </div>
                     </TableCell>
-                  </TableRow>
-                ) : filterUsers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6">
-                      No users found
+
+                    <TableCell>{user.email}</TableCell>
+
+                    <TableCell>
+                      <Badge variant="outline">{user.role}</Badge>
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  filterUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={user.avatarUrl} />
-                            <AvatarFallback>
-                              {user.username.slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{user.username}</span>
-                        </div>
-                      </TableCell>
 
-                      <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          user.status === UserStatus.Active
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                        }
+                      >
+                        {user.status}
+                      </Badge>
+                    </TableCell>
 
-                      <TableCell>
-                        <Badge variant="outline">{user.role}</Badge>
-                      </TableCell>
-
-                      <TableCell>
-                        <Badge
+                    {/* ACTIONS */}
+                    <TableCell className="text-right">
+                      <div className="flex justify-end items-center gap-2 flex-wrap">
+                        <Button
+                          size="sm"
                           variant="outline"
-                          className={
-                            user.status === UserStatus.Active
-                              ? "text-green-600"
-                              : "text-yellow-600"
-                          }
+                          onClick={() => handleViewUser(user.id)}
                         >
-                          {user.status}
-                        </Badge>
-                      </TableCell>
+                          View
+                        </Button>
 
-                      {/* ACTIONS */}
-                      <TableCell className="text-right">
-                        <div className="flex justify-end items-center gap-2 flex-wrap">
+                        <Select
+                          value={editingRoles[user.id] ?? user.role}
+                          onValueChange={(value) =>
+                            setEditingRoles((prev) => ({
+                              ...prev,
+                              [user.id]: value as UserRole,
+                            }))
+                          }
+                          disabled={user.status === UserStatus.Locked}
+                        >
+                          <SelectTrigger className="w-[150px] h-8">
+                            <SelectValue placeholder="Change Role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={UserRole.Volunteer}>
+                              Volunteer
+                            </SelectItem>
+                            <SelectItem value={UserRole.EventManager}>
+                              Event Manager
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {editingRoles[user.id] &&
+                          editingRoles[user.id] !== user.role && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateRole(user.id)}
+                            >
+                              Update
+                            </Button>
+                          )}
+
+                        {user.status === UserStatus.Active && (
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => handleViewUser(user.id)}
+                            variant="destructive"
+                            onClick={() => handleUserLock(user.id, true)}
                           >
-                            View
+                            Lock
                           </Button>
+                        )}
 
-                          <Select
-                            value={editingRoles[user.id] ?? user.role}
-                            onValueChange={(value) =>
-                              setEditingRoles((prev) => ({
-                                ...prev,
-                                [user.id]: value as UserRole,
-                              }))
-                            }
-                            disabled={user.status === UserStatus.Locked}
+                        {user.status === UserStatus.Locked && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleUserLock(user.id, false)}
                           >
-                            <SelectTrigger className="w-[150px] h-8">
-                              <SelectValue placeholder="Change Role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={UserRole.Volunteer}>
-                                Volunteer
-                              </SelectItem>
-                              <SelectItem value={UserRole.EventManager}>
-                                Event Manager
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-
-                          {editingRoles[user.id] &&
-                            editingRoles[user.id] !== user.role && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleUpdateRole(user.id)}
-                              >
-                                Update
-                              </Button>
-                            )}
-
-                          {user.status === UserStatus.Active && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleUserLock(user.id, true)}
-                            >
-                              Lock
-                            </Button>
-                          )}
-
-                          {user.status === UserStatus.Locked && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleUserLock(user.id, false)}
-                            >
-                              Unlock
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                            Unlock
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
           {/* PAGINATION */}
           <Pagination className="py-4">
